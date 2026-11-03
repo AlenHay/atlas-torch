@@ -62,17 +62,17 @@ def read_kapk(path: str | Path) -> np.ndarray:
 
 
 def read_spectrum_bin(path: str | Path) -> dict[str, np.ndarray]:
-    """spectrum.bin (spectrv fort.7): header record then one record (wave?, flux, cont) per point.
-
-    Mirrors BasicATLAS load_binary_spectrum but returns raw Fortran quantities (no unit conversion).
-    """
-    raw = Path(path).read_bytes()
-    dt = np.dtype("i4,f8,f8,S74,f8,f8,i4,i4,i4," + ",".join(["f8"] * 20 + ["i4"] + ["f8"] * 377))
-    header = np.frombuffer(raw, dtype=dt, count=1)
-    data = np.frombuffer(raw, dtype=np.dtype("f8,f8,f8"), offset=dt.itemsize)
-    wbegin, resolu, n = float(header["f4"][0]), float(header["f5"][0]), int(header["f6"][0])
-    return {"wbegin": wbegin, "resolu": resolu, "n": n, "c0": data["f0"].copy(),
-            "flux": data["f1"].copy(), "cont": data["f2"].copy()}
+    """spectrum.bin (spectrv fort.7), read as Fortran records: header record (same layout BasicATLAS's
+    load_binary_spectrum decodes), then one 16-byte record (flux, cont) per wavelength point, then any trailing
+    records (kept raw in `tail`)."""
+    recs = read_records(path)
+    hdt = np.dtype("f8,f8,S74,f8,f8,i4,i4,i4," + ",".join(["f8"] * 20 + ["i4"] + ["f8"] * 377))
+    h = np.frombuffer(recs[0][:hdt.itemsize], dtype=hdt, count=1)
+    pts = [r for r in recs[1:] if len(r) == 16]
+    tail = recs[1 + len(pts):]
+    d = np.frombuffer(b"".join(pts), dtype="<f8").reshape(-1, 2)
+    return {"wbegin": float(h["f3"][0]), "resolu": float(h["f4"][0]), "n": int(h["f5"][0]),
+            "flux": d[:, 0].copy(), "cont": d[:, 1].copy(), "header": recs[0], "tail": tail}
 
 
 # ---------------------------------------------------------------- ATLAS9
