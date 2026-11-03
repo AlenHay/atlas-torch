@@ -19,7 +19,7 @@ def test_hrayop_golden(golden):
         s = State.from_trace(golden(STAGE, "hrayop", hit, "entry"))
         exp = golden(STAGE, "hrayop", hit, "exit")
         out = hrayop(s)
-        assert_close(out["bhyd.sigh"], exp["bhyd.sigh"], rtol=1e-15, name="sigh")
+        assert_close(out["bhyd.sigh"], exp["bhyd.sigh"], rtol=0, name="sigh")
 
 
 @settings(max_examples=60, deadline=None)
@@ -33,7 +33,7 @@ def test_hrayop_vs_fortran(oracle, golden, lf):
     o.set_common("freq", freq=freq)
     o.call("hrayop")
     s = s.updated({"freq.freq": torch.tensor([freq])})
-    assert_close(hrayop(s)["bhyd.sigh"], o.common("bhyd")["sigh"], rtol=1e-15, name=f"sigh@{freq:.6e}")
+    assert_close(hrayop(s)["bhyd.sigh"], o.common("bhyd")["sigh"], rtol=0, name=f"sigh@{freq:.6e}")
 
 
 @settings(max_examples=100, deadline=None)

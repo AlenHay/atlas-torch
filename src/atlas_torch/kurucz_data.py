@@ -970,6 +970,8 @@ def parse_data(
 
 
 _MEMO: dict[str, dict[tuple[str, str], np.ndarray]] = {}
+# Bump whenever the parser's output can change: the on-disk cache is keyed on (source sha256, PARSER_VERSION).
+PARSER_VERSION = 3  # 3: EQUIVALENCE storage association + blank-free DATA keyword
 
 
 def load_tables(source_path: str | Path) -> dict[tuple[str, str], np.ndarray]:
@@ -989,7 +991,7 @@ def _load_tables(source_path: str | Path) -> dict[tuple[str, str], np.ndarray]:
     sha = hashlib.sha256(content).hexdigest()
 
     cache_dir = Path.home() / ".cache" / "atlas_torch"
-    cache_path = cache_dir / f"{sha}.npz"
+    cache_path = cache_dir / f"{sha}.v{PARSER_VERSION}.npz"
 
     if cache_path.exists():
         with np.load(cache_path) as npz:

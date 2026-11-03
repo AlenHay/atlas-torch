@@ -64,6 +64,13 @@ Everything outside the markers is the hand-written record of decisions, gate not
 
 ### Findings so far
 
+* Correction (line readers, commit 44c6701): the claim "byte-identical except TABLOG fields" was wrong. The
+  molecular records written by the `rmolecasc` port differ from stock by up to 79 ulp (<= 5e-6 relative) in
+  REAL*4 fields across ~600k records; the stage test hid this behind a 5e-4 helper tolerance. Being fixed (stock
+  -O3 uses glibc libmvec vector math); the bound will be tightened to exact.
+* Host vs container: the host glibc 2.43 `log10f` differs from the container's 2.39; all references and scores
+  are produced inside the container.
+
 * KAPPA9 alone: all four ifx variants reproduce the stock `kapk*.dat` and `kappa.ros` byte-for-byte (solar and
   alpha), so the KAPPA9 gate is one print quantum (1 milli-dex step / 0.001 dex).
 * SYNTHE `spectrv`: a gfortran -O0 debug build reproduces the -O3 stock `spectrum.bin` bit-for-bit (10 nm window).

@@ -22,6 +22,9 @@ own noise floor) comes first; see `RESULTS.md` for the current scoreboard and `B
 Large data (line lists, Fortran sources, reference runs) live outside git in `$ATLAS_EXT` (default `~/atlas-ext`):
 the pinned BasicATLAS checkout (`download.com` with its MD5s, `test.py` clean), builds, runs, traces.
 
+**All runs and tests happen inside the `atlas-dev` container** (`scripts/dx`, `make ...`): the Fortran references
+were produced there (glibc 2.39); the SteamOS host's glibc 2.43 has a different `log10f`, which changes results.
+
 ## Porting conventions
 
 * **Fidelity first.** Port the *patched* Fortran semantics exactly: REAL*4 vs REAL*8 arithmetic, single-precision

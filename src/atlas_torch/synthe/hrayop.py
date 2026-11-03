@@ -32,12 +32,15 @@ def hrayop_xsect(freq: float) -> float:
         _T = _tables()
     T = _T
     if freq < 3.288051e13:
-        return 6.65e-25 * float(T["gavrilam"][0]) ** 2 * (freq / 3.288051e13) ** 4
+        x = freq / 3.288051e13
+        x2 = x * x                       # gfortran: X**4 -> __powidf2 = (x*x)*(x*x); G**2 -> G*G
+        g0 = float(T["gavrilam"][0])
+        return 6.65e-25 * (g0 * g0) * (x2 * x2)
     if freq <= 2.4190611e15:
         i = min(fint(freq / 3.288051e13) + 1, 74)
         gm = T["gavrilam"]
         g = float(gm[i - 2]) + (float(gm[i - 1]) - float(gm[i - 2])) / 3.288051e13 * (freq - (i - 1) * 3.288051e13)
-        return 6.65e-25 * g**2
+        return 6.65e-25 * (g * g)
     if freq < f32(.77) * NU0:
         return 0.0
     if freq <= f32(.885) * NU0:
@@ -46,7 +49,7 @@ def hrayop_xsect(freq: float) -> float:
         t = T["gavrilamab"]
         g = float(t[i - 2]) + (float(t[i - 1]) - float(t[i - 2])) / 1.644026e13 * (
             freq - (f32(.755) * NU0 + ((i - 1) - 1) * 1.664026e13))
-        return 6.65e-25 * g**2
+        return 6.65e-25 * (g * g)
     if freq < f32(.890) * NU0:
         return 0.0
     if freq <= f32(.936) * NU0:
@@ -55,7 +58,7 @@ def hrayop_xsect(freq: float) -> float:
         t = T["gavrilambc"]
         g = float(t[i - 2]) + (float(t[i - 1]) - float(t[i - 2])) / 0.657610e13 * (
             freq - (f32(.890) * NU0 + ((i - 1) - 1) * 0.657610e13))
-        return 6.65e-25 * g**2
+        return 6.65e-25 * (g * g)
     if freq < f32(.938) * NU0:
         return 0.0
     if freq <= f32(.959) * NU0:
@@ -64,7 +67,7 @@ def hrayop_xsect(freq: float) -> float:
         t = T["gavrilamcd"]
         g = float(t[i - 2]) + (float(t[i - 1]) - float(t[i - 2])) / 0.3288051e13 * (
             freq - (f32(.938) * NU0 + ((i - 1) - 1) * 0.3288051e13))
-        return 6.65e-25 * g**2
+        return 6.65e-25 * (g * g)
     if freq < f32(.961) * NU0:
         return 0.0
     if freq <= f32(1.000) * NU0:
