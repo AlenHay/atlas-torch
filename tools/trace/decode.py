@@ -32,6 +32,8 @@ def decode(lib, d):
     groups = defaultdict(dict)
     for ln in (d / "index.jsonl").read_text().splitlines():
         r = json.loads(ln)
+        if r.get("tag") == "error":
+            continue
         key = (r["routine"], r["hit"], r["phase"])
         data = raw[r["off"]:r["off"] + r["size"]]
         if r["tag"] == "common":

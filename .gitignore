@@ -10,3 +10,4 @@ __pycache__/
 *.bdf
 .hypothesis/
 .pytest_cache/
+*.for

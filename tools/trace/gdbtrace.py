@@ -34,11 +34,17 @@ gdb.execute("set breakpoint pending on")
 _last = []
 
 
+MAXBYTES = int(os.environ.get("TRACE_MAXBYTES", str(64 << 20)))
+
+
 def dump(tag, name, addr, size, meta):
+    if size <= 0 or size > MAXBYTES:
+        idx.write(json.dumps(dict(meta, tag="error", name=name, msg=f"size {size} skipped")) + "\n")
+        return
     _last.append((tag, name, addr, size))
     try:
         data = bytes(gdb.selected_inferior().read_memory(addr, size))
-    except gdb.MemoryError:
+    except (gdb.MemoryError, ValueError, OverflowError):
         return
     off = raw.tell()
     raw.write(data)
@@ -85,7 +91,7 @@ def record(routine, phase, frame, hit):
                     v = s.value(frame)
                     if v.address is not None:
                         dump("static", s.name, int(v.address), v.type.sizeof, meta)
-            except (gdb.error, RuntimeError) as e:
+            except Exception as e:  # noqa: BLE001  never let a bad read stop the traced program
                 idx.write(json.dumps(dict(meta, tag="error", name=s.name, msg=str(e))) + "\n")
     # COMMON blocks: gdb exposes them as globals named <block>_
     for cb in COMMONS.get(routine, []):

@@ -12,7 +12,7 @@ if [ "$R" = ALL ]; then
 fi
 cd "$W"
 TRACE_ROUTINES="$R" TRACE_MAX="$MAX" TRACE_OUT="$OUT" TRACE_LAYOUT="$OUT/layout.json" \
-  TRACE_STDIN="$([ "$IN" = - ] || realpath "$IN")" gdb -q -batch -x "$repo/tools/trace/gdbtrace.py" --args "$EXE" > "$OUT/gdb.log" 2>&1
+  TRACE_STDIN="$([ "$IN" = - ] || realpath "$IN")" gdb -q -batch -x "$repo/tools/trace/gdbtrace.py" --args "$EXE" > "$OUT/gdb.log" 2>&1 || true
 $PY "$repo/tools/trace/decode.py" "$EXE" "$OUT"
 rm -f "$OUT/raw.bin"
 du -sh "$OUT"
