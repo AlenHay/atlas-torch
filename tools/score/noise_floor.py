@@ -26,6 +26,7 @@ QUANTUM = {  # by quantity prefix
     "flux": EPS, "cont": EPS, "normflux": EPS,
     "odf_v": 1.0, "logkappa_ros": 1e-3, "kapk_v": 1.0,
     "RHOX": 1e-5, "P": 1e-5, "XNE": 1e-5, "RHO": 1e-5, "ABROSS": 1e-5, "TAUROS": 1e-5, "T": 2e-5,
+    "deck_T": 1e-5, "deck_P": 1e-3, "deck_XNE": 1e-3, "deck_ABROSS": 1e-3,
     "FLXERR": 0.0, "FLXDRV": 0.0, "HEIGHT": 0.0, "FLXCNV_over_total": 1e-5,
 }
 

@@ -104,6 +104,14 @@ def read_atlas_table(output_main: str | Path, which: str = "last") -> dict[str, 
     return out
 
 
+def read_last_iteration(path: str | Path) -> dict[str, np.ndarray]:
+    """output_last_iteration.out: the best iteration's table rows (as selected by BasicATLAS atlas_converged)."""
+    rows = [[ffloat(x) for x in ln.split()] for ln in Path(path).read_text().splitlines() if ln.strip()]
+    t = np.array(rows)
+    names = ["J", "RHOX", "T", "P", "XNE", "RHO", "ABROSS", "HEIGHT", "TAUROS", "FLXCNV", "PRADK", "FLXERR", "FLXDRV"]
+    return {n: t[:, i] for i, n in enumerate(names)}
+
+
 def read_deck6(path: str | Path) -> dict[str, np.ndarray]:
     """'READ DECK6' block of a punched model (output_summary.out / restart): RHOX,T,P,XNE,ABROSS,ACCRAD,VTURB,FLXRAD,VCONV,VELSND."""
     lines = Path(path).read_text().splitlines()

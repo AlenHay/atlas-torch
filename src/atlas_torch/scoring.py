@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .io.formats import read_atlas_table, read_bdf, read_deck6, read_kapk, read_kappa_ros, read_spectrum_bin
+from .io.formats import read_atlas_table, read_bdf, read_deck6, read_kapk, read_kappa_ros, read_last_iteration, read_spectrum_bin
 
 VTURBS = [0, 1, 2, 4, 8]
 
@@ -79,8 +79,9 @@ ATLAS_ABS = ["FLXERR", "FLXDRV"]
 
 
 def atlas_metrics(ref: Path, cand: Path) -> dict:
-    """ref/cand = ATLAS run dirs (output_main.out with patched iteration tables + output_summary.out)."""
-    a, b = read_atlas_table(Path(ref) / "output_main.out"), read_atlas_table(Path(cand) / "output_main.out")
+    """ref/cand = ATLAS run dirs. Scores BasicATLAS's products: output_last_iteration.out (the best iteration,
+    what read_structure() returns) and output_summary.out (its punched deck)."""
+    a, b = read_last_iteration(Path(ref) / "output_last_iteration.out"), read_last_iteration(Path(cand) / "output_last_iteration.out")
     if a["T"].shape != b["T"].shape:
         return {"error": f"layers {a['T'].shape} vs {b['T'].shape}"}
     out = {}
@@ -94,7 +95,9 @@ def atlas_metrics(ref: Path, cand: Path) -> dict:
     da, db = read_deck6(Path(ref) / "output_summary.out"), read_deck6(Path(cand) / "output_summary.out")
     tot = np.max(np.abs(da["FLXRAD"]) + np.abs(a["FLXCNV"]))
     _put(out, "FLXCNV_over_total", "abs", _abs(a["FLXCNV"] / tot, b["FLXCNV"] / tot))
-    out["iterations_tables"] = int(b["ntables"])
+    for q in ["T", "P", "XNE", "ABROSS"]:  # the punched deck SYNTHE consumes
+        _put(out, f"deck_{q}", "rel", _rel(da[q], db[q]))
+    out["iterations_tables"] = int(read_atlas_table(Path(cand) / "output_main.out")["ntables"])
     return out
 
 
