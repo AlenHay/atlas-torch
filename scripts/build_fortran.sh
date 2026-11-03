@@ -29,10 +29,10 @@ case "$variant" in
   stock)  DF_FC=ifx;      DF_FL="-save";  AT_FC=gfortran; AT_FL="-ffpe-summary=none -finit-local-zero $GF_STD"; SY_FC=gfortran; SY_FL="$GF_STD -O3";;
   gf-O0)  DF_FC=gfortran; DF_FL="$GF_STD -finit-local-zero -O0"; AT_FC=gfortran; AT_FL="$GF_STD -finit-local-zero -ffpe-summary=none -O0"; SY_FC=gfortran; SY_FL="$GF_STD -finit-local-zero -O0";;
   gf-O3)  DF_FC=gfortran; DF_FL="$GF_STD -finit-local-zero -O3"; AT_FC=gfortran; AT_FL="$GF_STD -finit-local-zero -ffpe-summary=none -O3"; SY_FC=gfortran; SY_FL="$GF_STD -finit-local-zero -O3";;
-  ifx-O0) DF_FC=ifx; DF_FL="-save -zero -O0"; AT_FC=ifx; AT_FL="-save -zero -O0"; SY_FC=ifx; SY_FL="-save -zero -O0";;
-  ifx-O2) DF_FC=ifx; DF_FL="-save -zero -O2"; AT_FC=ifx; AT_FL="-save -zero -O2"; SY_FC=ifx; SY_FL="-save -zero -O2";;
-  ifx-O3) DF_FC=ifx; DF_FL="-save -zero -O3"; AT_FC=ifx; AT_FL="-save -zero -O3"; SY_FC=ifx; SY_FL="-save -zero -O3";;
-  ifx-precise) DF_FC=ifx; DF_FL="-save -zero -O2 -fp-model precise"; AT_FC=ifx; AT_FL="-save -zero -O2 -fp-model precise"; SY_FC=ifx; SY_FL="-save -zero -O2 -fp-model precise";;
+  ifx-O0) DF_FC=ifx; DF_FL="-save -zero -O0"; AT_FC=ifx; AT_FL="-save -zero -O0"; SY_FC=ifx; SY_FL="-save -zero -O0 -assume byterecl";;
+  ifx-O2) DF_FC=ifx; DF_FL="-save -zero -O2"; AT_FC=ifx; AT_FL="-save -zero -O2"; SY_FC=ifx; SY_FL="-save -zero -O2 -assume byterecl";;
+  ifx-O3) DF_FC=ifx; DF_FL="-save -zero -O3"; AT_FC=ifx; AT_FL="-save -zero -O3"; SY_FC=ifx; SY_FL="-save -zero -O3 -assume byterecl";;
+  ifx-precise) DF_FC=ifx; DF_FL="-save -zero -O2 -fp-model precise"; AT_FC=ifx; AT_FL="-save -zero -O2 -fp-model precise"; SY_FC=ifx; SY_FL="-save -zero -O2 -fp-model precise -assume byterecl";;
   debug)  DF_FC=ifx; DF_FL="-save -g -O0"; AT_FC=gfortran; AT_FL="-ffpe-summary=none -finit-local-zero $GF_STD -g -O0"; SY_FC=gfortran; SY_FL="$GF_STD -g -O0";;
   fpe)    F="$GF_STD -g -O0 -ffpe-trap=invalid,zero,overflow -finit-real=snan"
           DF_FC=gfortran; DF_FL="$F"; AT_FC=gfortran; AT_FL="$F"; SY_FC=gfortran; SY_FL="$F";;
@@ -41,12 +41,15 @@ esac
 cd "$out"
 log="$out/build.log"; : > "$log"
 b() { echo "+ $*" >> "$log"; "$@" >> "$log" 2>&1 || { echo "FAILED: $*" | tee -a "$log"; return 0; }; }
+# ONLY=synthe rebuilds just the SYNTHE family (safe while DFSYNTHE runs use this bin dir)
+if [ "${ONLY:-}" != synthe ]; then
 # DFSYNTHE / KAPPA9 family
 sfx=""; DFX=""; [ "$DF_FC" = gfortran ] && { sfx=".gf"; DFX="-fdec"; }
 for p in xnfdf dfsynthe separatedf dfsortp kappa9 kapreadts; do b $DF_FC $DF_FL $DFX -o bin/$p.exe "$psrc/$p$sfx.for"; done
 # ATLAS9 (patched)
 b $AT_FC $AT_FL -o bin/atlas9mem.exe "$psrc/atlas9mem.patched.for"
-# SYNTHE family
+fi
+# SYNTHE family (SYNTHE sources assume byte RECL units: ifx needs -assume byterecl)
 b $SY_FC $SY_FL -c "$psrc/atlas7v.for" -o atlas7v.o
 b $SY_FC $SY_FL -c "$psrc/xnfpelsyn.for" -o xnfpelsyn.o
 b $SY_FC $SY_FL -o bin/xnfpelsyn.exe xnfpelsyn.o atlas7v.o

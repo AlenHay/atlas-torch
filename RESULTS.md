@@ -27,6 +27,10 @@ Everything outside the markers is the hand-written record of decisions, gate not
   therefore measured across ifx optimisation levels and fp models only (`tools/gf_shim.py` exists for
   best-effort gfortran builds; not used for tolerances). `rmolecasc` (Hollerith assignment ifx rejects) is
   built with gfortran -O3 in the ifx variants; it only reformats line lists.
+* SYNTHE-family sources use direct-access files with RECL in bytes (gfortran convention): the ifx variants
+  of that family are built with `-assume byterecl` (I/O units only; first attempt crashed in rh2ofast).
+* ATLAS9 stock = gfortran -O0, so the gf-O0 variant is identical to stock by construction; the spread comes
+  from gf-O3 and the ifx builds.
 * Stages are scored stage-isolated: variant ATLAS9 runs use the stock ODFs, variant SYNTHE runs the stock solar
   model, KAPPA9-alone stages (`kappa9/<mix>`) the stock ODF.
 * Tolerance rule (frozen once in `results/tolerances.json` by `tools/score/noise_floor.py --write`, before any
