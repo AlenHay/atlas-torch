@@ -40,6 +40,7 @@ def main():
     ap.add_argument("variant"); ap.add_argument("kind"); ap.add_argument("name")
     ap.add_argument("--odf-from", default=None)
     ap.add_argument("--parallel", action="store_true")
+    ap.add_argument("--model-from", default=None, help="synthe: copy the ATLAS model of this variant first")
     a = ap.parse_args()
     ref = json.loads((REPO / "reference/reference_set.json").read_text())
     t = tree(a.variant)
@@ -62,19 +63,24 @@ def main():
         atlas.atlas(str(out), s, restart=ref["atlas"]["restart"], niter=ref["atlas"]["niter"], ODF=str(odf), silent=False)
     elif a.kind == "synthe":
         out = runs / "atlas" / a.name
+        if a.model_from:
+            src = EXT / "runs" / a.model_from / "atlas" / a.name
+            if out.exists(): shutil.rmtree(out)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(src, out, ignore=shutil.ignore_patterns("synthe_*", "window_*"))
         sy = ref["synthe"]
         for i, (lo, hi) in enumerate(sy["windows_nm"]):
             atlas.synthe(str(out), lo, hi, res=sy["res"], vturb=sy["vturb"], overwrite_prev=True, silent=False, progress=False)
             dst = out / f"window_{i}"
             if dst.exists(): shutil.rmtree(dst)
-            shutil.copytree(out / "synthe_1", dst)
+            shutil.copytree(out / "synthe_1", dst, ignore=shutil.ignore_patterns("rgfalllinesnew.out", "xnfpelsyn.out"))
     else:
         raise SystemExit("unknown kind")
     prov = {"variant": a.variant, "kind": a.kind, "name": a.name, "seconds": time.time() - t0,
             "build": json.loads((EXT / "builds" / a.variant / "build.json").read_text()) if a.variant != "stock" else
                      {"variant": "stock", "note": "BasicATLAS compile.com", "basicatlas_commit":
                       subprocess.check_output(["git", "-C", str(EXT / "BasicATLAS"), "rev-parse", "HEAD"], text=True).strip()},
-            "odf_from": a.odf_from, "command": " ".join(sys.argv), "atlas_torch_commit":
+            "odf_from": a.odf_from, "model_from": a.model_from, "command": " ".join(sys.argv), "atlas_torch_commit":
             subprocess.check_output(["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True).strip()}
     (out / f"provenance_{a.kind}.json").write_text(json.dumps(prov, indent=1))
     print(f"done {a.kind} {a.name} in {time.time()-t0:.0f}s")

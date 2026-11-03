@@ -1,21 +1,124 @@
 {
  "_comment": "Frozen reference set (M0). Never edit to make a score pass. abun = [X/M] enhancements in dex, BasicATLAS Settings conventions.",
  "odfs": {
-  "solar":   {"zscale": 0.0,  "abun": {}},
-  "m10":     {"zscale": -1.0, "abun": {}},
-  "m20":     {"zscale": -2.0, "abun": {}},
-  "alpha":   {"zscale": -1.0, "abun": {"O": 0.4, "Ne": 0.4, "Mg": 0.4, "Si": 0.4, "S": 0.4, "Ar": 0.4, "Ca": 0.4, "Ti": 0.4}}
+  "solar": {
+   "zscale": 0.0,
+   "abun": {}
+  },
+  "m10": {
+   "zscale": -1.0,
+   "abun": {}
+  },
+  "m20": {
+   "zscale": -2.0,
+   "abun": {}
+  },
+  "alpha": {
+   "zscale": -1.0,
+   "abun": {
+    "O": 0.4,
+    "Ne": 0.4,
+    "Mg": 0.4,
+    "Si": 0.4,
+    "S": 0.4,
+    "Ar": 0.4,
+    "Ca": 0.4,
+    "Ti": 0.4
+   }
+  }
  },
- "scored_odfs": ["solar", "alpha"],
+ "scored_odfs": [
+  "solar",
+  "alpha"
+ ],
  "models": {
-  "sun":      {"teff": 5777, "logg": 4.44, "odf": "solar"},
-  "t4500g25": {"teff": 4500, "logg": 2.5,  "odf": "solar"},
-  "t6500g40m10": {"teff": 6500, "logg": 4.0, "odf": "m10"},
-  "t9000g40": {"teff": 9000, "logg": 4.0,  "odf": "solar"},
-  "t5000g45m20": {"teff": 5000, "logg": 4.5, "odf": "m20"},
-  "t5500g40alpha": {"teff": 5500, "logg": 4.0, "odf": "alpha"}
+  "sun": {
+   "teff": 5777,
+   "logg": 4.44,
+   "odf": "solar"
+  },
+  "t4500g25": {
+   "teff": 4500,
+   "logg": 2.5,
+   "odf": "solar"
+  },
+  "t6500g40m10": {
+   "teff": 6500,
+   "logg": 4.0,
+   "odf": "m10"
+  },
+  "t9000g40": {
+   "teff": 9000,
+   "logg": 4.0,
+   "odf": "solar"
+  },
+  "t5000g45m20": {
+   "teff": 5000,
+   "logg": 4.5,
+   "odf": "m20"
+  },
+  "t5500g40alpha": {
+   "teff": 5500,
+   "logg": 4.0,
+   "odf": "alpha"
+  }
  },
- "atlas": {"vturb": 2, "niter": 450, "restart": "auto"},
- "synthe": {"model": "sun", "windows_nm": [[500, 510]], "res": 600000.0, "vturb": 1.5},
- "examples": ["sun_model", "output", "custom_abun"]
+ "atlas": {
+  "vturb": 2,
+  "niter": 450,
+  "restart": "auto"
+ },
+ "synthe": {
+  "model": "sun",
+  "windows_nm": [
+   [
+    500,
+    510
+   ],
+   [
+    380,
+    420
+   ],
+   [
+    640,
+    660
+   ],
+   [
+    1500,
+    1600
+   ]
+  ],
+  "res": 600000.0,
+  "vturb": 1.5,
+  "_comment": "window 0 is the M3 entry gate; 1-3 widen to the crowded UV (Ca H&K, Balmer), H-alpha and the IR. Examples (M6) cover 100-3000 nm."
+ },
+ "examples": [
+  "sun_model",
+  "output",
+  "custom_abun"
+ ],
+ "noise_variants": {
+  "atlas": [
+   "gf-O0",
+   "gf-O3",
+   "ifx-O0",
+   "ifx-O2",
+   "ifx-O3",
+   "ifx-precise"
+  ],
+  "synthe": [
+   "gf-O0",
+   "gf-O3",
+   "ifx-O0",
+   "ifx-O2",
+   "ifx-O3",
+   "ifx-precise"
+  ],
+  "dfsynthe": [
+   "ifx-O0",
+   "ifx-O3",
+   "ifx-precise"
+  ],
+  "_comment": "stage-isolated: variant ATLAS runs use stock ODFs, variant SYNTHE runs use the stock solar model. DFSYNTHE/KAPPA9 sources are Intel-dialect so only ifx variants (see RESULTS.md)."
+ }
 }
