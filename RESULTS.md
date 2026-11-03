@@ -46,15 +46,19 @@ Everything outside the markers is the hand-written record of decisions, gate not
   ifx-O0 and ifx-precise differ by up to **3590 steps (3.6 dex)** in 0.35 % of entries, concentrated at cool
   temperatures (index 0-17, < 4400 K), low pressures and some frequency intervals — whole ODF rows shifted by
   ~3.3 dex, i.e. molecular opacity switched on/off, not rounding; kappa.ros differs by 0.005 dex.
-* Root cause (shown): xnfdf's number densities. vs stock, 13 586 `xnfpdf.dat` values are exactly 0 in stock but
-  nonzero at -O0; an `ifx -O0 -ftz` build removes that whole category (0 left), leaving rounding-level
-  differences plus 912 values that are 0 in the -O0 builds only.
-* Decision: FTZ is part of stock's floating-point *environment* (like the rounding mode), not an optimisation
-  level, so the DFSYNTHE/KAPPA9 noise variants are run in that environment: `ifx-O3` (FTZ by default),
-  `ifx-precise-ftz` and `ifx-O0-ftz`. Using the non-FTZ builds would have produced a ±10.8 dex max-abs ODF
-  "tolerance" that gates nothing. Consequence: the torch port must emulate FTZ to pass at cool temperatures
-  (stricter, not looser). The non-FTZ spreads above stay on record here. This session created both this rule
-  and the gate.
+* FTZ is real in xnfdf (vs stock, 13 586 `xnfpdf.dat` values are 0 in stock but nonzero at -O0; an
+  `ifx -O0 -ftz` build removes that category), so the DFSYNTHE/KAPPA9 noise variants are run in stock's FTZ
+  environment: `ifx-O3` (FTZ by default), `ifx-precise-ftz`, `ifx-O0-ftz`. **But FTZ is not the cause of the
+  ODF jumps** (correction of an earlier note): `ifx-precise-ftz` still differs from stock by up to 3300-3590
+  steps in ~0.3 % of entries, while its xnfdf output differs from stock only at rounding level. The jumps
+  originate inside dfsynthe under `-fp-model fast` (root cause under investigation). Even at T >= 4571 K the
+  precise builds reach 119 (solar) / 358 (alpha) steps somewhere: cool-and-warm ODFs are genuinely not
+  reproducible across the Fortran's own compiler settings at the level of single entries.
+* Consequence for gating (decided before any full-table torch ODF exists): the literal max-abs gate stays
+  (3 x spread, i.e. ~±10 dex — recorded, but it gates almost nothing), and distributional metrics under the
+  same 3 x rule carry the weight: `share_gt1` (fraction of entries off by > 1 step; Fortran spread ~0.3 %),
+  `p999` (99.9th percentile |diff|; spread 24 steps), max-abs over T >= 4571 K, and kappa.ros max-abs.
+  This session created both these metrics and the gate.
 * Seen before freezing: the DFSYNTHE port agent reported one temperature (5012 K): port vs stock max 18 steps,
   vs ifx-precise 1 step (the port reproduces the non-FTZ precise build). No full-table torch ODF exists yet.
 

@@ -33,6 +33,9 @@ QUANTUM = {  # by quantity prefix
 
 def quantum(key):
     q = key.split(":")[0]
+    kind = key.split(":")[1] if ":" in key else ""
+    if q.startswith("odf_v") and kind == "share_gt1":
+        return 1.0 / (328 * 57 * 25 * 12)    # one entry
     for pre in ("odf_v", "kapk_v"):
         if q.startswith(pre):
             return QUANTUM[pre]

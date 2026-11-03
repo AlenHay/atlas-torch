@@ -55,7 +55,11 @@ def odf_metrics(ref: Path, cand: Path) -> dict:
         b = read_bdf(Path(cand) / f"p00big{v}.bdf").astype(np.int64)
         if a.shape != b.shape:
             return {"error": f"bdf shape {a.shape} vs {b.shape}"}
+        d = np.abs(a - b)
         _put(out, f"odf_v{v}", "abs", _abs(a, b))
+        out[f"odf_v{v}:share_gt1"] = float((d > 1).mean())          # fraction of steps off by > 1 milli-dex
+        out[f"odf_v{v}:p999"] = float(np.quantile(d, 0.999))        # 99.9th percentile |diff| (steps)
+        out[f"odf_v{v}_hot:abs"] = float(d[:, 18:].max())            # T >= 4571 K (index 18+)
         out[f"odf_v{v}:frac"] = float((a != b).mean())
     ka, kb = read_kappa_ros(Path(ref) / "kappa.ros"), read_kappa_ros(Path(cand) / "kappa.ros")
     _put(out, "logkappa_ros", "abs", _abs(ka["logkappa"], kb["logkappa"]))
