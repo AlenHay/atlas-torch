@@ -1,0 +1,21 @@
+{
+ "_comment": "Frozen reference set (M0). Never edit to make a score pass. abun = [X/M] enhancements in dex, BasicATLAS Settings conventions.",
+ "odfs": {
+  "solar":   {"zscale": 0.0,  "abun": {}},
+  "m10":     {"zscale": -1.0, "abun": {}},
+  "m20":     {"zscale": -2.0, "abun": {}},
+  "alpha":   {"zscale": -1.0, "abun": {"O": 0.4, "Ne": 0.4, "Mg": 0.4, "Si": 0.4, "S": 0.4, "Ar": 0.4, "Ca": 0.4, "Ti": 0.4}}
+ },
+ "scored_odfs": ["solar", "alpha"],
+ "models": {
+  "sun":      {"teff": 5777, "logg": 4.44, "odf": "solar"},
+  "t4500g25": {"teff": 4500, "logg": 2.5,  "odf": "solar"},
+  "t6500g40m10": {"teff": 6500, "logg": 4.0, "odf": "m10"},
+  "t9000g40": {"teff": 9000, "logg": 4.0,  "odf": "solar"},
+  "t5000g45m20": {"teff": 5000, "logg": 4.5, "odf": "m20"},
+  "t5500g40alpha": {"teff": 5500, "logg": 4.0, "odf": "alpha"}
+ },
+ "atlas": {"vturb": 2, "niter": 450, "restart": "auto"},
+ "synthe": {"model": "sun", "windows_nm": [[500, 510]], "res": 600000.0, "vturb": 1.5},
+ "examples": ["sun_model", "output", "custom_abun"]
+}

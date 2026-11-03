@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.o
+*.so
+*.mod
+/build/
+/work/
+*.bin
+*.bdf
+.hypothesis/
+.pytest_cache/

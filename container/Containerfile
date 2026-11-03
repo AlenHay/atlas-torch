@@ -1,0 +1,17 @@
+# atlas-torch development container (Ubuntu 24.04 + gfortran + Intel oneAPI ifx + gdb + uv)
+FROM docker.io/library/ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential gfortran gdb patch wget curl ca-certificates gnupg git make \
+      python3 python3-venv gzip xz-utils time file less sudo \
+    && rm -rf /var/lib/apt/lists/*
+# Intel oneAPI Fortran (ifx) from Intel's apt repository
+RUN wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+      | gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+      > /etc/apt/sources.list.d/oneAPI.list \
+    && apt-get update && apt-get install -y --no-install-recommends intel-oneapi-compiler-fortran \
+    && rm -rf /var/lib/apt/lists/*
+# uv (Python manager)
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+ENV ONEAPI_ROOT=/opt/intel/oneapi

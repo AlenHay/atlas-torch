@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Run a command inside the atlas-dev distrobox with oneAPI initialised, from the repo root.
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+exec distrobox enter atlas-dev -- bash -c "source /opt/intel/oneapi/setvars.sh >/dev/null 2>&1; cd '$repo'; $*"
