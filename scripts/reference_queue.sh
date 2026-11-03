@@ -3,7 +3,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 EXT="${ATLAS_EXT:-$HOME/atlas-ext}"; M="$EXT/runs/.done"; mkdir -p "$M"
-PY=.venv/bin/python
+PY="nice -n 19 .venv/bin/python"
 step() { local key="$1"; shift; [ -f "$M/$key" ] && return 0
   echo "[$(date +%T)] start $key"; if "$@" > "$EXT/runs/log_$key.txt" 2>&1; then touch "$M/$key"; echo "[$(date +%T)] ok $key"; else echo "[$(date +%T)] FAIL $key"; fi; }
 for o in solar alpha m10 m20; do step odf_stock_$o $PY scripts/run_fortran.py stock odf $o --parallel; done

@@ -9,7 +9,7 @@ import torch
 
 from ..fnum import f32, fint
 from ..interp import map1
-from ..kurucz_data import table
+from ..tables import table
 from ..state import State
 
 SRC = "atlas7v.for"

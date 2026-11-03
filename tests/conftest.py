@@ -24,7 +24,7 @@ def ext():
     return _need(EXT)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def oracle():
     """oracle('atlas7v') -> fresh Oracle over $ATLAS_EXT/oracle/libatlas7v.so (fresh SAVE state per call)."""
     from atlas_torch.testing.fortran_oracle import Oracle
