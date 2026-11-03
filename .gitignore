@@ -11,3 +11,6 @@ __pycache__/
 .hypothesis/
 .pytest_cache/
 *.for
+results/fmap/
+results/.pytest.xml
+reference/*.for

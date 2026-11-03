@@ -23,3 +23,9 @@ reference:       ## (M0) all Fortran reference + noise-variant runs
 
 oracles:         ## build -g shared libraries for ctypes oracles
 	$(DX) tools/oracle/build_libs.sh
+
+fmap:            ## Fortran map + variant table -> results/fmap/ (not committed: quotes Kurucz source)
+	mkdir -p results/fmap
+	for p in xnfdf dfsynthe kappa9 atlas9mem atlas7v xnfpelsyn synthe spectrv rgfalllinesnew rmolecasc rpredict rh2ofast synbeg; do \
+	  $(PY) tools/fmap.py map $$HOME/atlas-ext/BasicATLAS/src/$$p.for --json results/fmap/$$p.json; done
+	$(PY) tools/fmap.py variants $$HOME/atlas-ext/BasicATLAS/src/{xnfdf,kappa9,atlas9mem,atlas7v}.for --json results/fmap/variants.json --md results/fmap/variants.md
