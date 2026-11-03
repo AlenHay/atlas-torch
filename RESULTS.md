@@ -42,3 +42,11 @@ Everything outside the markers is the hand-written record of decisions, gate not
 * Our solar ODF vs the one shipped in BasicATLAS `data/solar_ODF`: 0.6 % of ODF steps differ (up to 3.6 dex in
   rare bins), `kappa.ros` within 0.001 dex — the shipped tables come from other line-list versions;
   information only, the gate is our pinned build.
+
+## GPU (M0 machine check)
+
+* Official PyTorch ROCm wheel `torch 2.9.1+rocm6.4` in a separate env (`$ATLAS_EXT/venv-rocm`, inside the
+  container with /dev/kfd + /dev/dri): **not available natively; works with `HSA_OVERRIDE_GFX_VERSION=11.0.0`**
+  (device reports gfx1100, 8 GB). `scripts/rocm_smoke.py`: 2048² matmul float32 6.5 TFLOP/s (rel err 2.7e-6),
+  float64 243 GFLOP/s (≈1/27 of float32, rel err 5e-15); float64 `exp` agrees with CPU to 2.2e-16.
+  Plan unchanged: validate in float64 on CPU, use the GPU for batched/float32 work and the precision study (M7).
