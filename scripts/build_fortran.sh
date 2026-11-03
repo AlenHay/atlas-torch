@@ -3,7 +3,7 @@
 # Run inside the atlas-dev container (scripts/dx). Sources come from the pinned BasicATLAS checkout
 # ($ATLAS_EXT/BasicATLAS/src, fetched by its download.com); patches are extracted from its compile.com.
 #
-#   scripts/build_fortran.sh <variant>      variant in: prep stock gf-O0 gf-O3 ifx-O0 ifx-O2 ifx-O3 ifx-precise debug fpe
+#   scripts/build_fortran.sh <variant>      variant in: prep stock gf-O0 gf-O3 ifx-O0 ifx-O2 ifx-O3 ifx-precise ifx-O0-ftz ifx-precise-ftz debug fpe
 #
 # Output: $ATLAS_EXT/builds/<variant>/bin/*.exe  (+ build.json with compilers/flags)
 # "stock" reproduces compile.com exactly (ifx -save for DFSYNTHE/KAPPA9, gfortran for ATLAS9/SYNTHE).
@@ -33,6 +33,8 @@ case "$variant" in
   ifx-O2) DF_FC=ifx; DF_FL="-save -zero -O2"; AT_FC=ifx; AT_FL="-save -zero -O2"; SY_FC=ifx; SY_FL="-save -zero -O2 -assume byterecl";;
   ifx-O3) DF_FC=ifx; DF_FL="-save -zero -O3"; AT_FC=ifx; AT_FL="-save -zero -O3"; SY_FC=ifx; SY_FL="-save -zero -O3 -assume byterecl";;
   ifx-precise) DF_FC=ifx; DF_FL="-save -zero -O2 -fp-model precise"; AT_FC=ifx; AT_FL="-save -zero -O2 -fp-model precise"; SY_FC=ifx; SY_FL="-save -zero -O2 -fp-model precise -assume byterecl";;
+  ifx-O0-ftz) DF_FC=ifx; DF_FL="-save -zero -O0 -ftz"; AT_FC=ifx; AT_FL="-save -zero -O0 -ftz"; SY_FC=ifx; SY_FL="-save -zero -O0 -ftz -assume byterecl";;
+  ifx-precise-ftz) DF_FC=ifx; DF_FL="-save -zero -O2 -fp-model precise -ftz"; AT_FC=ifx; AT_FL="-save -zero -O2 -fp-model precise -ftz"; SY_FC=ifx; SY_FL="-save -zero -O2 -fp-model precise -ftz -assume byterecl";;
   debug)  DF_FC=ifx; DF_FL="-save -g -O0"; AT_FC=gfortran; AT_FL="-ffpe-summary=none -finit-local-zero $GF_STD -g -O0"; SY_FC=gfortran; SY_FL="$GF_STD -g -O0";;
   fpe)    F="$GF_STD -g -O0 -ffpe-trap=invalid,zero,overflow -finit-real=snan"
           DF_FC=gfortran; DF_FL="$F"; AT_FC=gfortran; AT_FL="$F"; SY_FC=gfortran; SY_FL="$F";;

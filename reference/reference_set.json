@@ -115,10 +115,10 @@
    "ifx-precise"
   ],
   "dfsynthe": [
-   "ifx-O0",
    "ifx-O3",
-   "ifx-precise"
+   "ifx-precise-ftz",
+   "ifx-O0-ftz"
   ],
-  "_comment": "stage-isolated: variant ATLAS runs use stock ODFs, variant SYNTHE runs use the stock solar model. DFSYNTHE/KAPPA9 sources are Intel-dialect so only ifx variants (see RESULTS.md)."
+  "_comment": "stage-isolated: variant ATLAS runs use stock ODFs, variant SYNTHE runs use the stock solar model. DFSYNTHE/KAPPA9 sources are Intel-dialect so only ifx variants; they keep stock's flush-to-zero FP environment (-ftz on -O0/precise; -O3 has it by default). See RESULTS.md 'DFSYNTHE and flush-to-zero'."
  }
 }
