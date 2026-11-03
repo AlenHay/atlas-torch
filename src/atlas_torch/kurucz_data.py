@@ -969,8 +969,18 @@ def parse_data(
     return result
 
 
+_MEMO: dict[str, dict[tuple[str, str], np.ndarray]] = {}
+
+
 def load_tables(source_path: str | Path) -> dict[tuple[str, str], np.ndarray]:
-    """Load DATA tables from source_path with an on-disk npz cache under ~/.cache/atlas_torch/."""
+    """Load DATA tables from source_path (memoised per process; on-disk npz cache under ~/.cache/atlas_torch/)."""
+    key = str(Path(source_path).resolve())
+    if key not in _MEMO:
+        _MEMO[key] = _load_tables(source_path)
+    return _MEMO[key]
+
+
+def _load_tables(source_path: str | Path) -> dict[tuple[str, str], np.ndarray]:
     source_p = Path(source_path).resolve()
     if not source_p.exists():
         raise FileNotFoundError(f"Source file not found: {source_p}")
