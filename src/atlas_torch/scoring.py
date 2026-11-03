@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .io.formats import read_atlas_table, read_bdf, read_deck6, read_kappa_ros, read_spectrum_bin
+from .io.formats import read_atlas_table, read_bdf, read_deck6, read_kapk, read_kappa_ros, read_spectrum_bin
 
 VTURBS = [0, 1, 2, 4, 8]
 
@@ -57,6 +57,18 @@ def odf_metrics(ref: Path, cand: Path) -> dict:
             return {"error": f"bdf shape {a.shape} vs {b.shape}"}
         _put(out, f"odf_v{v}", "abs", _abs(a, b))
         out[f"odf_v{v}:frac"] = float((a != b).mean())
+    ka, kb = read_kappa_ros(Path(ref) / "kappa.ros"), read_kappa_ros(Path(cand) / "kappa.ros")
+    _put(out, "logkappa_ros", "abs", _abs(ka["logkappa"], kb["logkappa"]))
+    return out
+
+
+def kappa9_metrics(ref: Path, cand: Path) -> dict:
+    """ref/cand = KAPPA9 work dirs (scripts/kappa9_workdir.sh layout): kapk{v}.dat + kappa.ros."""
+    out = {}
+    for v in VTURBS:
+        a, b = read_kapk(Path(ref) / f"kapk{v}.dat"), read_kapk(Path(cand) / f"kapk{v}.dat")
+        _put(out, f"kapk_v{v}", "abs", _abs(a, b))
+        out[f"kapk_v{v}:frac"] = float((a != b).mean())
     ka, kb = read_kappa_ros(Path(ref) / "kappa.ros"), read_kappa_ros(Path(cand) / "kappa.ros")
     _put(out, "logkappa_ros", "abs", _abs(ka["logkappa"], kb["logkappa"]))
     return out

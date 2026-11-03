@@ -40,6 +40,24 @@ def read_kappa_ros(path: str | Path) -> dict[str, np.ndarray]:
     return {"logT": a[:, 0, 0], "logP": a[0, :, 1], "logkappa": a[:, :, 2:]}  # logkappa [57,42,5]
 
 
+def read_kapk(path: str | Path) -> np.ndarray:
+    """kapk{v}.dat written by KAPPA9 (fort.7): Fortran DATA statements KTAB01..KTAB42, each 57 integers
+    (1000*log10 Rosseland kappa over the 57 temperatures) for one pressure. Returns int array [42, 57]."""
+    tabs, cur = [], None
+    for ln in Path(path).read_text().splitlines():
+        body = ln[6:66]
+        if "DATA KTAB" in ln:
+            cur = []
+            tabs.append(cur)
+            continue
+        if cur is None or len(tabs) == 0:
+            continue
+        cur.extend(int(x) for x in body.replace("/", "").split(",") if x.strip())
+    a = np.array(tabs, dtype=np.int64)
+    assert a.shape == (42, 57), a.shape
+    return a
+
+
 # ---------------------------------------------------------------- SYNTHE
 
 

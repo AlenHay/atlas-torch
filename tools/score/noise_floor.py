@@ -17,14 +17,14 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
-from atlas_torch.scoring import atlas_metrics, gated_keys, odf_metrics, synthe_metrics  # noqa: E402
+from atlas_torch.scoring import atlas_metrics, gated_keys, kappa9_metrics, odf_metrics, synthe_metrics  # noqa: E402
 
 EXT = Path(os.environ.get("ATLAS_EXT", Path.home() / "atlas-ext"))
 RUNS = EXT / "runs"
 EPS = 2.220446049250313e-16
 QUANTUM = {  # by quantity prefix
     "flux": EPS, "cont": EPS, "normflux": EPS,
-    "odf_v": 1.0, "logkappa_ros": 1e-3,
+    "odf_v": 1.0, "logkappa_ros": 1e-3, "kapk_v": 1.0,
     "RHOX": 1e-5, "P": 1e-5, "XNE": 1e-5, "RHO": 1e-5, "ABROSS": 1e-5, "TAUROS": 1e-5, "T": 2e-5,
     "FLXERR": 0.0, "FLXDRV": 0.0, "HEIGHT": 0.0, "FLXCNV_over_total": 1e-5,
 }
@@ -32,8 +32,9 @@ QUANTUM = {  # by quantity prefix
 
 def quantum(key):
     q = key.split(":")[0]
-    if q.startswith("odf_v"):
-        return QUANTUM["odf_v"]
+    for pre in ("odf_v", "kapk_v"):
+        if q.startswith(pre):
+            return QUANTUM[pre]
     return QUANTUM.get(q, 0.0)
 
 
@@ -45,6 +46,9 @@ def stage_pairs(ref):
                {v: RUNS / v / "atlas/sun" / f"window_{i}" for v in nv["synthe"]})
     for o in ref["scored_odfs"]:
         yield (f"odf/{o}", odf_metrics, RUNS / "stock/odf" / o, {v: RUNS / v / "odf" / o for v in nv["dfsynthe"]})
+    for o in ref["scored_odfs"]:  # KAPPA9 alone on the stock ODF (scripts/kappa9_workdir.sh)
+        yield (f"kappa9/{o}", kappa9_metrics, EXT / "work" / f"kappa9_{o}_stock",
+               {v: EXT / "work" / f"kappa9_{o}_{v}" for v in nv["dfsynthe"] + ["ifx-O2"]})
     for m in ref["models"]:
         yield (f"atlas/{m}", atlas_metrics, RUNS / "stock/atlas" / m, {v: RUNS / v / "atlas" / m for v in nv["atlas"]})
 
