@@ -20,9 +20,25 @@ import torch
 
 from ..fnum import f32
 from . import data
+from . import native as _native
 from .numerics import deriv, integ, map1b
 
 _TOL = np.float32(f32(0.00001))
+
+
+def _gs(xs, xsbar, xalpha, diag, coefj, active, nsweep):
+    """Gauss-Seidel on float32 arrays [NX, B]: the native transcription (native/josh.c) when built, else
+    _gs_numpy (identical results). Returns xs."""
+    lib = _native.load()
+    if lib is None:
+        return _gs_numpy(xs, xsbar, xalpha, diag, coefj, active, nsweep)
+    nx, B = xs.shape
+    rows = [np.ascontiguousarray(a.T, dtype=np.float32) for a in (xs, xsbar, xalpha, diag)]
+    cj = np.ascontiguousarray(coefj, dtype=np.float32)
+    act = np.ascontiguousarray(active, dtype=np.uint8)
+    lib.josh_gs(nx, B, cj.ctypes.data, rows[0].ctypes.data, rows[1].ctypes.data, rows[2].ctypes.data,
+                rows[3].ctypes.data, act.ctypes.data, int(nsweep), float(_TOL))
+    return np.ascontiguousarray(rows[0].T)
 
 
 def _gs_numpy(xs, xsbar, xalpha, diag, coefj, active, nsweep):
@@ -90,7 +106,7 @@ def josh(acont, scont, aline, sline, sigmac, sigmal, rhox, ifscat: int = 1, ifsu
     xs = xsbar.copy()
     diag = (np.float32(1.0) - xalpha * np.diag(coefj)[:, None]).astype(np.float32)
     xsbar = ((np.float32(1.0) - xalpha) * xsbar).astype(np.float32)
-    xs = _gs_numpy(xs, xsbar, xalpha, diag, coefj, (~deep).cpu().numpy(), 2 * nx)
+    xs = _gs(xs, xsbar, xalpha, diag, coefj, (~deep).cpu().numpy(), 2 * nx)
     dev = acont.device
     xs8 = torch.from_numpy(xs.T.astype(np.float64)).to(dev)            # [B, NX]
     # S on TAUNU(1..MAXJ)
@@ -105,27 +121,30 @@ def josh(acont, scont, aline, sline, sigmac, sigmal, rhox, ifscat: int = 1, ifsu
     hnu = torch.zeros_like(snu)
     jmins = torch.zeros_like(snu)
     jnu = torch.zeros_like(snu)
-    running = torch.ones(B, dtype=torch.bool, device=dev)
     tail = jidx >= (maxj1 - 1).unsqueeze(1)                             # J >= MAXJ1
+    # Lambda iteration on the rows still running (row-wise identical to iterating all rows under a mask)
+    idx = torch.arange(B, device=dev)
     for _ in range(nx):
-        if not running.any():
+        if idx.numel() == 0:
             break
-        h = _deriv_from(taunu, snu, m0) / 3.0
-        jm = _deriv_from(taunu, h, maxj - 1)
-        jn = jm + snu
-        snew = (1.0 - alpha) * snubar + alpha * jn
-        zero = tail & (snew == 0)
-        first0 = torch.where(zero.any(1), torch.argmax(zero.to(torch.int8), dim=1), torch.full_like(maxj, n))
+        tn, sn, al, tl = taunu[idx], snu[idx], alpha[idx], tail[idx]
+        m0i, mj1 = m0[idx], maxj[idx] - 1
+        h = _deriv_from(tn, sn, m0i) / 3.0
+        jm = _deriv_from(tn, h, mj1)
+        jn = jm + sn
+        snew = (1.0 - al) * snubar[idx] + al * jn
+        zero = tl & (snew == 0)
+        anyzero = zero.any(1)
+        first0 = torch.where(anyzero, torch.argmax(zero.to(torch.int8), dim=1), torch.full_like(mj1, n))
         upto = jidx < first0.unsqueeze(1)                               # J processed before a SNEW==0
-        term = torch.where(tail & upto, torch.abs(snew - snu) / snew, torch.zeros_like(snew))
+        term = torch.where(tl & upto, torch.abs(snew - sn) / snew, torch.zeros_like(snew))
         error = torch.cumsum(term, dim=1)[:, -1]
-        r = running.unsqueeze(1)
-        hnu = torch.where(r & (jidx >= m0.unsqueeze(1)), h, hnu)
-        jmins = torch.where(r & (jidx >= (maxj - 1).unsqueeze(1)), jm, jmins)
-        jnu = torch.where(r & tail & (jidx <= first0.unsqueeze(1)), jn, jnu)
-        snu = torch.where(r & tail & upto, snew, snu)
-        stop = zero.any(1) | (error < f32(0.00001))
-        running = running & ~stop
+        hnu[idx] = torch.where(jidx >= m0i.unsqueeze(1), h, hnu[idx])
+        jmins[idx] = torch.where(jidx >= mj1.unsqueeze(1), jm, jmins[idx])
+        jnu[idx] = torch.where(tl & (jidx <= first0.unsqueeze(1)), jn, jnu[idx])
+        snu[idx] = torch.where(tl & upto, snew, sn)
+        stop = anyzero | (error < f32(0.00001))
+        idx = idx[~stop]
     # label 50 (MAXJ > 1): JMINS, HNU on the XTAU grid -> TAUNU(1..MAXJ); KNU(1)
     coefh = T["coefh"]
     xjs = _matvec_seq(coefj, xs, init=-xs)

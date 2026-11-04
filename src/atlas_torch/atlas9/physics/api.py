@@ -6,6 +6,7 @@ import torch
 from ...state import State
 from ._data import VARIANTS, potion as _potion_data
 from .opacity import OPS, Freq, kapp
+from .opacity_batch import FreqBatch, continuum as continuum_batch
 from .pops import electrons as _electrons, pops as _pops, populations as _populations
 
 
@@ -70,11 +71,15 @@ def continuum(s, freq: float | None = None, variant: str = "atlas9", derive_freq
 
 
 class Atlas9Physics:
-    """Implementation of atlas9/physics.py's `Physics` protocol for the iteration machinery."""
+    """Implementation of atlas9/physics.py's `Physics` protocol for the iteration machinery.
 
-    def __init__(self, variant: str = "atlas9"):
+    batched=True (default): the continuum of all frequencies in one pass (:mod:`.opacity_batch`, bit-identical
+    to the per-frequency KAPP); batched=False: the per-frequency reference loop."""
+
+    def __init__(self, variant: str = "atlas9", batched: bool = True):
         _check(variant)
         self.variant = variant
+        self.batched = batched
 
     def electrons(self, s) -> dict:
         return electrons(s, self.variant)
@@ -83,12 +88,16 @@ class Atlas9Physics:
         return populations(s, self.variant, include_electrons=False)
 
     def continuum(self, s, fq: dict) -> dict[str, torch.Tensor]:
-        """fq: {'freq': [F], 'freqlg': [F], 'ehvkt','stim','bnu': [F, n]} -> {ops member: [F, n]}.
-        (Frequencies are a Python loop: the Fortran's FREQ is a scalar and the sources branch on it.)"""
+        """fq: {'freq': [F], 'freqlg': [F], 'ehvkt','stim','bnu': [F, n]} -> {ops member: [F, n]}."""
         s = _with_defaults(s, self.variant)
         n = s.iscalar("rhox.nrhox")
         freqs = torch.as_tensor(fq["freq"]).reshape(-1)
         fl = torch.as_tensor(fq["freqlg"]).reshape(-1)
+        if self.batched:
+            fb = FreqBatch(freqs.tolist(), fl.tolist(), fq["ehvkt"][:, :n], fq["stim"][:, :n], fq["bnu"][:, :n])
+            u = continuum_batch(s, fb, self.variant)
+            zero = torch.zeros((fb.F, n), dtype=torch.float64, device=fb.dev)
+            return {k: u[k] if k in u else zero for k in OPS}
         cols = {k: [] for k in OPS}
         for i in range(freqs.shape[0]):
             f = Freq(float(freqs[i]), float(fl[i]), fq["ehvkt"][i][:n], fq["stim"][i][:n], fq["bnu"][i][:n])

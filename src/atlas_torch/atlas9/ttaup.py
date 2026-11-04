@@ -15,8 +15,12 @@ import math
 
 import torch
 
+import numpy as np
+
 from ..fnum import f32
+from . import native as _native
 from .errors import FortranExit
+from .rosstab import LN10_F32
 
 _TOL = f32(0.00005)
 _P1 = f32(0.1)
@@ -25,7 +29,12 @@ _P1 = f32(0.1)
 def ttaup(t, tau, abstd, prad, pturb, vturb, grav: float, numtau: int, iross: int, rosstab):
     """Returns (ABSTD, PTOTAL, P) for J=1..NUMTAU (tensors of length NUMTAU).
 
-    `abstd` is only read at J=1 when iross==1. `rosstab(T,P,V)` is the ROSSTAB callable."""
+    `abstd` is only read at J=1 when iross==1. `rosstab(T,P,V)` is the ROSSTAB callable. With a Rosstab table
+    and the native helper built, the recurrence runs in native/ttaup.c (same arithmetic, same exits)."""
+    from .rosstab import Rosstab
+    lib = _native.load()
+    if lib is not None and isinstance(rosstab, Rosstab):
+        return _ttaup_native(lib, t, tau, abstd, prad, pturb, vturb, grav, numtau, iross, rosstab)
     T = [float(v) for v in t[:numtau]]
     TAU = [float(v) for v in tau[:numtau]]
     PRAD = [float(v) for v in prad[:numtau]]
@@ -78,4 +87,24 @@ def ttaup(t, tau, abstd, prad, pturb, vturb, grav: float, numtau: int, iross: in
         plog4, plog3, plog2, plog1 = plog3, plog2, plog1, plog
         dplog3, dplog2, dplog1 = dplog2, dplog1, dplog
     f = lambda a: torch.tensor(a, dtype=torch.float64)
+    return f(AB), f(PT), f(P)
+
+
+def _ttaup_native(lib, t, tau, abstd, prad, pturb, vturb, grav, numtau, iross, rosstab):
+    c = lambda a: np.ascontiguousarray(np.asarray([float(v) for v in a[:numtau]], dtype=np.float64))
+    T, TAU, PRAD, PTURB, VT = (c(a) for a in (t, tau, prad, pturb, vturb))
+    AB = c(abstd) if abstd is not None else np.zeros(numtau)
+    PT, P = np.zeros(numtau), np.zeros(numtau)
+    tabt, nt, tabp, np_, tabv, tk = rosstab.native_args()
+    work = np.empty(6 * np_ + 8)
+    p = lambda a: a.ctypes.data
+    rc = lib.ttaup_c(p(T), p(TAU), p(PRAD), p(PTURB), p(VT), p(AB), p(PT), p(P), float(grav), int(numtau), int(iross),
+                     float(_TOL), float(_P1), p(tabt), nt, p(tabp), np_, p(tabv), p(tk), float(LN10_F32), p(work))
+    if rc == 1:
+        raise FortranExit("HYDROFAIL", 0)
+    if rc == 2:
+        raise ValueError("math domain error")
+    if rc == 3:
+        raise OverflowError("math range error")
+    f = lambda a: torch.from_numpy(a)
     return f(AB), f(PT), f(P)

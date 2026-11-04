@@ -9,9 +9,11 @@ sequential loops are reproduced operation-for-operation:
 """
 from __future__ import annotations
 
+import numpy as np
 import torch
 
 from . import data, fmath
+from . import native as _native
 
 
 def deriv(x: torch.Tensor, f: torch.Tensor) -> torch.Tensor:
@@ -117,10 +119,21 @@ def map1b(xold: torch.Tensor, fold: torch.Tensor, xnew: torch.Tensor) -> tuple[t
     """FUNCTION MAP1 batched over leading dims: xold[..., nold], fold[..., nold], xnew[..., nnew] (each row
     increasing). Same arithmetic as atlas_torch.interp.map1. Returns (fnew, MAP1 value per row = LL-1)."""
     nold = xold.shape[-1]
-    lead = torch.broadcast_shapes(xold.shape[:-1], fold.shape[:-1], xnew.shape[:-1])
+    lead = tuple(np.broadcast_shapes(xold.shape[:-1], fold.shape[:-1], xnew.shape[:-1]))
     xo = xold.expand(lead + xold.shape[-1:]).contiguous()
     fo = fold.expand(lead + fold.shape[-1:])
     xn = xnew.expand(lead + xnew.shape[-1:]).contiguous()
+    lib = _native.load()
+    if (lib is not None and xn.shape[-1] > 0 and all(t.device.type == "cpu" and t.dtype == torch.float64
+                                                     and not t.requires_grad for t in (xo, fo, xn))):
+        a_xo = xo.detach().numpy().reshape(-1, nold)
+        a_fo = np.ascontiguousarray(fo.detach().numpy()).reshape(-1, nold)
+        a_xn = xn.detach().numpy().reshape(-1, xn.shape[-1])
+        out = np.empty(a_xn.shape)
+        ll = np.empty(a_xn.shape[0], dtype=np.int64)
+        lib.map1b_rows(a_xn.shape[0], nold, a_xn.shape[1], a_xo.ctypes.data, a_fo.ctypes.data, a_xn.ctypes.data,
+                       out.ctypes.data, ll.ctypes.data)
+        return torch.from_numpy(out.reshape(xn.shape)), torch.from_numpy(ll.reshape(lead))
     L = torch.searchsorted(xo, xn, right=True) + 1
     L = torch.clamp(L, min=2)
     lin = (L == 2) | (L == 3) | (L > nold)

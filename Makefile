@@ -15,6 +15,7 @@ full:            ## full tier: everything
 
 native:          ## build the DFSYNTHE line-accumulation C kernel (bit-identical to the torch fallback)
 	$(DX) '$(PY) -m atlas_torch.dfsynthe.lines.native'
+	$(DX) '$(PY) -m atlas_torch.atlas9.native'
 
 score: native    ## scoreboard vs frozen tolerances -> results/scoreboard.jsonl, RESULTS.md
 	$(DX) '$(PY) tools/score/score.py $(ARGS)'

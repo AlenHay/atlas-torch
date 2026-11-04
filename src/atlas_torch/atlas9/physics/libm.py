@@ -6,7 +6,9 @@ a bit-exact port makes oracle tests sharp (any mismatch is a porting error, not 
 iterative solvers (NMOLEC's convergence test) on exactly the Fortran's path.
 
 EXACT = True (default): CPU float64 tensors go through Python's `math` (= the platform C libm, glibc on
-Linux) element by element; float32 functions go through libm's *f entry points via ctypes.
+Linux) element by element; float32 functions go through libm's *f entry points via ctypes. When the optional
+native helper (atlas9/native, vlibm.c) is built, whole arrays go through one C call that applies the same
+scalar glibc entry points element by element (identical bits, no per-element Python overhead).
 EXACT = False, or tensors on other devices: native torch kernels (device-agnostic, ulp-level differences).
 
 Scalars (python floats) always use `math` (glibc).
@@ -19,6 +21,8 @@ import math
 
 import numpy as np
 import torch
+
+from .. import native as _native
 
 EXACT = True
 
@@ -61,6 +65,10 @@ def _exact(x: torch.Tensor) -> bool:
 
 def _apply(name, x):
     if isinstance(x, torch.Tensor):
+        if _exact(x) and x.dtype in (torch.float32, torch.float64):
+            r = _native.vmath(name, x.detach().numpy())     # same glibc calls, one ctypes call per array
+            if r is not None:
+                return torch.from_numpy(r)
         if x.dtype == torch.float32:
             if _exact(x):
                 with np.errstate(all="ignore"):
@@ -114,6 +122,9 @@ def pow(x, y):
     if _exact(ref):
         xa = x.detach().numpy() if xt else np.float64(x)
         ya = y.detach().numpy() if yt else np.float64(y)
+        r = _native.vmath("pow", xa, ya)
+        if r is not None:
+            return torch.from_numpy(r)
         with np.errstate(all="ignore"):
             r = _pow(xa, ya).astype(np.float64)
         return torch.from_numpy(np.asarray(r, dtype=np.float64).reshape(np.broadcast_shapes(np.shape(xa), np.shape(ya))))

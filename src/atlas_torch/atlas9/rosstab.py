@@ -12,6 +12,7 @@ Quirks reproduced:
 """
 from __future__ import annotations
 
+import numpy as np
 import torch
 
 from ..fnum import f32
@@ -44,12 +45,20 @@ class Rosstab:
         self.np = np_
         self.tk = tabkap[:nt, :np_, :].permute(1, 2, 0).reshape(np_ * 5, nt).contiguous().to(torch.float64)
         self.updates = upd
+        self._native = None
+
+    def native_args(self):
+        """(tabt, nt, tabp, np, tabv, tk) as contiguous float64 numpy arrays for native/ttaup.c."""
+        if self._native is None:
+            c = lambda a: np.ascontiguousarray(a.detach().cpu().numpy(), dtype=np.float64)
+            self._native = (c(self.tabt), int(self.tabt.shape[0]), c(self.tabp), int(self.np), c(self.tabv), c(self.tk))
+        return self._native
 
     def __call__(self, t, p, v) -> torch.Tensor:
         t = torch.as_tensor(t, dtype=torch.float64)
         p = torch.as_tensor(p, dtype=torch.float64)
         v = torch.as_tensor(v, dtype=torch.float64)
-        shp = torch.broadcast_shapes(t.shape, p.shape, v.shape)
+        shp = tuple(np.broadcast_shapes(t.shape, p.shape, v.shape))   # (torch's imports torch.fx on first use)
         t, p, v = (a.expand(shp).reshape(-1) for a in (t, p, v))
         tlog10 = fmath.log10(t)
         # PKAPV(IV,IP) = MAP1(TABT, TABKAP(1,IP,IV), NT, TLOG10)

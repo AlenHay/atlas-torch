@@ -22,6 +22,7 @@ import numpy as np
 import torch
 
 from . import libm
+from .. import native as _native
 from ._data import r4
 from .pfsaha import Layers, SahaPlan, _nions, pfsaha
 
@@ -167,6 +168,19 @@ class MolTables:
 
     @classmethod
     def from_state(cls, s) -> "MolTables":
+        """Tables of /IFEQUA/ (cached on the arrays' contents: READMOL runs once per model)."""
+        key = tuple(np.asarray(s[k].cpu().numpy() if isinstance(s[k], torch.Tensor) else s[k]).tobytes()
+                    for k in ("ifequa.nequa", "ifequa.nummol", "ifequa.locj", "ifequa.kcomps", "ifequa.equil",
+                              "ifequa.code", "ifequa.idequa"))
+        t = _MOLTABLES.get(key)
+        if t is None:
+            if len(_MOLTABLES) > 16:
+                _MOLTABLES.clear()
+            t = _MOLTABLES[key] = cls._build(s)
+        return t
+
+    @classmethod
+    def _build(cls, s) -> "MolTables":
         g = lambda k: np.asarray(s[k].cpu().numpy() if isinstance(s[k], torch.Tensor) else s[k]).reshape(-1)
         nequa, nummol = int(g("ifequa.nequa")[0]), int(g("ifequa.nummol")[0])
         locj, kcomps = g("ifequa.locj").astype(np.int64), g("ifequa.kcomps").astype(np.int64)
@@ -183,6 +197,9 @@ class MolTables:
                 equil[:, :nummol], np.array([len(c) for c in comps]), comps, pad, inv, ())
         t.events = _events(t)
         return t
+
+
+_MOLTABLES: dict = {}
 
 
 def _events(t: MolTables):
@@ -276,6 +293,89 @@ def _ion_groups(t: MolTables):
     return g
 
 
+def _newton_solver(t: MolTables, xab: np.ndarray, cap):
+    """The per-layer Newton iteration of NMOLEC (labels 41-110) as a function newton(xn, equilj, xntot) ->
+    (iterations, chemfail) that updates xn in place: the native transcription (native/nmolec.c) when built,
+    else the reference loop below (identical results)."""
+    N = t.nequa
+    tgt, ejm, ediv, esg = t.events
+    last_el = bool(t.idequa[N - 1] >= 100)
+    lib = _native.load()
+    if lib is not None:
+        cp = np.ascontiguousarray(t.comp_pad, dtype=np.int64)
+        inv = np.ascontiguousarray(t.is_inv, dtype=np.uint8)
+        tg, jm_, dv = (np.ascontiguousarray(a, dtype=np.int64) for a in (tgt, ejm, ediv))
+        sg = np.ascontiguousarray(esg, dtype=np.float64)
+        xab_c = np.ascontiguousarray(xab, dtype=np.float64)
+        work = np.empty(N + N * N + 2 * N + t.nummol)
+        iwork = np.empty(N, dtype=np.int32)
+        flag = np.zeros(1, dtype=np.int32)
+        ptr = lambda a: a.ctypes.data
+        maxc = cp.shape[1]
+
+        def newton(xn, equilj, xntot):
+            eqj = np.ascontiguousarray(equilj, dtype=np.float64)
+            assert xn.dtype == np.float64 and xn.flags.c_contiguous
+            it = lib.nmolec_newton(N, t.nummol, maxc, ptr(cp), ptr(inv), len(tg), ptr(tg), ptr(jm_), ptr(dv), ptr(sg),
+                                   ptr(xab_c), float(xntot), int(last_el), ptr(eqj), ptr(xn),
+                                   0 if cap is None else int(cap), R4_1E4, R4_69, ptr(work), ptr(iwork), ptr(flag))
+            return int(it), bool(flag[0])
+        return newton
+    has_div = ediv >= 0
+    ediv0 = np.maximum(ediv, 0)
+    nflat = N + N * N
+
+    def newton(xn, equilj, xntot):
+        eqold = np.zeros(N)
+        it = 0
+        chemfail = False
+        while True:
+            it += 1
+            flat = np.zeros(nflat)
+            eq = flat[:N]
+            deq = flat[N:].reshape((N, N), order="F")     # view: deq[m-1, k-1] = DEQ(M,K)
+            eq[0] = -xntot
+            for k in range(2, N + 1):
+                eq[0] = eq[0] + xn[k - 1]
+                deq[0, k - 1] = 1.0
+                eq[k - 1] = xn[k - 1] - xab[k - 1] * xn[0]
+                deq[k - 1, k - 1] = 1.0
+                deq[k - 1, 0] = -xab[k - 1]
+            if last_el:
+                eq[N - 1] = -xn[N - 1]
+                deq[N - 1, N - 1] = -1.0
+            term = _terms(t, equilj, xn)
+            vals = term[ejm]
+            vals = np.where(has_div, vals / xn[ediv0], vals) * esg
+            np.add.at(flat, tgt, vals)
+            sol = solvit(deq, eq)
+            iferr = 0
+            scale = 100.0
+            for k in range(N):
+                e = sol[k]
+                ratio = abs(e / xn[k])
+                if ratio > R4_1E4:
+                    iferr = 1
+                if eqold[k] * e < 0.0:
+                    e = e * R4_69
+                xneq = xn[k] - e
+                xn100 = xn[k] / 100.0
+                if abs(xneq) < xn100:
+                    xn[k] = xn[k] / scale
+                    if eqold[k] * e < 0.0:
+                        scale = math.sqrt(scale)
+                else:
+                    xn[k] = abs(xneq)
+                eqold[k] = e
+            if cap is not None and it >= cap:
+                chemfail = True
+                break
+            if iferr != 1:
+                break
+        return it, chemfail
+    return newton
+
+
 def nmolec(s, mode: int, variant: str = "atlas9", max_iter: int | None = None) -> dict:
     """SUBROUTINE NMOLEC(MODE). Returns the updated COMMON entries:
     state.xne/xnatom/rho, xnmol.xnmol, xnsave.xnsave (IFEDNS=0), edens.edens (IFEDNS=1), and temp.t/tk/tkev
@@ -329,13 +429,9 @@ def nmolec(s, mode: int, variant: str = "atlas9", max_iter: int | None = None) -
                 rows.append(row)
             ion_mols.append((jm, rows.index(row), nc))
     plan = SahaPlan(L_all, rows, potion, variant) if rows else None
-    tgt, ejm, ediv, esg = t.events
-    has_div = ediv >= 0
-    ediv0 = np.maximum(ediv, 0)
-    nflat = N + N * N
-    # static initial parts of DEQ (before the molecule loop): DEQ(1,K)=1, DEQ(K,K)=1, DEQ(K,1)=-XAB(K)
     xnz = np.zeros((n, N))
     eqiters = np.zeros(n, np.int64)
+    newton = _newton_solver(t, xab, cap)
     chemfail = False
     for j in range(n):
         xntot = P[j] / TK[j]
@@ -350,55 +446,11 @@ def nmolec(s, mode: int, variant: str = "atlas9", max_iter: int | None = None) -
             if t.equil[0, jm] == 0.0 and t.ncomp[jm] == 1:
                 equilj[jm] = 1.0
         if plan is not None:
-            Lj = L_all.index(slice(j, j + 1)).replace(xne=torch.tensor([xne[j]], dtype=torch.float64, device=dev))
-            frac = plan.fractions(slice(j, j + 1), Lj)[0][0].cpu().numpy()        # (R, M)
+            frac = plan.fractions_layer(j, float(xne[j]))                          # (R, M)
             for jm, r, nc in ion_mols:
                 equilj[jm] = frac[r, nc - 1] / frac[r, 0] * libm.ipow_var(xne[j], nc - 1)
-        eqold = np.zeros(N)
-        it = 0
-        while True:
-            it += 1
-            flat = np.zeros(nflat)
-            eq = flat[:N]
-            deq = flat[N:].reshape((N, N), order="F")     # view: deq[m-1, k-1] = DEQ(M,K)
-            eq[0] = -xntot
-            for k in range(2, N + 1):
-                eq[0] = eq[0] + xn[k - 1]
-                deq[0, k - 1] = 1.0
-                eq[k - 1] = xn[k - 1] - xab[k - 1] * xn[0]
-                deq[k - 1, k - 1] = 1.0
-                deq[k - 1, 0] = -xab[k - 1]
-            if t.idequa[N - 1] >= 100:
-                eq[N - 1] = -xn[N - 1]
-                deq[N - 1, N - 1] = -1.0
-            term = _terms(t, equilj, xn)
-            vals = term[ejm]
-            vals = np.where(has_div, vals / xn[ediv0], vals) * esg
-            np.add.at(flat, tgt, vals)
-            sol = solvit(deq, eq)
-            iferr = 0
-            scale = 100.0
-            for k in range(N):
-                e = sol[k]
-                ratio = abs(e / xn[k])
-                if ratio > R4_1E4:
-                    iferr = 1
-                if eqold[k] * e < 0.0:
-                    e = e * R4_69
-                xneq = xn[k] - e
-                xn100 = xn[k] / 100.0
-                if abs(xneq) < xn100:
-                    xn[k] = xn[k] / scale
-                    if eqold[k] * e < 0.0:
-                        scale = math.sqrt(scale)
-                else:
-                    xn[k] = abs(xneq)
-                eqold[k] = e
-            if cap is not None and it >= cap:
-                chemfail = True
-                break
-            if iferr != 1:
-                break
+        it, failed = newton(xn, equilj, xntot)
+        chemfail = chemfail or failed
         eqiters[j] = it
         xnz[j] = xn
         xnatom[j] = xn[0]
@@ -474,50 +526,50 @@ def _partition_divide(t, s, n, xnz, xnmol, atmass, potion, variant, xne):
             xnmol[:n, jm] = xnmol[:n, jm] / part_of(idd, nc)
 
 
-def _perturbed(L: Layers, T, TK, TKEV, mask, step):
-    """Apply one of the Fortran's in-place temperature perturbations to the masked layers.
-    step 'up': X=X*1.001; 'down': X=X/1.001*.999; 'back': X=X/.999."""
-    for a in (T, TK, TKEV):
-        if step == "up":
-            v = a * R4_1001
-        elif step == "down":
-            v = a / R4_1001 * R4_999
-        else:
-            v = a / R4_999
-        a.copy_(torch.where(mask, v, a))
-    return L.replace(t=T.clone(), tk=TK.clone(), tkev=TKEV.clone())
+def _edens_molecular(*args):
+    with np.errstate(all="ignore"):                # IEEE inf/nan as in the Fortran (and torch), no warnings
+        return _edens_molecular_impl(*args)
 
 
-def _edens_molecular(t, s, n, xnmol, rho, potion, variant, T, TK, TKEV, xne):
+def _edens_molecular_impl(t, s, n, xnmol, rho, potion, variant, T, TK, TKEV, xne):
     """Label 160-181 (IFEDNS=1): internal energy per gram EDENS, with the T perturbations kept in T/TK/TKEV
-    (full-length tensors, modified in place)."""
+    (full-length tensors, modified in place).
+
+    The PFSAHA calls (one per perturbed temperature) depend only on the perturbation chain of T/TK/TKEV,
+    which is fixed by the molecule structure and the masks XNMOL>0 -- not on any PFSAHA result. So the chain is
+    replayed first (recording the perturbed temperatures of every call), the partition functions of all calls
+    of one element are then evaluated in one layer-batched SahaPlan (elementwise, identical per layer), and
+    finally EDENS is accumulated in the Fortran's molecule order. The chain and the accumulation are [n]-sized
+    IEEE operations done in numpy (cheaper per operation than torch at this size)."""
     N = t.nequa
-    Pn = s["state.p"][:n]
-    edens = s["edens.edens"].clone()
-    xm = torch.from_numpy(xnmol[:n].copy())
+    Pn = s["state.p"][:n].detach().cpu().numpy()
+    edens_full = s["edens.edens"].clone()
+    xm = np.array(xnmol[:n], dtype=np.float64)
     L0 = Layers.from_state(s, n).replace(xne=torch.from_numpy(xne[:n].copy()))
-    Tn, TKn, TKEVn = T[:n], TK[:n], TKEV[:n]          # views into the full arrays
-    xntot = Pn / TKn
-    edens[:n] = 1.5 * xntot * TKn
+    Tn, TKn, TKEVn = (a[:n].detach().cpu().numpy().copy() for a in (T, TK, TKEV))
     E = t.equil
-    pfplus = torch.zeros(n, dtype=torch.float64)
-    pfmin = torch.zeros(n, dtype=torch.float64)
+    xntot = Pn / TKn
+    edens = 1.5 * xntot * TKn                         # before the chain perturbs TK
+    # --- pass 1: the T perturbation chain and the PFSAHA requests (element, NION, MODE, T state)
+    rec_t, rec_tk, rec_tkev = [], [], []
+    calls = []                                        # (idd, nion)
+    plan_mol = []                                     # per molecule: (kind, data)
+
+    def perturb(mask, step):
+        _perturb_inplace(Tn, TKn, TKEVn, mask, step)
+
+    def request(idd, nion, mask, step):
+        perturb(mask, step)
+        rec_t.append(Tn.copy()); rec_tk.append(TKn.copy()); rec_tkev.append(TKEVn.copy())
+        calls.append((idd, nion))
+        return len(calls) - 1
+
     for jm in range(t.nummol):
         nc = int(t.ncomp[jm])
         pos = xm[:, jm] > 0.0
         if E[0, jm] != 0.0:
-            tplus, tminus = Tn * R4_1001, Tn * R4_999
-            pp = libm.exp(-E[1, jm] + (E[2, jm] + (-E[3, jm] + (E[4, jm] - E[5, jm] * tplus) * tplus) * tplus) * tplus) + 1e-30
-            pm = libm.exp(-E[1, jm] + (E[2, jm] + (-E[3, jm] + (E[4, jm] - E[5, jm] * tminus) * tminus) * tminus) * tminus) + 1e-30
-            if t.code[jm] == 101.0:
-                tm10, tp10 = tminus / 10000.0, tplus / 10000.0
-                c = [r4(v) for v in ("0.582145", "16.3760", "-49.4684", "112.049", "-149.953", "106.531", "30.9791")]
-
-                def h2(x):
-                    return libm.exp(c[0] + (c[1] + (c[2] + (c[3] + (c[4] + (c[5] - c[6] * x) * x) * x) * x) * x) * x) + 1e-30
-                pm, pp = h2(tm10), h2(tp10)
-            pfplus = torch.where(pos, pp, pfplus)
-            pfmin = torch.where(pos, pm, pfmin)
+            tplus, tminus = Tn * R4_1001, Tn * R4_999          # T as it is at this point of the chain
+            reqs = []
             skip_update = False
             if t.code[jm] != 101.0:
                 for k in t.comps[jm]:
@@ -527,34 +579,89 @@ def _edens_molecular(t, s, n, xnmol, rho, potion, variant, T, TK, TKEV, xne):
                         skip_update = True        # GO TO 180: positive molecular ions get no EDENS term
                         break
                     idd = int(t.idequa[k - 1])
-                    Lp = _perturbed(L0, Tn, TKn, TKEVn, pos, "up")
-                    fr = pfsaha(Lp, idd, 1, 3, potion, variant)
-                    pfplus = torch.where(pos, pfplus * fr, pfplus)
-                    Lm = _perturbed(L0, Tn, TKn, TKEVn, pos, "down")
-                    fr = pfsaha(Lm, idd, 1, 3, potion, variant)
-                    pfmin = torch.where(pos, pfmin * fr, pfmin)
-                    _perturbed(L0, Tn, TKn, TKEVn, pos, "back")
-            if skip_update:
-                continue
-            upd = edens[:n] + xm[:, jm] * TKn * (libm.rdiv(-E[0, jm], TKEVn) + (pfplus - pfmin) / (pfplus + pfmin) * 2.0 * 500.0)
-            edens[:n] = torch.where(pos, upd, edens[:n])
+                    cu = request(idd, 1, pos, "up")
+                    cd = request(idd, 1, pos, "down")
+                    perturb(pos, "back")
+                    reqs.append((cu, cd))
+            plan_mol.append(("mol", jm, pos, tplus, tminus, reqs, skip_update, TKn.copy(), TKEVn.copy()))
         else:
             idd = int(t.code[jm])
-            Lp = _perturbed(L0, Tn, TKn, TKEVn, pos, "up")
-            pfp, eion = pfsaha(Lp, idd, nc, 5, potion, variant)
-            Lm = _perturbed(L0, Tn, TKn, TKEVn, pos, "down")
-            pfm, _ = pfsaha(Lm, idd, nc, 5, potion, variant)
-            _perturbed(L0, Tn, TKn, TKEVn, pos, "back")
-            a, b = pfp[:, nc - 1], pfm[:, nc - 1]
-            a = torch.maximum(a, b)
-            upd = edens[:n] + xm[:, jm] * TKn * (eion[:, nc - 1] / TKEVn + (a - b) / (a + b) * 2.0 * 500.0)
-            edens[:n] = torch.where(pos, upd, edens[:n])
-    edens[:n] = edens[:n] / rho_t(rho, n)
-    return edens
+            cu = request(idd, nc, pos, "up")
+            cd = request(idd, nc, pos, "down")
+            perturb(pos, "back")
+            plan_mol.append(("ion", jm, pos, idd, nc, cu, cd, TKn.copy(), TKEVn.copy()))
+    # the drifted temperatures stay (the Fortran perturbs T/TK/TKEV in place)
+    for full, v in ((T, Tn), (TK, TKn), (TKEV, TKEVn)):
+        full[:n] = torch.from_numpy(v)
+    # --- pass 2: the partition functions of all requests, batched per element
+    res = [None] * len(calls)
+    eions = {}
+    by_el = {}
+    for c, (idd, nion) in enumerate(calls):
+        by_el.setdefault(idd, []).append(c)
+    cat = lambda rec, cs: torch.from_numpy(np.concatenate([rec[c] for c in cs]))
+    for idd, cs in by_el.items():
+        k = len(cs)
+        # PART(ION) of each ion is independent of the other ions of the row: ions 1..max NION suffice
+        nion2 = max(calls[c][1] for c in cs)
+        Lb = Layers(cat(rec_t, cs), cat(rec_tk, cs), cat(rec_tkev, cs), L0.hckt.repeat(k), L0.tlog.repeat(k),
+                    L0.xne.repeat(k), L0.p.repeat(k), L0.bhyd.repeat(k, 1), L0.nlteon)
+        plan = SahaPlan(Lb, [(idd, nion2)], potion, variant)
+        part = plan.parts(slice(None), Lb)[0][:, 0, :].reshape(k, n, -1).cpu().numpy()
+        for i, c in enumerate(cs):
+            res[c] = part[i, :, calls[c][1] - 1]
+        acc, ev = 0.0, [0.0]                                # PFSAHA MODE 5: ANSWER(ION+7)=IP(ION)+ANSWER(ION+6)
+        for m in range(plan.M):
+            acc = float(plan.ip[0, m]) + acc
+            ev.append(acc)
+        eions[idd] = ev
+    # --- pass 3: EDENS in molecule order
+    exp = lambda a: libm.exp(torch.from_numpy(a)).numpy()
+    c101 = [r4(v) for v in ("0.582145", "16.3760", "-49.4684", "112.049", "-149.953", "106.531", "30.9791")]
+    pfplus = np.zeros(n)
+    pfmin = np.zeros(n)
+    for item in plan_mol:
+        if item[0] == "mol":
+            _, jm, pos, tplus, tminus, reqs, skip_update, tk_j, tkev_j = item
+            pp = exp(-E[1, jm] + (E[2, jm] + (-E[3, jm] + (E[4, jm] - E[5, jm] * tplus) * tplus) * tplus) * tplus) + 1e-30
+            pm = exp(-E[1, jm] + (E[2, jm] + (-E[3, jm] + (E[4, jm] - E[5, jm] * tminus) * tminus) * tminus) * tminus) + 1e-30
+            if t.code[jm] == 101.0:
+                tm10, tp10 = tminus / 10000.0, tplus / 10000.0
+                c = c101
+
+                def h2(x):
+                    return exp(c[0] + (c[1] + (c[2] + (c[3] + (c[4] + (c[5] - c[6] * x) * x) * x) * x) * x) * x) + 1e-30
+                pm, pp = h2(tm10), h2(tp10)
+            pfplus = np.where(pos, pp, pfplus)
+            pfmin = np.where(pos, pm, pfmin)
+            for cu, cd in reqs:
+                pfplus = np.where(pos, pfplus * res[cu], pfplus)
+                pfmin = np.where(pos, pfmin * res[cd], pfmin)
+            if skip_update:
+                continue
+            upd = edens + xm[:, jm] * tk_j * (np.float64(-E[0, jm]) / tkev_j + (pfplus - pfmin) / (pfplus + pfmin) * 2.0 * 500.0)
+            edens = np.where(pos, upd, edens)
+        else:
+            _, jm, pos, idd, nc, cu, cd, tk_j, tkev_j = item
+            a, b = res[cu], res[cd]
+            a = np.maximum(a, b)
+            upd = edens + xm[:, jm] * tk_j * (np.float64(eions[idd][nc - 1]) / tkev_j + (a - b) / (a + b) * 2.0 * 500.0)
+            edens = np.where(pos, upd, edens)
+    edens_full[:n] = torch.from_numpy(edens / np.asarray(rho[:n], dtype=np.float64))
+    return edens_full
 
 
-def rho_t(rho, n):
-    return torch.from_numpy(np.asarray(rho[:n]))
+def _perturb_inplace(T, TK, TKEV, mask, step):
+    """Apply one of the Fortran's in-place temperature perturbations to the masked layers (numpy arrays).
+    step 'up': X=X*1.001; 'down': X=X/1.001*.999; 'back': X=X/.999."""
+    for a in (T, TK, TKEV):
+        if step == "up":
+            v = a * R4_1001
+        elif step == "down":
+            v = a / R4_1001 * R4_999
+        else:
+            v = a / R4_999
+        np.copyto(a, np.where(mask, v, a))
 
 
 # ------------------------------------------------------------------------------------------------- MOLEC

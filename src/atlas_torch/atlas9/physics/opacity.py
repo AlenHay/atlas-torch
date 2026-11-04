@@ -189,6 +189,14 @@ def linter(xold: torch.Tensor, yold: torch.Tensor, xnew: torch.Tensor) -> torch.
 
 # ------------------------------------------------------------------------------------------------- HOP
 
+@lru_cache(maxsize=None)
+def hop_coef(freq: float, v="atlas9"):
+    """HOP's frequency-only factors: (CONT(1..8), CFREE, C)."""
+    cont = [xkarsas(freq, 1.0, N, N, v) for N in range(1, 9)]
+    freq3 = ipow_const(freq, 3)
+    return cont, 3.6919e8 / freq3, 2.815e29 / freq3
+
+
 def hop(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE HOP: H I bound-free (n=1..8 + higher-level integral) and free-free."""
     tkev, rho, T = _g(s, "temp.tkev", n), _g(s, "state.rho", n), _g(s, "temp.t", n)
@@ -205,10 +213,7 @@ def hop(s, fq: Freq, n, v="atlas9"):
     boltex = libm.exp(rdiv(-r4("13.427"), tkev)) * xr
     exlim = libm.exp(rdiv(-r4("13.595"), tkev)) * xr
     freq = fq.freq
-    cont = [xkarsas(freq, 1.0, N, N, v) for N in range(1, 9)]
-    freq3 = ipow_const(freq, 3)
-    cfree = 3.6919e8 / freq3
-    c = 2.815e29 / freq3
+    cont, cfree, c = hop_coef(freq, v)
     ex = exlim / fq.ehvkt if freq < 4.05933e13 else boltex
     h = (cont[6] * bolt[6] + cont[7] * bolt[7] + (ex - exlim) * c + coulff(s, fq, n, 1, v) * freet * cfree) * fq.stim
     sh = h * fq.bnu
@@ -241,22 +246,29 @@ def _hmin_tables(v):
             torch.from_numpy(_tab(v, "hminop", "wbf")), torch.from_numpy(_tab(v, "hminop", "bf")))
 
 
+@lru_cache(maxsize=None)
+def hminop_coef(freq: float, v="atlas9"):
+    """HMINOP's frequency-only factors: (WAVELOG, HMINBF)."""
+    from ...interp import map1
+    _, _, _, wbf, bf = _hmin_tables(v)
+    wave = 2.99792458e17 / freq
+    hminbf = 0.0
+    if freq > 1.82365e14:
+        hminbf = float(map1(wbf, bf, torch.tensor([wave], dtype=torch.float64))[0][0])
+    return math.log(wave), hminbf
+
+
 def hminop(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE HMINOP: H- bound-free (Wishart/Mathisen table, MAP1) and free-free (Bell & Berrington)."""
-    from ...interp import map1
     wfflog, fflog, thetaff, wbf, bf = _hmin_tables(v)
     T, tkev, rho, xne = _g(s, "temp.t", n), _g(s, "temp.tkev", n), _g(s, "state.rho", n), _g(s, "state.xne", n)
     bmin, b1, xnfph1 = s["depart.bmin"][:n], s["depart.bhyd"][:n, 0], s["ions.xnfph"][:n, 0]
     theta = rdiv(5040.0, T)
     xhmin = libm.exp(rdiv(r4(".754209"), tkev)) / (2.0 * 2.4148e15 * T * libm.sqrt(T)) * bmin * b1 * xnfph1 * xne
     freq = fq.freq
-    wave = 2.99792458e17 / freq
-    wavelog = math.log(wave)
+    wavelog, hminbf = hminop_coef(freq, v)
     fftlog = linter(wfflog, fflog.T, torch.tensor([wavelog], dtype=torch.float64))[:, 0]     # (11,)
     fftt = libm.exp(fftlog) / thetaff * 5040.0 * 1.380658e-16
-    hminbf = 0.0
-    if freq > 1.82365e14:
-        hminbf = float(map1(wbf, bf, torch.tensor([wave], dtype=torch.float64))[0][0])
     fftheta = linter(thetaff, fftt, theta)
     hminff = fftheta * xnfph1 * 2.0 * b1 * xne / rho
     h = hminbf * 1e-18 * (1.0 - fq.ehvkt / bmin) * xhmin / rho
@@ -265,6 +277,7 @@ def hminop(s, fq: Freq, n, v="atlas9"):
     return {"ahmin": ahmin, "shmin": shmin}
 
 
+@lru_cache(maxsize=None)
 def hrayop_xsect(freq: float, v="atlas9") -> float:
     """HRAYOP's cross-section per H atom (Gavrila 1967) at FREQ."""
     from ...interp import map1
@@ -399,8 +412,7 @@ def he1op(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE HE1OP: He I bound-free (10 levels + n=4..27 hydrogenic) and free-free."""
     tkev, rho, T = _g(s, "temp.tkev", n), _g(s, "state.rho", n), _g(s, "temp.t", n)
     xnfphe1 = s["ions.xnfphe"][:n, 0]
-    G, chi, hefreq = _tab(v, "he1op", "g"), _tab(v, "he1op", "chi"), _tab(v, "he1op", "hefreq")
-    ryd = r4("109722.273") * 2.99792458e10
+    G, chi = _tab(v, "he1op", "g"), _tab(v, "he1op", "chi")
     bolt = [libm.exp(rdiv(-float(chi[N]), tkev)) * float(G[N]) * xnfphe1 / rho for N in range(10)]
     boltn = {}
     for N in range(4, 28):
@@ -411,6 +423,24 @@ def he1op(s, fq: Freq, n, v="atlas9"):
     boltex = libm.exp(rdiv(-r4("23.730"), tkev)) * xr
     exlim = libm.exp(rdiv(-r4("24.587"), tkev)) * xr
     freq = fq.freq
+    imin, trans, transn, cfree, c = he1op_coef(freq, v)
+    ex = exlim / fq.ehvkt if freq < 2.055e14 else boltex
+    he1 = (ex - exlim) * c
+    if imin:
+        for N in range(imin, 11):
+            he1 = he1 + trans[N] * bolt[N - 1]
+        if freq >= 1.25408e16:
+            for N in range(4, 28):
+                he1 = he1 + transn.get(N, 0.0) * boltn[N]
+    a = (he1 + coulff(s, fq, n, 1, v) * freet * cfree) * fq.stim
+    return {"ahe1": a}
+
+
+@lru_cache(maxsize=None)
+def he1op_coef(freq: float, v="atlas9"):
+    """HE1OP's frequency-only factors: (IMIN, TRANS(0..10), TRANSN {N: ...}, CFREE, C)."""
+    hefreq = _tab(v, "he1op", "hefreq")
+    ryd = r4("109722.273") * 2.99792458e10
     freq3 = ipow_const(freq, 3)
     cfree = 3.6919e8 / freq3
     c = 2.815e29 / freq3
@@ -447,16 +477,23 @@ def he1op(s, fq: Freq, n, v="atlas9"):
             if freq >= 1.25408e16:
                 for N in range(4, 28):
                     transn[N] = xkarsas(freq, float(F32(4.0) - F32(3.0) / F32(N * N)), 1, 0, v)
-    ex = exlim / fq.ehvkt if freq < 2.055e14 else boltex
-    he1 = (ex - exlim) * c
-    if imin:
-        for N in range(imin, 11):
-            he1 = he1 + trans[N] * bolt[N - 1]
-        if freq >= 1.25408e16:
-            for N in range(4, 28):
-                he1 = he1 + transn.get(N, 0.0) * boltn[N]
-    a = (he1 + coulff(s, fq, n, 1, v) * freet * cfree) * fq.stim
-    return {"ahe1": a}
+    return imin, trans, transn, cfree, c
+
+
+@lru_cache(maxsize=None)
+def he2op_coef(freq: float, v="atlas9"):
+    """HE2OP's frequency-only factors: (CONT(1..9), CFREE, C, EXTH)."""
+    cont = [xkarsas(freq, 4.0, N, N, v) for N in range(1, 10)]
+    freq3 = ipow_const(freq, 3)
+    if v == "kappa9":
+        cfree = r4("3.6919E8") / freq3 * 4.0
+        c = f4("2.815E29", "*", "2.", "*", "2.") / freq3
+        exth = r4("1.31522E14")
+    else:
+        cfree = 3.6919e8 / freq3 * 4.0
+        c = 2.815e29 * 2.0 * 2.0 / freq3
+        exth = 1.31522e14
+    return cont, cfree, c, exth
 
 
 def he2op(s, fq: Freq, n, v="atlas9"):
@@ -470,16 +507,7 @@ def he2op(s, fq: Freq, n, v="atlas9"):
     boltex = libm.exp(rdiv(-r4("53.859"), tkev)) * xr
     exlim = libm.exp(rdiv(-r4("54.403"), tkev)) * xr
     freq = fq.freq
-    cont = [xkarsas(freq, 4.0, N, N, v) for N in range(1, 10)]
-    freq3 = ipow_const(freq, 3)
-    if v == "kappa9":
-        cfree = r4("3.6919E8") / freq3 * 4.0
-        c = f4("2.815E29", "*", "2.", "*", "2.") / freq3
-        exth = r4("1.31522E14")
-    else:
-        cfree = 3.6919e8 / freq3 * 4.0
-        c = 2.815e29 * 2.0 * 2.0 / freq3
-        exth = 1.31522e14
+    cont, cfree, c, exth = he2op_coef(freq, v)
     ex = exlim / fq.ehvkt if freq < exth else boltex
     he2 = (ex - exlim) * c
     for N in range(9):
@@ -487,21 +515,30 @@ def he2op(s, fq: Freq, n, v="atlas9"):
     return {"ahe2": (he2 + coulff(s, fq, n, 2, v) * cfree * freet) * fq.stim}
 
 
-def hemiop(s, fq: Freq, n, v="atlas9"):
-    """SUBROUTINE HEMIOP: He- free-free (John 1968 fit)."""
-    f = fq.freq
+def hemiop_coef(f: float):
+    """HEMIOP's frequency-only factors (A, B, C)."""
     a = 3.397e-46 + (-5.216e-31 + 7.039e-15 / f) / f
     b = -4.116e-42 + (1.067e-26 + 8.135e-11 / f) / f
     c = 5.081e-37 + (-8.724e-23 - 5.659e-8 / f) / f
+    return a, b, c
+
+
+def hemiop(s, fq: Freq, n, v="atlas9"):
+    """SUBROUTINE HEMIOP: He- free-free (John 1968 fit)."""
+    a, b, c = hemiop_coef(fq.freq)
     T = _g(s, "temp.t", n)
     return {"ahemin": (a * T + b + rdiv(c, T)) * _g(s, "state.xne", n) * s["ions.xnfphe"][:n, 0] / _g(s, "state.rho", n)}
 
 
+def heraop_sig(freq: float) -> float:
+    wave = 2.997925e18 / min(freq, 5.15e15)
+    ww = ipow_const(wave, 2)
+    return 5.484e-14 / ww / ww * ipow_const(1.0 + (2.44e5 + 5.94e10 / (ww - 2.90e5)) / ww, 2)
+
+
 def heraop(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE HERAOP: Rayleigh scattering by He I."""
-    wave = 2.997925e18 / min(fq.freq, 5.15e15)
-    ww = ipow_const(wave, 2)
-    sig = 5.484e-14 / ww / ww * ipow_const(1.0 + (2.44e5 + 5.94e10 / (ww - 2.90e5)) / ww, 2)
+    sig = heraop_sig(fq.freq)
     return {"sighe": sig * s["ions.xnfphe"][:n, 0] / _g(s, "state.rho", n)}
 
 
@@ -510,10 +547,16 @@ def heraop(s, fq: Freq, n, v="atlas9"):
 def c1op(s, fq: Freq, n, v="atlas9"):
     """FUNCTION C1OP(J): C I bound-free (1100, 1240, 1444 A edges), vectorised over J."""
     tkev = _g(s, "temp.tkev", n)
-    ryd = 109732.298 if v == "atlas9" else r4("109732.298")
     c1240 = 5.0 * libm.exp(rdiv(-r4("1.264"), tkev))
     c1444 = libm.exp(rdiv(-r4("2.683"), tkev))
-    freq = fq.freq
+    x1100, x1240, x1444 = c1op_coef(fq.freq, v)
+    return x1100 * 9.0 + x1240 * c1240 + x1444 * c1444
+
+
+@lru_cache(maxsize=None)
+def c1op_coef(freq: float, v="atlas9"):
+    """C1OP's frequency-only cross-sections (X1100, X1240, X1444)."""
+    ryd = 109732.298 if v == "atlas9" else r4("109732.298")
     waveno = freq / 2.99792458e10
     x1100 = x1240 = x1444 = 0.0
     if freq >= 2.7254e15:
@@ -530,7 +573,7 @@ def c1op(s, fq: Freq, n, v="atlas9"):
         eps = (waveno - 97700.0) * 2.0 / 2743.0
         xs1 = (68e-18 * eps + 118e-18) / (ipow_const(eps, 2) + 1.0)
         x1444 = xs0 + xs1
-    return x1100 * 9.0 + x1240 * c1240 + x1444 * c1444
+    return x1100, x1240, x1444
 
 
 def _peach_op(s, fq, n, v, unit, nfreq, tdiv, toff, nmax, fix14):
@@ -539,21 +582,27 @@ def _peach_op(s, fq, n, v, unit, nfreq, tdiv, toff, nmax, fix14):
     tlg = torch.from_numpy(_tab(v, unit, "tlg"))
     nt = torch.clamp(torch.clamp(torch.trunc(T / tdiv).to(torch.int64) - toff, max=nmax), min=1)
     dt = (tlog - tlg[nt - 1]) / (tlg[nt] - tlg[nt - 1])
+    x = torch.from_numpy(peach_x(fq.freq, fq.freqlg, v, unit, fix14))
+    return libm.exp(x[nt - 1] * (1.0 - dt) + x[nt] * dt)
+
+
+@lru_cache(maxsize=None)
+def peach_x(freq: float, freqlg: float, v, unit, fix14):
+    """MG1OP/SI2OP: Peach's table interpolated in log nu at FREQ, for every table temperature."""
     freqs = _tab(v, unit, "freqmg" if unit == "mg1op" else "freqsi")
     flog, peach = _tab(v, unit, "flog"), _tab(v, unit, "peach")
     N = 8
     for k in range(1, 8):
-        if fq.freq > freqs[k - 1]:
+        if freq > freqs[k - 1]:
             N = k
             break
-    d = (fq.freqlg - flog[N - 1]) / (flog[N] - flog[N - 1])
+    d = (freqlg - flog[N - 1]) / (flog[N] - flog[N - 1])
     if N > 2:
         N = 2 * N - 2
     if fix14 and N == 14:
         N = 13
     d1 = 1.0 - d
-    x = torch.from_numpy(np.array([peach[it, N] * d + peach[it, N - 1] * d1 for it in range(peach.shape[0])]))
-    return libm.exp(x[nt - 1] * (1.0 - dt) + x[nt] * dt)
+    return np.array([peach[it, N] * d + peach[it, N - 1] * d1 for it in range(peach.shape[0])])
 
 
 def mg1op(s, fq, n, v="atlas9"):
@@ -568,8 +617,12 @@ def si2op(s, fq, n, v="atlas9"):
 
 def al1op(s, fq, n, v="atlas9"):
     """FUNCTION AL1OP(J)."""
-    if fq.freq >= 1.443e15:
-        return 6.5e-17 * libm.pow(1.443e15 / fq.freq, r4("4.4")) * 6.0
+    return al1op_coef(fq.freq)
+
+
+def al1op_coef(freq: float) -> float:
+    if freq >= 1.443e15:
+        return 6.5e-17 * libm.pow(1.443e15 / freq, r4("4.4")) * 6.0
     return 0.0
 
 
@@ -594,8 +647,19 @@ def si1op(s, fq: Freq, n, v="atlas9"):
     hckt = _g(s, "temp.hckt", n)
     elev, glev = _tab(v, "si1op", "elev"), _tab(v, "si1op", "glev")
     bolt = [float(glev[i]) * libm.exp(-float(elev[i]) * hckt) for i in range(33)]
+    X, freq3, m, rz2, elim = si1op_coef(fq.freq, v)
+    gfactor = 6.0
+    h = rdiv(freq3 * gfactor * 2.0 / 2.0, rz2 * hckt) * (libm.exp(-m * hckt) - libm.exp(-elim * hckt))
+    for i in range(1, 34):
+        h = h + X[i] * bolt[i - 1]
+    return h * fq.stim
+
+
+@lru_cache(maxsize=None)
+def si1op_coef(freq: float, v="atlas9"):
+    """SI1OP's frequency-only factors: (X(0..33), FREQ3, M, RZ2, ELIM) of label 60."""
+    elev = _tab(v, "si1op", "elev")
     z = 1.0
-    freq = fq.freq
     freq3 = 2.815e29 / freq / freq / freq * ipow_const(z, 4)
     waveno = freq / 2.99792458e10
     X = [0.0] * 34
@@ -696,48 +760,67 @@ def si1op(s, fq: Freq, n, v="atlas9"):
                 X[k] = xkarsas(freq, 9.0 / ryd * (elim - E(k)), 3, 1, v) * degen
     # label 60
     elim = r4("65747.55")
-    gfactor = 6.0
     rz2 = ryd * ipow_const(z, 2)
     m = max(elim - rz2 / 25.0, elim - waveno)
-    h = rdiv(freq3 * gfactor * 2.0 / 2.0, rz2 * hckt) * (libm.exp(-m * hckt) - libm.exp(-elim * hckt))
-    for i in range(1, 34):
-        h = h + X[i] * bolt[i - 1]
-    return h * fq.stim
+    return X, freq3, m, rz2, elim
 
 
 def fe1op(s, fq: Freq, n, v="atlas9"):
     """FUNCTION FE1OP(J): Fe I bound-free (48 levels, schematic)."""
     hkt = _g(s, "temp.hkt", n)
-    G, E, wno = _tab(v, "fe1op", "g"), _tab(v, "fe1op", "e"), _tab(v, "fe1op", "wno")
-    waveno = fq.freq / 2.99792458e10
-    if waveno < 21000.0:
+    G, E = _tab(v, "fe1op", "g"), _tab(v, "fe1op", "e")
+    xss = fe1op_coef(fq.freq, v)
+    if xss is None:
         return torch.zeros_like(hkt)
     out = torch.zeros_like(hkt)
+    for i in range(48):
+        out = out + xss[i] * (float(G[i]) * libm.exp(-float(E[i]) * 2.99792458e10 * hkt))
+    return out
+
+
+@lru_cache(maxsize=None)
+def fe1op_coef(freq: float, v="atlas9"):
+    """FE1OP's 48 frequency-only cross-sections XSECT(I), or None below 21000 cm-1 (zero opacity)."""
+    wno = _tab(v, "fe1op", "wno")
+    waveno = freq / 2.99792458e10
+    if waveno < 21000.0:
+        return None
+    out = []
     for i in range(48):
         xs = 0.0
         if wno[i] < waveno:
             xs = 3e-18 / (1.0 + ipow_const((float(wno[i]) + 3000.0 - waveno) / float(wno[i]) / r4(".1"), 4))
-        out = out + xs * (float(G[i]) * libm.exp(-float(E[i]) * 2.99792458e10 * hkt))
+        out.append(xs)
     return out
 
 
-def _molop(s, fq, n, v, unit, cross_name, part_name, nshift, nmax, ln10, chop):
-    T = _g(s, "temp.t", n)
-    cross, part = _eq(v, unit, cross_name), _tab(v, unit, part_name)
-    waveno = fq.freq / 2.99792458e10
+@lru_cache(maxsize=None)
+def molop_crt(freq: float, v, unit, cross_name, nmax, chop):
+    """CHOP/OHOP: the cross-section table interpolated in energy at FREQ (15 temperatures), or None (zero)."""
+    cross = _eq(v, unit, cross_name)
+    waveno = freq / 2.99792458e10
     evolt = waveno / r4("8065.479")
     if chop:
         N = int(evolt * 10.0)
         en = float(F32(N) * F32(r4(".1")))
         if N < 20 or N >= nmax:
-            return torch.zeros_like(T)
+            return None
     else:
         N = int(evolt * 10.0 - 20.0)
         en = float(F32(N) * F32(r4(".1")) + F32(2.0))
         if N <= 0 or N >= nmax:
-            return torch.zeros_like(T)
-    crt = torch.from_numpy(np.array([cross[it, N - 1] + (cross[it, N] - cross[it, N - 1]) * (evolt - en) / r4(".1")
-                                     for it in range(15)]))
+            return None
+    return np.array([cross[it, N - 1] + (cross[it, N] - cross[it, N - 1]) * (evolt - en) / r4(".1")
+                     for it in range(15)])
+
+
+def _molop(s, fq, n, v, unit, cross_name, part_name, nshift, nmax, ln10, chop):
+    T = _g(s, "temp.t", n)
+    part = _tab(v, unit, part_name)
+    crt = molop_crt(fq.freq, v, unit, cross_name, nmax, chop)
+    if crt is None:
+        return torch.zeros_like(T)
+    crt = torch.from_numpy(crt)
     pt = torch.from_numpy(part)
     it = torch.clamp(torch.trunc((T - 1000.0) / 200.0 + 1.0).to(torch.int64), min=1, max=len(part) - 1)
     tn = (it.to(torch.float32) * 200.0 + 800.0).double()
@@ -766,18 +849,27 @@ def _xnh2(s, n):
         8.1424e-11 - 5.0501e-15 * T) * T) * T) * T - 1.5 * tlog)
 
 
+@lru_cache(maxsize=None)
+def h2collop_nu(freq: float, v="atlas9"):
+    """H2COLLOP's tables interpolated in wavenumber at FREQ: (H2H2NU(7), H2HENU(7)), or None (zero) above 20000."""
+    waveno = freq / r4("2.99792458E10")
+    if waveno > 20000.0:
+        return None
+    h2he, h2h2 = _eq(v, "h2collop", "h2he"), _eq(v, "h2collop", "h2h2")
+    nu = min(80, int(waveno / 250.0) + 1)
+    delnu = (waveno - float(F32(250.0) * F32(nu - 1))) / 250.0
+    return (np.array([h2h2[it, nu - 1] * (1.0 - delnu) + h2h2[it, nu] * delnu for it in range(7)]),
+            np.array([h2he[it, nu - 1] * (1.0 - delnu) + h2he[it, nu] * delnu for it in range(7)]))
+
+
 def h2collop(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE H2COLLOP(AH2COLL): H2-H2 and H2-He collision-induced absorption (Borysow)."""
     T, rho = _g(s, "temp.t", n), _g(s, "state.rho", n)
     xnh2 = _xnh2(s, n)
-    waveno = fq.freq / r4("2.99792458E10")
-    if waveno > 20000.0:
+    nus = h2collop_nu(fq.freq, v)
+    if nus is None:
         return torch.zeros_like(T)
-    h2he, h2h2 = _eq(v, "h2collop", "h2he"), _eq(v, "h2collop", "h2h2")
-    nu = min(80, int(waveno / 250.0) + 1)
-    delnu = (waveno - float(F32(250.0) * F32(nu - 1))) / 250.0
-    h2h2nu = torch.from_numpy(np.array([h2h2[it, nu - 1] * (1.0 - delnu) + h2h2[it, nu] * delnu for it in range(7)]))
-    h2henu = torch.from_numpy(np.array([h2he[it, nu - 1] * (1.0 - delnu) + h2he[it, nu] * delnu for it in range(7)]))
+    h2h2nu, h2henu = (torch.from_numpy(a) for a in nus)
     it = torch.clamp(torch.trunc(T / 1000.0).to(torch.int64), 1, 6)
     delt = (T - (it.to(torch.float32) * 1000.0).double()) / 1000.0
     delt = torch.clamp(torch.clamp(delt, max=1.0), min=0.0)
@@ -802,40 +894,55 @@ def coolop(s, fq: Freq, n, v="atlas9"):
 
 # ------------------------------------------------------------------------------------------ metals (luke)
 
+def n1op_coef(f: float):
+    x853 = seaton(f, 3.517915e15, 1.142e-17, 2.0, 4.29) if f >= 3.517915e15 else 0.0
+    x1020 = seaton(f, 2.941534e15, 4.41e-18, 1.5, 3.85) if f >= 2.941534e15 else 0.0
+    x1130 = seaton(f, 2.653317e15, 4.2e-18, 1.5, 4.34) if f >= 2.653317e15 else 0.0
+    return x853, x1020, x1130
+
+
 def n1op(s, fq, n, v="atlas9"):
     tkev = _g(s, "temp.tkev", n)
     c1130 = 6.0 * libm.exp(rdiv(-r4("3.575"), tkev))
     c1020 = 10.0 * libm.exp(rdiv(-r4("2.384"), tkev))
-    f = fq.freq
-    x853 = seaton(f, 3.517915e15, 1.142e-17, 2.0, 4.29) if f >= 3.517915e15 else 0.0
-    x1020 = seaton(f, 2.941534e15, 4.41e-18, 1.5, 3.85) if f >= 2.941534e15 else 0.0
-    x1130 = seaton(f, 2.653317e15, 4.2e-18, 1.5, 4.34) if f >= 2.653317e15 else 0.0
+    x853, x1020, x1130 = n1op_coef(fq.freq)
     return x853 * 4.0 + x1020 * c1020 + x1130 * c1130
 
 
-def o1op(s, fq, n, v="atlas9"):
-    f = fq.freq
+def o1op_coef(f: float) -> float:
     x911 = seaton(f, 3.28805e15, 2.94e-18, 1.0, 2.66) if f >= 3.28805e15 else 0.0
     return x911 * 9.0
+
+
+def o1op(s, fq, n, v="atlas9"):
+    return o1op_coef(fq.freq)
+
+
+def mg2op_coef(f: float):
+    x824 = seaton(f, 3.635492e15, 1.40e-19, 4.0, 6.7) if f >= 3.635492e15 else 0.0
+    x1169 = r4("5.11E-19") * ipow_const(r4("2.564306E15") / f, 3) if f >= 2.564306e15 else 0.0
+    return x824, x1169
 
 
 def mg2op(s, fq, n, v="atlas9"):
     tkev = _g(s, "temp.tkev", n)
     c1169 = 6.0 * libm.exp(rdiv(-r4("4.43"), tkev))
-    f = fq.freq
-    x824 = seaton(f, 3.635492e15, 1.40e-19, 4.0, 6.7) if f >= 3.635492e15 else 0.0
-    x1169 = r4("5.11E-19") * ipow_const(r4("2.564306E15") / f, 3) if f >= 2.564306e15 else 0.0
+    x824, x1169 = mg2op_coef(fq.freq)
     return x824 * 2.0 + x1169 * c1169
+
+
+def ca2op_coef(f: float):
+    x1044 = 5.4e-20 * ipow_const(2.870454e15 / f, 3) if f >= r4("2.870454E15") else 0.0
+    x1218 = 1.64e-17 * math.sqrt(2.460127e15 / f) if f >= r4("2.460127E15") else 0.0
+    x1420 = seaton(f, 2.110779e15, 4.13e-18, 3.0, 0.69) if f >= r4("2.110779E15") else 0.0
+    return x1044, x1218, x1420
 
 
 def ca2op(s, fq, n, v="atlas9"):
     tkev = _g(s, "temp.tkev", n)
     c1218 = 10.0 * libm.exp(rdiv(-r4("1.697"), tkev))
     c1420 = 6.0 * libm.exp(rdiv(-r4("3.142"), tkev))
-    f = fq.freq
-    x1044 = 5.4e-20 * ipow_const(2.870454e15 / f, 3) if f >= r4("2.870454E15") else 0.0
-    x1218 = 1.64e-17 * math.sqrt(2.460127e15 / f) if f >= r4("2.460127E15") else 0.0
-    x1420 = seaton(f, 2.110779e15, 4.13e-18, 3.0, 0.69) if f >= r4("2.110779E15") else 0.0
+    x1044, x1218, x1420 = ca2op_coef(fq.freq)
     return x1044 * 2.0 + x1218 * c1218 + x1420 * c1420
 
 
@@ -861,6 +968,21 @@ def _xnfp_flat(s, n):
     return torch.cat(cols, 1)                       # (n, 30): XNFP(J, 1..30) by storage association
 
 
+@lru_cache(maxsize=None)
+def hotop_xs(freq: float, v="atlas9"):
+    """HOTOP's 60 edge cross-sections XSECT at FREQ (None below the edge)."""
+    A = _eq(v, "hotop", "a")
+    out = []
+    for i in range(60):
+        L = 7 * i
+        if freq < A[L]:
+            out.append(None)
+            continue
+        r = A[L] / freq
+        out.append(A[L + 1] * (A[L + 2] + r - A[L + 2] * r) * math.sqrt(ipow_var(r, int(A[L + 3]))))
+    return out
+
+
 def hotop(s, fq: Freq, n, v="atlas9"):
     """SUBROUTINE HOTOP: free-free of C,N,O,Ne,Mg,Si,S,Fe ions + 60 hot bound-free edges."""
     xnf = {k: s["xnf." + k][:n] for k in ("xnfc", "xnfn", "xnfo", "xnfne", "xnfmg", "xnfsi", "xnfs", "xnffe")}
@@ -884,12 +1006,12 @@ def hotop(s, fq: Freq, n, v="atlas9"):
         ahot = ahot + 0.0
     A = _eq(v, "hotop", "a")
     xnfp = _xnfp_flat(s, n)
+    xss = hotop_xs(freq, v)
     for i in range(60):
         L = 7 * i
         if freq < A[L]:
             continue
-        r = A[L] / freq
-        xs = A[L + 1] * (A[L + 2] + r - A[L + 2] * r) * math.sqrt(ipow_var(r, int(A[L + 3])))
+        xs = xss[i]
         idd = int(A[L + 6])
         xx = xs * xnfp[:, idd - 1] * float(A[L + 4])
         ahot = torch.where(xx > ahot / 100.0, ahot + xx / libm.exp(rdiv(float(A[L + 5]), tkev)), ahot)
@@ -904,10 +1026,13 @@ def elecop(s, fq, n, v="atlas9"):
 def h2raop(s, fq, n, v="atlas9"):
     """SUBROUTINE H2RAOP: Rayleigh scattering by H2 (Dalgarno & Williams)."""
     xnh2 = _xnh2(s, n) / _g(s, "state.rho", n)
-    wave = 2.997925e18 / min(fq.freq, 2.922e15)
+    return {"sigh2": h2raop_sig(fq.freq) * xnh2}
+
+
+def h2raop_sig(freq: float) -> float:
+    wave = 2.997925e18 / min(freq, 2.922e15)
     ww = ipow_const(wave, 2)
-    sig = (8.14e-13 + 1.28e-6 / ww + r4("1.61") / (ww * ww)) / (ww * ww)
-    return {"sigh2": sig * xnh2}
+    return (8.14e-13 + 1.28e-6 / ww + r4("1.61") / (ww * ww)) / (ww * ww)
 
 
 # ------------------------------------------------------------------------------------------------ KAPP

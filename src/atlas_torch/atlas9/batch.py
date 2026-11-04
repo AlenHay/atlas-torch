@@ -53,9 +53,24 @@ class AtlasJob:
     kwargs: dict = field(default_factory=dict)
 
 
-def _one(job: AtlasJob, backend: str, threads: int) -> dict:
+_CORES = None
+
+
+def _init_worker(cores, threads: int):
+    """Worker start: one core per worker (taken from a shared queue) and the native helpers loaded once."""
     import torch
     torch.set_num_threads(threads)
+    if cores is not None:
+        try:
+            c = cores.get_nowait()
+            os.sched_setaffinity(0, {c})
+        except Exception:                 # queue empty or affinity not permitted: run unpinned
+            pass
+    from . import native
+    native.load()
+
+
+def _one(job: AtlasJob, backend: str, threads: int) -> dict:
     os.environ["ATLAS_TORCH_BACKEND"] = backend
     from atlas_torch.compat import atlas as api
     t0 = time.perf_counter()
@@ -70,13 +85,36 @@ def _one(job: AtlasJob, backend: str, threads: int) -> dict:
     return {"output_dir": job.output_dir, "seconds": time.perf_counter() - t0, "error": err}
 
 
-def run_models(jobs: list[AtlasJob], workers: int | None = None, backend: str = "torch", threads: int = 1) -> list[dict]:
+def run_models(jobs: list[AtlasJob], workers: int | None = None, backend: str = "torch", threads: int = 1,
+               pin: bool = True) -> list[dict]:
     """Run ``jobs`` concurrently (``workers`` processes, default: half the CPUs, at most len(jobs)); results in
-    job order: {'output_dir', 'seconds', 'error' (None or message)}."""
+    job order: {'output_dir', 'seconds', 'error' (None or message)}. pin=True gives every worker its own core
+    (the first `workers` cores of this process's affinity set, one per physical core first when the set allows).
+    Memory: ~0.5 GB per worker (one model each)."""
     if not jobs:
         return []
     workers = workers or max(1, min(len(jobs), (os.cpu_count() or 2) // 2))
     ctx = multiprocessing.get_context("spawn")
-    with concurrent.futures.ProcessPoolExecutor(workers, mp_context=ctx) as ex:
+    cores = None
+    if pin:
+        avail = sorted(os.sched_getaffinity(0))
+        cores = ctx.Queue()
+        for c in _spread(avail)[:workers]:
+            cores.put(c)
+    with concurrent.futures.ProcessPoolExecutor(workers, mp_context=ctx, initializer=_init_worker,
+                                                initargs=(cores, threads)) as ex:
         futs = [ex.submit(_one, j, backend, threads) for j in jobs]
         return [f.result() for f in futs]
+
+
+def _spread(cores):
+    """Order cores so that SMT siblings come last (one worker per physical core first)."""
+    first, later, seen = [], [], set()
+    for c in cores:
+        try:
+            sib = open(f"/sys/devices/system/cpu/cpu{c}/topology/thread_siblings_list").read().strip()
+        except OSError:
+            sib = str(c)
+        (later if sib in seen else first).append(c)
+        seen.add(sib)
+    return first + later

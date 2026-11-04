@@ -14,6 +14,8 @@ older compilation in kappa9), which are passed in through the State (potion.poti
 """
 from __future__ import annotations
 
+import hashlib
+from collections import OrderedDict
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -129,6 +131,25 @@ def pfiron_stage2(a: torch.Tensor, potlow8: torch.Tensor, variant: str = "atlas9
     one = torch.tensor(_PFI["1."], dtype=torch.float32)
     pf = torch.where(direct, a_low, pp * a_low + (one - pp) * a_lowm)
     return pf.to(torch.float64)
+
+
+def _pfiron_stage2_np(a: np.ndarray, potlow8: np.ndarray, variant: str) -> np.ndarray:
+    """pfiron_stage2 on numpy arrays (same REAL*4 operations)."""
+    _, potlo, potlolog = _pfiron_tables(variant)
+    pl = np.asarray(potlow8).astype(np.float32)
+    less = pl[..., None] < potlo
+    anyless = less.any(-1)
+    first = np.where(anyless, less.astype(np.int64).argmax(-1) + 1, 0)
+    direct = (first == 1) | (first == 0)
+    low = np.where(first == 0, 7, first)
+    lowm = np.maximum(low - 1, 1)
+    a_low = np.take_along_axis(a, (low - 1)[..., None], -1)[..., 0]
+    a_lowm = np.take_along_axis(a, (lowm - 1)[..., None], -1)[..., 0]
+    lg = libm.log10(torch.from_numpy(np.ascontiguousarray(pl))).numpy()
+    pp = (lg - potlolog[lowm - 1]) / np.float32(_PFI[".30103"])
+    one = np.float32(_PFI["1."])
+    pf = np.where(direct, a_low, pp * a_low + (one - pp) * a_lowm)
+    return pf.astype(np.float64)
 
 
 def pfiron(nelem: int, ion: int, tlog8: torch.Tensor, potlow8: torch.Tensor, variant: str = "atlas9") -> torch.Tensor:
@@ -380,6 +401,47 @@ def potlow_of(L: Layers) -> torch.Tensor:
     return torch.clamp(rdiv(1.44e-7, debye), max=1.0)
 
 
+# ---- stage-1 memo: item_stage1 is a pure function of (IZ, ION, the layers' T-side arrays, POTION, variant).
+# NMOLEC, its partition-function pass and the POPS calls of one iteration -- and CONVEC's two pressure-perturbed
+# NMOLEC calls -- evaluate it on byte-identical layers; the memo (keyed on the exact bytes) returns the stored
+# result of the same computation. Bounded by entry bytes (oldest evicted first).
+_STAGE1: OrderedDict = OrderedDict()
+_SIZES: dict = {}
+_STAGE1_BYTES = [0]
+STAGE1_BUDGET = 96 * 2**20
+
+
+def _layers_key(L: Layers, potion: np.ndarray, variant: str):
+    """Memo key of the layer bundle, or None (no memo: autograd inputs)."""
+    arrs = (L.t, L.tk, L.tkev, L.hckt, L.tlog, L.bhyd)
+    if any(a.requires_grad for a in arrs):
+        return None
+    h = hashlib.blake2b(digest_size=20)
+    for a in arrs:
+        h.update(np.ascontiguousarray(a.detach().cpu().numpy()).tobytes())
+    h.update(np.ascontiguousarray(potion).tobytes())
+    return (variant, int(L.nlteon), str(L.t.device), str(L.t.dtype), bool(libm.EXACT), h.digest())
+
+
+def _stage1_cached(L, iz, ion, potion, variant, lkey):
+    if lkey is None:
+        return item_stage1(L, iz, ion, potion, variant)
+    key = (lkey, iz, ion)
+    d = _STAGE1.get(key)
+    if d is not None:
+        _STAGE1.move_to_end(key)
+        return d
+    d = item_stage1(L, iz, ion, potion, variant)
+    nb = sum(v.element_size() * v.nelement() for v in d.values() if isinstance(v, torch.Tensor))
+    _STAGE1[key] = d
+    _STAGE1_BYTES[0] += nb
+    _SIZES[key] = nb
+    while _STAGE1_BYTES[0] > STAGE1_BUDGET and _STAGE1:
+        k, _ = _STAGE1.popitem(last=False)
+        _STAGE1_BYTES[0] -= _SIZES.pop(k)
+    return d
+
+
 class SahaPlan:
     """PFSAHA for several (IZ, NION2) rows at once: stage 1 (T only) is computed once for all layers,
     stage 2 (XNE dependent) + the Saha chain are vectorised over rows x ions, for all layers or any subset
@@ -396,46 +458,51 @@ class SahaPlan:
         self.M = M
         dev = L.t.device
         cache = {}
+        lkey = _layers_key(L, potion, variant)
         f64 = dict(dtype=torch.float64, device=dev)
-        z = torch.ones((R, M), **f64)
-        ip = torch.zeros((R, M), **f64)
-        g0 = torch.zeros((R, M), dtype=torch.bool, device=dev)
-        kind = torch.full((R, M), SPEC, dtype=torch.int64, device=dev)
-        part0 = torch.ones((n, R, M), **f64)
-        part_cold = torch.ones((n, R, M), **f64)
-        cold = torch.zeros((n, R, M), dtype=torch.bool, device=dev)
-        tcool = torch.zeros((n, R, M), dtype=torch.bool, device=dev)
-        tvx = torch.ones((n, R, M), **f64)
-        c = torch.ones((n, R, M), **f64)
-        blk1 = torch.zeros((n, R, M), **f64)
-        ge = torch.zeros((n, R, M), **f64)
-        a = torch.ones((n, R, M, 7), dtype=torch.float32, device=dev)
-        valid = torch.zeros((R, M), dtype=torch.bool, device=dev)
+        one, zero = torch.ones(n, **f64), torch.zeros(n, **f64)
+        false = torch.zeros(n, dtype=torch.bool, device=dev)
+        one7 = torch.ones((n, 7), dtype=torch.float32, device=dev)
+        names = ("part0", "part_cold", "cold", "tcool", "tvx", "c", "blk1", "ge", "a")
+        defaults = (one, one, false, false, one, one, zero, zero, one7)
+        cols = {k: [] for k in names}
+        z, ip, g0, kind, valid = [], [], [], [], []
         for r, (iz, nion2) in enumerate(rows):
-            for ion in range(1, nion2 + 1):
-                key = (iz, ion)
-                if key not in cache:
-                    cache[key] = item_stage1(L, iz, ion, potion, variant)
-                d = cache[key]
-                m = ion - 1
-                valid[r, m] = True
-                kind[r, m] = d["kind"]
-                z[r, m] = d["z"]
-                ip[r, m] = d["ip"]
-                g0[r, m] = d["g"] == 0
-                if d["kind"] == IRON:
-                    a[:, r, m] = d["a"]
-                    continue
-                part0[:, r, m] = d["part0"]
-                if d["kind"] in (DEFAULT, SPEC_TAIL):
-                    tvx[:, r, m], c[:, r, m], blk1[:, r, m], ge[:, r, m] = d["tvx"], d["c"], d["blk1"], d["ge"]
-                if d["kind"] == DEFAULT:
-                    part_cold[:, r, m], cold[:, r, m], tcool[:, r, m] = d["part_cold"], d["cold"], d["tcool"]
+            for m in range(M):
+                ion = m + 1
+                if ion > nion2:
+                    d = None
+                else:
+                    key = (iz, ion)
+                    if key not in cache:
+                        cache[key] = _stage1_cached(L, iz, ion, potion, variant, lkey)
+                    d = cache[key]
+                if d is None:                                   # padding slot (ION > NION2 of the row)
+                    z.append(1.0); ip.append(0.0); g0.append(False); kind.append(SPEC); valid.append(False)
+                    use = ()
+                else:
+                    z.append(d["z"]); ip.append(d["ip"]); g0.append(d["g"] == 0); kind.append(d["kind"])
+                    valid.append(True)
+                    k_ = d["kind"]
+                    use = ("a",) if k_ == IRON else ("part0",) + (
+                        ("tvx", "c", "blk1", "ge") if k_ in (DEFAULT, SPEC_TAIL) else ()) + (
+                        ("part_cold", "cold", "tcool") if k_ == DEFAULT else ())
+                for k, dv in zip(names, defaults):
+                    cols[k].append(d[k] if k in use else dv)
+        stk = lambda k: torch.stack(cols[k], 1).reshape((n, R, M) + cols[k][0].shape[1:])
+        part0, part_cold, cold, tcool = stk("part0"), stk("part_cold"), stk("cold"), stk("tcool")
+        tvx, c, blk1, ge, a = stk("tvx"), stk("c"), stk("blk1"), stk("ge"), stk("a")
+        z = torch.tensor(z, **f64).reshape(R, M)
+        ip = torch.tensor(ip, **f64).reshape(R, M)
+        g0 = torch.tensor(g0, dtype=torch.bool, device=dev).reshape(R, M)
+        kind = torch.tensor(kind, dtype=torch.int64, device=dev).reshape(R, M)
+        valid = torch.tensor(valid, dtype=torch.bool, device=dev).reshape(R, M)
         self.z, self.ip, self.g0, self.kind, self.valid = z, ip, g0, kind, valid
         self.part0, self.part_cold, self.cold, self.tcool = part0, part_cold, cold, tcool
         self.tvx, self.c, self.blk1, self.ge, self.a = tvx, c, blk1, ge, a
         self.nion2 = torch.tensor([n2 for _, n2 in rows], device=dev)
         self.has_iron = bool((kind == IRON).any())
+        self._np_cache = None
 
     def parts(self, idx, Lsub: Layers):
         """PART(ION) and POTLO(ION) for layers `idx` (slice/index of the plan's layers) with the XNE etc.
@@ -453,6 +520,59 @@ class SahaPlan:
             part = torch.where(self.kind == IRON, pf, part)
         part = torch.where(self.valid, part, torch.ones_like(part))
         return part, potlo
+
+    def fractions_layer(self, j: int, xne: float) -> np.ndarray:
+        """fractions(slice(j, j+1), L.index(j) with XNE=xne)[0][0] as a numpy (R, M) array: the same operations
+        on one layer in numpy (NMOLEC calls this once per layer inside its sequential layer recurrence, where
+        torch's per-operation overhead dominated)."""
+        c = self._np_cache
+        if c is None:
+            g = lambda a: a.detach().cpu().numpy()
+            L = self.L
+            c = self._np_cache = {
+                "t": g(L.t), "tk": g(L.tk), "tkev": g(L.tkev), "p": g(L.p), "z": g(self.z), "ip": g(self.ip),
+                "g0": g(self.g0), "kind": g(self.kind), "valid": g(self.valid), "part0": g(self.part0),
+                "part_cold": g(self.part_cold), "cold": g(self.cold), "tcool": g(self.tcool), "tvx": g(self.tvx),
+                "c": g(self.c), "blk1": g(self.blk1), "ge": g(self.ge), "a": g(self.a), "nion2": g(self.nion2)}
+        t, tk, tkev, p = c["t"][j], c["tk"][j], c["tkev"][j], c["p"][j]
+        with np.errstate(all="ignore"):
+            # potlow_of
+            charge = xne * 2.0
+            excess = 2.0 * xne - p / tk
+            if excess > 0:
+                charge = charge + 2.0 * excess
+            if charge == 0:
+                charge = 1.0
+            debye = np.sqrt(np.float64(tk / 2.8965e-18 / charge))
+            potlow = np.minimum(np.float64(1.44e-7) / debye, 1.0)
+            # parts
+            potlo = potlow * c["z"]
+            d2 = potlo / c["tvx"][j]
+            cj = c["c"][j]
+            blk2 = libm.ipow_const(np.sqrt(cj / d2), 3) * (_C["1/3"] + (1.0 - (0.5 + (_C["1/18"] + d2 / 120.0) * d2) * d2) * d2)
+            part0 = c["part0"][j]
+            tail = part0 + c["ge"][j] * (blk2 - c["blk1"][j])
+            skip = c["g0"] | (potlo < _C[".1"]) | c["tcool"][j]
+            dflt = np.where(c["cold"][j], c["part_cold"][j], np.where(skip, part0, tail))
+            kind = c["kind"]
+            part = np.where(kind == DEFAULT, dflt, np.where(kind == SPEC_TAIL, tail, part0))
+            if self.has_iron:
+                pf = _pfiron_stage2_np(c["a"][j], potlo * _C["8065.479"], self.variant)
+                part = np.where(kind == IRON, pf, part)
+            part = np.where(c["valid"], part, 1.0)
+            # fractions
+            cf = 2.0 * 2.4148e15 * t * np.sqrt(np.float64(t)) / xne
+            ex = libm.exp(torch.from_numpy(-np.minimum((c["ip"][:, :-1] - potlo[:, :-1]) / tkev, 100.0))).numpy()
+            ratio = cf * part[:, 1:] / part[:, :-1] * ex
+        M = self.M
+        cols = [None, None] + [ratio[:, k - 2] for k in range(2, M + 1)]
+        f1 = np.ones(part.shape[0])
+        for l in range(M, 1, -1):
+            f1 = np.where(c["nion2"] >= l, 1.0 + cols[l] * f1, f1)
+        f = [None, 1.0 / f1]
+        for k in range(2, M + 1):
+            f.append(f[k - 1] * cols[k])
+        return np.stack(f[1:], -1)
 
     def fractions(self, idx, Lsub: Layers):
         """Ionisation fractions F(ION) (n, R, M) of each row (PFSAHA label 19-22), plus part, potlo."""

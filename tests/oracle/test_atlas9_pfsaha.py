@@ -104,3 +104,24 @@ def test_pfground_vs_fortran(t):
     for nel in range(1, 400):
         exp = o.call("pfground", nel, float(t), restype=ctypes.c_double)[0]
         assert pfground(nel, tt).item() == exp, nel
+
+
+@settings(max_examples=8, deadline=None)
+@given(seed=st.integers(0, 2**31 - 1), variant=st.sampled_from(["atlas9", "kappa9"]))
+def test_fractions_layer_numpy_path(seed, variant):
+    """SahaPlan.fractions_layer (numpy, one layer; used inside NMOLEC's layer recurrence) is bit-identical to
+    SahaPlan.fractions on that layer, for rows of every element class incl. the iron group (PFIRON)."""
+    from atlas_torch.atlas9.physics.pfsaha import SahaPlan
+    d = random_layers(seed)
+    L = Layers(*[torch.from_numpy(d[k]) for k in ("t", "tk", "tkev", "hckt", "tlog", "xne", "p")],
+               torch.from_numpy(d["bhyd"]), 0)
+    rng = np.random.default_rng(seed + 1)
+    rows = [(iz, _nions(iz, variant) if rng.random() < 0.5 else min(3, _nions(iz, variant)))
+            for iz in (1, 2, 6, 7, 8, 11, 12, 13, 14, 16, 19, 20, 22, 26, 28, 38, 56)]
+    plan = SahaPlan(L, rows, potion(variant), variant)
+    for j in range(0, L.t.shape[0], 7):
+        for xne in (float(L.xne[j]), float(L.xne[j]) * float(np.exp(rng.normal(0, 2)))):
+            Lj = L.index(slice(j, j + 1)).replace(xne=torch.tensor([xne], dtype=torch.float64))
+            ref = plan.fractions(slice(j, j + 1), Lj)[0][0].numpy()
+            got = plan.fractions_layer(j, xne)
+            assert got.shape == ref.shape and np.array_equal(got.view(np.int64), ref.view(np.int64)), (j, xne)
