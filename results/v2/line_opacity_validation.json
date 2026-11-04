@@ -1,0 +1,876 @@
+{
+ "1500_1600": {
+  "default": {
+   "atomic": {
+    "dk_over_kc:max": 47.8507829537644,
+    "dk_over_kc:p99": 0.11562735464572146,
+    "dk_over_kc:rms": 0.291345303029929,
+    "points_compared": 1536928,
+    "rel:max": 8.454688817609853,
+    "rel:median": 0.004260525951433402,
+    "rel:p99": 0.9418758998305466,
+    "total_ratio": 1.197756918166033
+   },
+   "helium": {
+    "dk_over_kc:max": 5.449828378291215e-06,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 6.776557244483612e-09,
+    "points_compared": 0,
+    "rel:max": 0.0,
+    "rel:median": 0.0,
+    "rel:p99": 0.0,
+    "total_ratio": 0.0
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 0.044846971437715134,
+    "dk_over_kc:p99": 0.002087653371546419,
+    "dk_over_kc:rms": 0.0015082930868833531,
+    "points_compared": 163908,
+    "rel:max": 1.2728776235800219,
+    "rel:median": 0.000278973083356115,
+    "rel:p99": 0.8534871341657864,
+    "total_ratio": 2.476046775302322
+   },
+   "molecular": {
+    "dk_over_kc:max": 11.76675698375174,
+    "dk_over_kc:p99": 0.020364531251792956,
+    "dk_over_kc:rms": 0.057593874102758305,
+    "points_compared": 1505326,
+    "rel:max": 192.58706485569078,
+    "rel:median": 0.0022625624493808304,
+    "rel:p99": 0.038131553609480236,
+    "total_ratio": 1.0003751334276987
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.010469405952021128,
+    "normflux:abs": 0.010469405952021171,
+    "normflux:p99": 0.0023591537996979104,
+    "normflux:rms_abs": 0.0006181664001572362
+   },
+   "total": {
+    "dk_over_kc:max": 47.850865644631455,
+    "dk_over_kc:p99": 0.12055140385300372,
+    "dk_over_kc:rms": 0.29699115268891074,
+    "points_compared": 2323737,
+    "rel:max": 148.509049994511,
+    "rel:median": 0.00328861100279716,
+    "rel:p99": 0.7952301844522742,
+    "total_ratio": 1.22396659889187
+   }
+  },
+  "kurucz": {
+   "atomic": {
+    "dk_over_kc:max": 34.5512433415476,
+    "dk_over_kc:p99": 0.053585134059358046,
+    "dk_over_kc:rms": 0.2216864344317693,
+    "points_compared": 1536928,
+    "rel:max": 0.03383727835701228,
+    "rel:median": 0.0007561533456655264,
+    "rel:p99": 0.009930172122772783,
+    "total_ratio": 1.0019165004202955
+   },
+   "helium": {
+    "dk_over_kc:max": 5.4510326191685696e-06,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 9.58413580728598e-09,
+    "points_compared": 0,
+    "rel:max": 0.0,
+    "rel:median": 0.0,
+    "rel:p99": 0.0,
+    "total_ratio": 3.0001934450968952
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 0.006713807887007758,
+    "dk_over_kc:p99": 1.6510720414135346e-05,
+    "dk_over_kc:rms": 7.118763727114917e-06,
+    "points_compared": 163908,
+    "rel:max": 0.5610573471700475,
+    "rel:median": 0.0002718391868829465,
+    "rel:p99": 0.0005065694549281816,
+    "total_ratio": 1.0000029367700758
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.30105776461458433,
+    "dk_over_kc:p99": 0.01964833270815348,
+    "dk_over_kc:rms": 0.004657618807447681,
+    "points_compared": 1505326,
+    "rel:max": 0.0807013328738089,
+    "rel:median": 0.0010976401850604522,
+    "rel:p99": 0.006791234196077316,
+    "total_ratio": 1.0000177654065332
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.00012995990960106338,
+    "normflux:abs": 0.00012995990960107395,
+    "normflux:p99": 6.192874165313862e-05,
+    "normflux:rms_abs": 1.3187763197472814e-05
+   },
+   "total": {
+    "dk_over_kc:max": 34.55160394594155,
+    "dk_over_kc:p99": 0.06258596080610988,
+    "dk_over_kc:rms": 0.22173388091822538,
+    "points_compared": 2323737,
+    "rel:max": 0.09152531422797505,
+    "rel:median": 0.0007969300454340742,
+    "rel:p99": 0.007985807013143307,
+    "total_ratio": 1.0018737947572456
+   }
+  },
+  "lines_read": {
+   "kurucz": 1977900,
+   "kurucz_kurucz_isotopes": 1977900,
+   "wide": 2141549,
+   "wide_kurucz_isotopes": 2141549
+  },
+  "toggles": {
+   "const=CODATA2018": {
+    "normflux:abs": 0.00013774732581894877,
+    "normflux:p99": 7.124134638590256e-05,
+    "normflux:rms_abs": 1.4649973837477421e-05
+   },
+   "cutoff_rule=local": {
+    "normflux:abs": 0.000128216943504178,
+    "normflux:p99": 5.9535555866630914e-05,
+    "normflux:rms_abs": 1.403482786620138e-05
+   },
+   "doppler_mass=line": {
+    "normflux:abs": 0.00012995990960107395,
+    "normflux:p99": 6.20597646655052e-05,
+    "normflux:rms_abs": 1.3181106234674713e-05
+   },
+   "helium_ii=voigt": {
+    "normflux:abs": 0.00012995990960107395,
+    "normflux:p99": 6.192874165313862e-05,
+    "normflux:rms_abs": 1.3187763197472814e-05
+   },
+   "isotopes=physical": {
+    "normflux:abs": 0.00012995990960107395,
+    "normflux:p99": 6.192874165313862e-05,
+    "normflux:rms_abs": 1.3187763197472814e-05
+   },
+   "line_center=exact": {
+    "normflux:abs": 0.031215402946918935,
+    "normflux:p99": 0.01273336934870971,
+    "normflux:rms_abs": 0.002525618962355082
+   },
+   "max_wing_points=None": {
+    "normflux:abs": 0.00012995990960107395,
+    "normflux:p99": 6.192874165313862e-05,
+    "normflux:rms_abs": 1.3187763197472814e-05
+   },
+   "selection=wide": {
+    "normflux:abs": 0.010327777383439485,
+    "normflux:p99": 0.0008714821138911077,
+    "normflux:rms_abs": 0.00020483091970316318
+   },
+   "voigt=exact": {
+    "normflux:abs": 0.003907139637518764,
+    "normflux:p99": 0.002339008680088444,
+    "normflux:rms_abs": 0.0005678556505113863
+   }
+  },
+  "v2_eos": {
+   "atomic": {
+    "dk_over_kc:max": 506.87316721036757,
+    "dk_over_kc:p99": 0.5226339895604525,
+    "dk_over_kc:rms": 2.0672597394387995,
+    "points_compared": 1536928,
+    "rel:max": 68.96914281584749,
+    "rel:median": 0.011952065894510457,
+    "rel:p99": 0.8693777006006153,
+    "total_ratio": 1.1450693332557265
+   },
+   "helium": {
+    "dk_over_kc:max": 5.449828378291215e-06,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 6.776557244483612e-09,
+    "points_compared": 0,
+    "rel:max": 0.0,
+    "rel:median": 0.0,
+    "rel:p99": 0.0,
+    "total_ratio": 0.0
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 0.04475102568459513,
+    "dk_over_kc:p99": 0.0020874692943552388,
+    "dk_over_kc:rms": 0.001501714844416636,
+    "points_compared": 163908,
+    "rel:max": 1.2675214139060293,
+    "rel:median": 0.0025994841219128054,
+    "rel:p99": 0.8512296137195847,
+    "total_ratio": 2.4750296324738534
+   },
+   "molecular": {
+    "dk_over_kc:max": 11.75140356936046,
+    "dk_over_kc:p99": 0.02891966448416819,
+    "dk_over_kc:rms": 0.05774064176137218,
+    "points_compared": 1505326,
+    "rel:max": 192.3347442274114,
+    "rel:median": 0.0027267890494173533,
+    "rel:p99": 0.03911024201577985,
+    "total_ratio": 0.9990017588756562
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.010907125461976539,
+    "normflux:abs": 0.010907125461976475,
+    "normflux:p99": 0.002628157274442539,
+    "normflux:rms_abs": 0.0007552729440942524
+   },
+   "total": {
+    "dk_over_kc:max": 506.8733188480934,
+    "dk_over_kc:p99": 0.5340487272395911,
+    "dk_over_kc:rms": 2.068040184973789,
+    "points_compared": 2323737,
+    "rel:max": 148.31786336785905,
+    "rel:median": 0.005700930465276166,
+    "rel:p99": 0.7369627628958085,
+    "total_ratio": 1.1724323737946012
+   }
+  }
+ },
+ "380_420": {
+  "default": {
+   "atomic": {
+    "dk_over_kc:max": 2320831.4820411457,
+    "dk_over_kc:p99": 18.548716553736494,
+    "dk_over_kc:rms": 6864.2994288583795,
+    "points_compared": 4069547,
+    "rel:max": 13.679735245363323,
+    "rel:median": 0.013415681738724872,
+    "rel:p99": 2.4760000326038565,
+    "total_ratio": 1.0001861050677137
+   },
+   "helium": {
+    "dk_over_kc:max": 0.00017602773665692417,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 2.179675670437866e-06,
+    "points_compared": 4,
+    "rel:max": 0.011586056357682393,
+    "rel:median": 0.009387780057837882,
+    "rel:p99": 0.011535288224645545,
+    "total_ratio": 1.0393517375240906
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 21.67963616227759,
+    "dk_over_kc:p99": 0.018794256337963708,
+    "dk_over_kc:rms": 0.012302927638086441,
+    "points_compared": 904935,
+    "rel:max": 0.8572453878627481,
+    "rel:median": 0.00048655556132471285,
+    "rel:p99": 0.4178963237570359,
+    "total_ratio": 1.0005091344693113
+   },
+   "molecular": {
+    "dk_over_kc:max": 1.0054521452037701,
+    "dk_over_kc:p99": 0.06480842715026182,
+    "dk_over_kc:rms": 0.017320106517572747,
+    "points_compared": 2828203,
+    "rel:max": 4.873962850677832,
+    "rel:median": 0.031044026386354298,
+    "rel:p99": 1.5387675261613991,
+    "total_ratio": 1.0088988560290586
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.022754975620138795,
+    "normflux:abs": 0.02275497562013873,
+    "normflux:p99": 0.014338691762013564,
+    "normflux:rms_abs": 0.004346549379619298
+   },
+   "total": {
+    "dk_over_kc:max": 2320831.517688668,
+    "dk_over_kc:p99": 18.544456718285154,
+    "dk_over_kc:rms": 6864.299431727526,
+    "points_compared": 4314319,
+    "rel:max": 12.044248404417306,
+    "rel:median": 0.008749691405618171,
+    "rel:p99": 0.6165015820938079,
+    "total_ratio": 1.0002105100148821
+   }
+  },
+  "kurucz": {
+   "atomic": {
+    "dk_over_kc:max": 2265272.7318132687,
+    "dk_over_kc:p99": 12.565374760298294,
+    "dk_over_kc:rms": 6863.490284869446,
+    "points_compared": 4069547,
+    "rel:max": 0.031728063694819106,
+    "rel:median": 0.0010809688880836863,
+    "rel:p99": 0.00875203268619105,
+    "total_ratio": 1.0000057562805105
+   },
+   "helium": {
+    "dk_over_kc:max": 0.00020337003003840853,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 3.017307087685132e-06,
+    "points_compared": 4,
+    "rel:max": 0.013934974638427083,
+    "rel:median": 0.01193442820221852,
+    "rel:p99": 0.01388834392221503,
+    "total_ratio": 0.9544629406284627
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 21.67004789430664,
+    "dk_over_kc:p99": 0.010904201108145663,
+    "dk_over_kc:rms": 0.012007694426428794,
+    "points_compared": 904935,
+    "rel:max": 0.856866253340648,
+    "rel:median": 0.0003315521896476471,
+    "rel:p99": 0.001589312279966124,
+    "total_ratio": 1.0000444788190677
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.960121667806332,
+    "dk_over_kc:p99": 0.04778093245786825,
+    "dk_over_kc:rms": 0.01266095437470586,
+    "points_compared": 2828203,
+    "rel:max": 0.10023404284363636,
+    "rel:median": 0.0009267883090712679,
+    "rel:p99": 0.008404806774505221,
+    "total_ratio": 1.0000590030864647
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.0023350678497677502,
+    "normflux:abs": 0.0023350678497677246,
+    "normflux:p99": 0.0005984030122982989,
+    "normflux:rms_abs": 0.00015485891668356362
+   },
+   "total": {
+    "dk_over_kc:max": 2265272.7542610094,
+    "dk_over_kc:p99": 12.567204341597575,
+    "dk_over_kc:rms": 6863.490265935492,
+    "points_compared": 4314319,
+    "rel:max": 0.8541345967497642,
+    "rel:median": 0.0007693132388386065,
+    "rel:p99": 0.00729895215090076,
+    "total_ratio": 1.0000086250658184
+   }
+  },
+  "lines_read": {
+   "kurucz": 1035859,
+   "kurucz_kurucz_isotopes": 1035859,
+   "wide": 1313317,
+   "wide_kurucz_isotopes": 1313317
+  },
+  "toggles": {
+   "const=CODATA2018": {
+    "normflux:abs": 0.0023242778443007817,
+    "normflux:p99": 0.0005851354453266108,
+    "normflux:rms_abs": 0.00015487648061187788
+   },
+   "cutoff_rule=local": {
+    "normflux:abs": 0.002336025542560627,
+    "normflux:p99": 0.0006462294547029338,
+    "normflux:rms_abs": 0.00016147742027143512
+   },
+   "doppler_mass=line": {
+    "normflux:abs": 0.0023354722089469204,
+    "normflux:p99": 0.0006030034562058642,
+    "normflux:rms_abs": 0.00015566253191944733
+   },
+   "helium_ii=voigt": {
+    "normflux:abs": 0.0023350678497677246,
+    "normflux:p99": 0.0005984030122982989,
+    "normflux:rms_abs": 0.00015485891668356362
+   },
+   "isotopes=physical": {
+    "normflux:abs": 0.0023348763112090998,
+    "normflux:p99": 0.0005984030122982989,
+    "normflux:rms_abs": 0.00015493987488703496
+   },
+   "line_center=exact": {
+    "normflux:abs": 0.11380368455463907,
+    "normflux:p99": 0.05054550799838252,
+    "normflux:rms_abs": 0.011409640405840351
+   },
+   "max_wing_points=None": {
+    "normflux:abs": 0.010967385778359429,
+    "normflux:p99": 0.008629257849204746,
+    "normflux:rms_abs": 0.0026308389322887704
+   },
+   "selection=wide": {
+    "normflux:abs": 0.0023502409104249056,
+    "normflux:p99": 0.0012736262145090717,
+    "normflux:rms_abs": 0.00026580947706734124
+   },
+   "voigt=exact": {
+    "normflux:abs": 0.013513438850919601,
+    "normflux:p99": 0.008644783221845533,
+    "normflux:rms_abs": 0.002148074187118922
+   }
+  },
+  "v2_eos": {
+   "atomic": {
+    "dk_over_kc:max": 2363372.420985679,
+    "dk_over_kc:p99": 78.10221548634472,
+    "dk_over_kc:rms": 7272.054510693942,
+    "points_compared": 4069547,
+    "rel:max": 13.360417772472282,
+    "rel:median": 0.01744255465151354,
+    "rel:p99": 2.413647448819574,
+    "total_ratio": 1.0000959136059888
+   },
+   "helium": {
+    "dk_over_kc:max": 0.00017578983730504757,
+    "dk_over_kc:p99": 0.0,
+    "dk_over_kc:rms": 2.1788881432090493e-06,
+    "points_compared": 4,
+    "rel:max": 0.012438061630920427,
+    "rel:median": 0.010245653003496558,
+    "rel:p99": 0.012387448826763974,
+    "total_ratio": 1.0387377112356204
+   },
+   "hydrogen": {
+    "dk_over_kc:max": 21.84915047227552,
+    "dk_over_kc:p99": 0.02601281337785974,
+    "dk_over_kc:rms": 0.01665374716394728,
+    "points_compared": 904935,
+    "rel:max": 0.8639482383780769,
+    "rel:median": 0.0014974515828741284,
+    "rel:p99": 0.418806189199361,
+    "total_ratio": 1.0000904506001984
+   },
+   "molecular": {
+    "dk_over_kc:max": 1.578352242001836,
+    "dk_over_kc:p99": 0.07604861961631551,
+    "dk_over_kc:rms": 0.02296780480888267,
+    "points_compared": 2828203,
+    "rel:max": 4.867945985771511,
+    "rel:median": 0.030724448845186776,
+    "rel:p99": 1.5370528334784157,
+    "total_ratio": 1.0076796775536343
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.022812944606117404,
+    "normflux:abs": 0.02281294460611738,
+    "normflux:p99": 0.01452219079349444,
+    "normflux:rms_abs": 0.004604543798031041
+   },
+   "total": {
+    "dk_over_kc:max": 2363372.3967022235,
+    "dk_over_kc:p99": 78.08875308248454,
+    "dk_over_kc:rms": 7272.055235790096,
+    "points_compared": 4314319,
+    "rel:max": 12.056303373136673,
+    "rel:median": 0.01319323790413164,
+    "rel:p99": 0.6181463551290827,
+    "total_ratio": 1.000095969637679
+   }
+  }
+ },
+ "500_510": {
+  "default": {
+   "atomic": {
+    "dk_over_kc:max": 95.09543175754838,
+    "dk_over_kc:p99": 0.6174151637120935,
+    "dk_over_kc:rms": 0.8280456532212888,
+    "points_compared": 564984,
+    "rel:max": 0.8863631912559834,
+    "rel:median": 0.002821206070986184,
+    "rel:p99": 0.2541922327212701,
+    "total_ratio": 1.0244468478190476
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 9.879262872732106e-05,
+    "dk_over_kc:p99": 1.2460126238466941e-05,
+    "dk_over_kc:rms": 2.5196091805294306e-06,
+    "points_compared": 64225,
+    "rel:max": 0.0006738267517547095,
+    "rel:median": 0.00028872341084346364,
+    "rel:p99": 0.0006633018724552796,
+    "total_ratio": 1.0002676927731557
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.024939794548989574,
+    "dk_over_kc:p99": 0.004009411413693638,
+    "dk_over_kc:rms": 0.000878388952889749,
+    "points_compared": 542561,
+    "rel:max": 0.09327347861152858,
+    "rel:median": 0.002680820847838217,
+    "rel:p99": 0.03137388851164506,
+    "total_ratio": 0.9979454076990605
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.005239809130161678,
+    "normflux:abs": 0.005239809130161643,
+    "normflux:p99": 0.002495461930846459,
+    "normflux:rms_abs": 0.0004928080686093465
+   },
+   "total": {
+    "dk_over_kc:max": 95.0927561449965,
+    "dk_over_kc:p99": 0.6176804848649192,
+    "dk_over_kc:rms": 0.8280486107856426,
+    "points_compared": 774933,
+    "rel:max": 0.2891631547766413,
+    "rel:median": 0.0027776649508717867,
+    "rel:p99": 0.20124792139723813,
+    "total_ratio": 1.0216409779026163
+   }
+  },
+  "kurucz": {
+   "atomic": {
+    "dk_over_kc:max": 97.3678835709389,
+    "dk_over_kc:p99": 0.6004526053769323,
+    "dk_over_kc:rms": 0.8275790007728437,
+    "points_compared": 564984,
+    "rel:max": 0.015877405231823464,
+    "rel:median": 0.000943995027895434,
+    "rel:p99": 0.007748375745145422,
+    "total_ratio": 0.9999900857384305
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 9.842550785799908e-05,
+    "dk_over_kc:p99": 9.284074270048241e-06,
+    "dk_over_kc:rms": 1.8947991734793666e-06,
+    "points_compared": 64225,
+    "rel:max": 0.0005574238709375347,
+    "rel:median": 0.0003113527443858859,
+    "rel:p99": 0.0005396973614441734,
+    "total_ratio": 1.0000921530013391
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.02424560959974098,
+    "dk_over_kc:p99": 0.004003600333100804,
+    "dk_over_kc:rms": 0.0008482956760565047,
+    "points_compared": 542561,
+    "rel:max": 0.043673160283172946,
+    "rel:median": 0.001105966711370075,
+    "rel:p99": 0.006603723035502964,
+    "total_ratio": 1.0000526918088832
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.00045844912559064714,
+    "normflux:abs": 0.0004584491255906764,
+    "normflux:p99": 0.00018750591502097745,
+    "normflux:rms_abs": 4.2160513131221205e-05
+   },
+   "total": {
+    "dk_over_kc:max": 97.36521573959095,
+    "dk_over_kc:p99": 0.6001525536931048,
+    "dk_over_kc:rms": 0.8275777258547754,
+    "points_compared": 774933,
+    "rel:max": 0.02821492923127324,
+    "rel:median": 0.0008537810607967258,
+    "rel:p99": 0.006669202341426049,
+    "total_ratio": 1.0000017405172132
+   }
+  },
+  "lines_read": {
+   "kurucz": 617540,
+   "kurucz_kurucz_isotopes": 617540,
+   "wide": 763551,
+   "wide_kurucz_isotopes": 763551
+  },
+  "toggles": {
+   "const=CODATA2018": {
+    "normflux:abs": 0.0005028487710966312,
+    "normflux:p99": 0.00018470183943202604,
+    "normflux:rms_abs": 4.304570477197945e-05
+   },
+   "cutoff_rule=local": {
+    "normflux:abs": 0.00047374812367551034,
+    "normflux:p99": 0.000177816550874982,
+    "normflux:rms_abs": 6.436229119368538e-05
+   },
+   "doppler_mass=line": {
+    "normflux:abs": 0.0004566262662444309,
+    "normflux:p99": 0.00018970593779865213,
+    "normflux:rms_abs": 4.206077883110076e-05
+   },
+   "helium_ii=voigt": {
+    "normflux:abs": 0.0004584491255906764,
+    "normflux:p99": 0.00018750591502097745,
+    "normflux:rms_abs": 4.2160513131221205e-05
+   },
+   "isotopes=physical": {
+    "normflux:abs": 0.0004584491255906764,
+    "normflux:p99": 0.00018750591502097745,
+    "normflux:rms_abs": 4.216058608034003e-05
+   },
+   "line_center=exact": {
+    "normflux:abs": 0.0873079098972987,
+    "normflux:p99": 0.042275654205050466,
+    "normflux:rms_abs": 0.00902033163444168
+   },
+   "max_wing_points=None": {
+    "normflux:abs": 0.0004674218470286373,
+    "normflux:p99": 0.00020262082407221057,
+    "normflux:rms_abs": 7.001128062260875e-05
+   },
+   "selection=wide": {
+    "normflux:abs": 0.0004584491255906764,
+    "normflux:p99": 0.00018801592819162486,
+    "normflux:rms_abs": 4.302570739151858e-05
+   },
+   "voigt=exact": {
+    "normflux:abs": 0.0052248702587998075,
+    "normflux:p99": 0.002491543819260092,
+    "normflux:rms_abs": 0.0004937709613444773
+   }
+  },
+  "v2_eos": {
+   "atomic": {
+    "dk_over_kc:max": 719.8671106034094,
+    "dk_over_kc:p99": 4.738478270336374,
+    "dk_over_kc:rms": 7.2395315664375595,
+    "points_compared": 564984,
+    "rel:max": 0.8855490114049556,
+    "rel:median": 0.009760400736460464,
+    "rel:p99": 0.25392442684040845,
+    "total_ratio": 1.0281342274948904
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 9.891551483299392e-05,
+    "dk_over_kc:p99": 3.093284162778642e-05,
+    "dk_over_kc:rms": 5.923834119743178e-06,
+    "points_compared": 64225,
+    "rel:max": 0.0012793941374409088,
+    "rel:median": 0.0008150677369282643,
+    "rel:p99": 0.0012645778566656234,
+    "total_ratio": 1.0008603440151844
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.033743506953229495,
+    "dk_over_kc:p99": 0.005308379928025235,
+    "dk_over_kc:rms": 0.001190031055288357,
+    "points_compared": 542561,
+    "rel:max": 0.10175066670787969,
+    "rel:median": 0.003552020855054478,
+    "rel:p99": 0.03295279520150348,
+    "total_ratio": 0.9963509780293558
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.004223641903637033,
+    "normflux:abs": 0.004223641903636999,
+    "normflux:p99": 0.002555556586676884,
+    "normflux:rms_abs": 0.0006687573247867916
+   },
+   "total": {
+    "dk_over_kc:max": 719.8700711015416,
+    "dk_over_kc:p99": 4.7379709223035125,
+    "dk_over_kc:rms": 7.2395615597152405,
+    "points_compared": 774933,
+    "rel:max": 0.28989174295267245,
+    "rel:median": 0.007066069750106744,
+    "rel:p99": 0.20176463487498286,
+    "total_ratio": 1.0249617136944953
+   }
+  }
+ },
+ "640_660": {
+  "default": {
+   "atomic": {
+    "dk_over_kc:max": 35.645015417647876,
+    "dk_over_kc:p99": 0.07721184047228839,
+    "dk_over_kc:rms": 0.23316351243653594,
+    "points_compared": 406370,
+    "rel:max": 0.6194478615579673,
+    "rel:median": 0.0020152200506574486,
+    "rel:p99": 0.048125802330076066,
+    "total_ratio": 1.0122517708920067
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 131.35953185164922,
+    "dk_over_kc:p99": 0.04915611994812593,
+    "dk_over_kc:rms": 0.5241845539936479,
+    "points_compared": 296251,
+    "rel:max": 0.012894534685710175,
+    "rel:median": 0.00026146631158812994,
+    "rel:p99": 0.0017637391138578017,
+    "total_ratio": 1.0002239415239527
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.10728364857805321,
+    "dk_over_kc:p99": 0.0016217444966796944,
+    "dk_over_kc:rms": 0.0010743941667657215,
+    "points_compared": 609331,
+    "rel:max": 5.826233880319066,
+    "rel:median": 0.00200167364486211,
+    "rel:p99": 0.023013826539702895,
+    "total_ratio": 0.9945117879356992
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.0046951281245344745,
+    "normflux:abs": 0.004695128124534431,
+    "normflux:p99": 0.0008155812074157147,
+    "normflux:rms_abs": 0.00021274140653063114
+   },
+   "total": {
+    "dk_over_kc:max": 131.3604341115827,
+    "dk_over_kc:p99": 0.25743574137074837,
+    "dk_over_kc:rms": 0.5737148596697842,
+    "points_compared": 1086487,
+    "rel:max": 3.9794260418586815,
+    "rel:median": 0.0015614102850711631,
+    "rel:p99": 0.03267446875257747,
+    "total_ratio": 1.000225019512247
+   }
+  },
+  "kurucz": {
+   "atomic": {
+    "dk_over_kc:max": 34.96510966029786,
+    "dk_over_kc:p99": 0.06673187379408714,
+    "dk_over_kc:rms": 0.2311055617095055,
+    "points_compared": 406370,
+    "rel:max": 0.019870331542758524,
+    "rel:median": 0.0009372016538275447,
+    "rel:p99": 0.007827674856159818,
+    "total_ratio": 1.0001257844872589
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 87.78354033582863,
+    "dk_over_kc:p99": 0.0432821822257111,
+    "dk_over_kc:rms": 0.4947763140787412,
+    "points_compared": 296251,
+    "rel:max": 0.012178824890870976,
+    "rel:median": 0.00033292889101031807,
+    "rel:p99": 0.0017693022476364699,
+    "total_ratio": 1.0000471472870058
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.013784600602155639,
+    "dk_over_kc:p99": 0.0013983149924901826,
+    "dk_over_kc:rms": 0.0003000040216628641,
+    "points_compared": 609331,
+    "rel:max": 0.031874972609401205,
+    "rel:median": 0.0008735074073483321,
+    "rel:p99": 0.005185386234733219,
+    "total_ratio": 1.0000448332800105
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.00048421226652553973,
+    "normflux:abs": 0.0004842122665256188,
+    "normflux:p99": 0.00010689542681468972,
+    "normflux:rms_abs": 2.0803087403425806e-05
+   },
+   "total": {
+    "dk_over_kc:max": 87.78411340294457,
+    "dk_over_kc:p99": 0.22793176987727334,
+    "dk_over_kc:rms": 0.5460883190793917,
+    "points_compared": 1086487,
+    "rel:max": 0.02997416553359655,
+    "rel:median": 0.0005086904229173824,
+    "rel:p99": 0.005627016688065607,
+    "total_ratio": 1.000047167156541
+   }
+  },
+  "lines_read": {
+   "kurucz": 1126687,
+   "kurucz_kurucz_isotopes": 1126687,
+   "wide": 1255946,
+   "wide_kurucz_isotopes": 1255946
+  },
+  "toggles": {
+   "const=CODATA2018": {
+    "normflux:abs": 0.0005116053954103972,
+    "normflux:p99": 0.00011113215777846853,
+    "normflux:rms_abs": 2.0877144699145376e-05
+   },
+   "cutoff_rule=local": {
+    "normflux:abs": 0.0004846928477341139,
+    "normflux:p99": 0.00010821840454466243,
+    "normflux:rms_abs": 3.1839982481651114e-05
+   },
+   "doppler_mass=line": {
+    "normflux:abs": 0.00048415886861352675,
+    "normflux:p99": 0.00010731093579235913,
+    "normflux:rms_abs": 2.0809452614550525e-05
+   },
+   "helium_ii=voigt": {
+    "normflux:abs": 0.0004842122665256188,
+    "normflux:p99": 0.00010689542681468972,
+    "normflux:rms_abs": 2.0803087403425806e-05
+   },
+   "isotopes=physical": {
+    "normflux:abs": 0.0004842122665256188,
+    "normflux:p99": 0.00010689542681468972,
+    "normflux:rms_abs": 2.0803087403425806e-05
+   },
+   "line_center=exact": {
+    "normflux:abs": 0.06982387188580863,
+    "normflux:p99": 0.01834965019773085,
+    "normflux:rms_abs": 0.003707325393032048
+   },
+   "max_wing_points=None": {
+    "normflux:abs": 0.0004842122665256188,
+    "normflux:p99": 0.00010689542681468972,
+    "normflux:rms_abs": 2.0803087403425806e-05
+   },
+   "selection=wide": {
+    "normflux:abs": 0.0007792553157486282,
+    "normflux:p99": 0.00013053153517109535,
+    "normflux:rms_abs": 3.0285885890394203e-05
+   },
+   "voigt=exact": {
+    "normflux:abs": 0.0046935614070593434,
+    "normflux:p99": 0.0007969247642688281,
+    "normflux:rms_abs": 0.0002081188360166689
+   }
+  },
+  "v2_eos": {
+   "atomic": {
+    "dk_over_kc:max": 281.0995714974207,
+    "dk_over_kc:p99": 0.4614462671056332,
+    "dk_over_kc:rms": 1.820280648760397,
+    "points_compared": 406370,
+    "rel:max": 0.6189262032117271,
+    "rel:median": 0.009785643497719619,
+    "rel:p99": 0.04737940383295984,
+    "total_ratio": 1.0156137702567223
+   },
+   "helium": null,
+   "hydrogen": {
+    "dk_over_kc:max": 529.2799337516847,
+    "dk_over_kc:p99": 0.11198707752133434,
+    "dk_over_kc:rms": 1.2860656784963673,
+    "points_compared": 296251,
+    "rel:max": 0.01830989326338808,
+    "rel:median": 0.0008407804876138527,
+    "rel:p99": 0.0032498424724503212,
+    "total_ratio": 0.9998607035892069
+   },
+   "molecular": {
+    "dk_over_kc:max": 0.1070976984568299,
+    "dk_over_kc:p99": 0.0023655031163378384,
+    "dk_over_kc:rms": 0.0011181863368109213,
+    "points_compared": 609331,
+    "rel:max": 5.8173671866932555,
+    "rel:median": 0.0028201179104211356,
+    "rel:p99": 0.024001665134842125,
+    "total_ratio": 0.9932615081275249
+   },
+   "spectrum": {
+    "cont:rel": 0.0,
+    "flux_over_cont:abs": 0.0033408015022997057,
+    "normflux:abs": 0.0033408015022997617,
+    "normflux:p99": 0.0016145577470371725,
+    "normflux:rms_abs": 0.00030675928775257696
+   },
+   "total": {
+    "dk_over_kc:max": 529.2793155414532,
+    "dk_over_kc:p99": 0.9640551661023222,
+    "dk_over_kc:rms": 2.2287587729056266,
+    "points_compared": 1086487,
+    "rel:max": 3.975409949047359,
+    "rel:median": 0.002680811611677326,
+    "rel:p99": 0.03190709073237454,
+    "total_ratio": 0.9998621116628533
+   }
+  }
+ }
+}

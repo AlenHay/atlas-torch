@@ -126,3 +126,29 @@ def spectrum_batches_metrics(ref: Path, cand: Path) -> dict:
             out[k] = max(out.get(k, 0.0), v)
     out["batches"] = len(batches)
     return out
+
+
+def synthe_metrics_v2(ref: Path, cand: Path) -> dict:
+    """synthe_metrics plus the metrics results/v2/tolerances.json adds: normflux:p99 = 99th percentile of
+    |Fa/Ca - Fb/Cb|; flux_over_cont:abs = max |Fa - Fb| / Ca with Ca the reference continuum (rms alongside)."""
+    out = synthe_metrics(ref, cand)
+    if "error" in out:
+        return out
+    a, b = read_spectrum_bin(Path(ref) / "spectrum.bin"), read_spectrum_bin(Path(cand) / "spectrum.bin")
+    d = np.abs(a["flux"] / a["cont"] - b["flux"] / b["cont"])
+    out["normflux:p99"] = float(np.quantile(d, 0.99))
+    _put(out, "flux_over_cont", "abs", _abs(a["flux"] / a["cont"], b["flux"] / a["cont"]))
+    return out
+
+
+def gate_v2(metrics: dict, tolerances: dict) -> dict:
+    """{key: (value, tol)} of the gated keys of a results/v2/tolerances.json stage block that the metrics fail
+    (a missing metric fails)."""
+    fails = {}
+    for k, t in tolerances.items():
+        if k.startswith("_") or not t.get("gate") or t.get("tol") is None:
+            continue
+        v = metrics.get(k)
+        if v is None or not v <= t["tol"]:
+            fails[k] = (v, t["tol"])
+    return fails

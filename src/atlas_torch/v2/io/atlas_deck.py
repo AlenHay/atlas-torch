@@ -52,8 +52,8 @@ def read_atlas_deck(path_or_text: str | Path) -> AtlasDeck:
     grav = re.search(r"GRAVITY\s+(\S+)", head)
     extra = {k: tt(k) for k in ("ABROSS", "ACCRAD", "FLXRAD", "VCONV", "VELSND")}
     atm = Atmosphere(rhox=tt("RHOX"), T=tt("T"), P=tt("P"), n_e=tt("XNE"), vturb=tt("VTURB"),
-                     teff=torch.tensor(_f(teff.group(1))) if teff else None,
-                     logg=torch.tensor(_f(grav.group(1))) if grav else None, extra=extra)
+                     teff=torch.tensor(_f(teff.group(1)), dtype=torch.float64) if teff else None,
+                     logg=torch.tensor(_f(grav.group(1)), dtype=torch.float64) if grav else None, extra=extra)
     return AtlasDeck(atm, comp, lines[:i_ab], lines[ab_end:i_d6], lines[i_d6 + 1 + n:], lines[i_d6][14:])
 
 

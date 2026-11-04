@@ -43,3 +43,10 @@ def synthe_state(pops: Populations) -> dict[str, torch.Tensor]:
     h2 = pops.molecules.index(101.0)
     return {"xne": pops.n_e, "xnatom": pops.n_nuclei, "rho": pops.rho, "xnfh": pops.n_atom[..., 0, 0],
             "xnfhe": pops.n_atom[..., 1, :2], "xnfh2": pops.n_mol[..., h2]}
+
+
+def continuum_tables(opacity) -> dict[str, torch.Tensor]:
+    """Fort.10 continuum records of XNFPELSYN: CONTINALL, CONTABS, CONTSCAT = log10 of the total, absorption and
+    scattering coefficients (cm^2 g^-1), each (..., L, F), from a v2 Opacity."""
+    return {"continall": torch.log10(opacity.total), "contabs": torch.log10(opacity.absorption),
+            "contscat": torch.log10(opacity.scattering)}

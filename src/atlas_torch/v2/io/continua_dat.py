@@ -44,3 +44,15 @@ def read_continua_dat(path: str | Path | None = None) -> dict[str, np.ndarray]:
         cm.append(1e7 / w)
     order = np.argsort(np.abs(wl), kind="stable")
     return {k: np.asarray(v)[order] for k, v in (("wavelength_nm", wl), ("frequency", fr), ("wavenumber", cm))}
+
+
+def frequency_set(edges: dict[str, np.ndarray] | None = None) -> np.ndarray:
+    """XNFPELSYN's continuum frequencies FREQSET (loop 18), Hz: per interval between consecutive edges, the lower
+    edge / (1 + 1e-7), the frequency of the mean wavelength, and the upper edge * (1 + 1e-7)."""
+    e = read_continua_dat() if edges is None else edges
+    fr, wl = np.abs(e["frequency"]), np.abs(e["wavelength_nm"])
+    out = np.empty(3 * (len(fr) - 1))
+    out[0::3] = fr[:-1] / (1.0 + 1e-7)
+    out[1::3] = C_NM / (0.5 * (wl[:-1] + wl[1:]))
+    out[2::3] = fr[1:] * (1.0 + 1e-7)
+    return out
