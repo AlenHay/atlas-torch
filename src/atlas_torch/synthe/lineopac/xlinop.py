@@ -123,6 +123,30 @@ def vacair(w):
     return w / (1.0000834213 + 2406030. / (1.30e10 - waven ** 2) + 15997. / (3.89e9 - waven ** 2))
 
 
+def _native_normal(c, lay, kappa0, adamp, dopwl, wcon, wtail, wl4, wl, nbuff) -> bool:
+    """Both Voigt wings of a TYPE 0/3 line through the C kernel (native/synline.c xl_normal, bit-identical to
+    the torch walk below); False if the kernel is not built / not applicable (non-CPU tensors)."""
+    if c.device.type != "cpu" or c.buffer is None or c.cutcont is None:
+        return False
+    from ..native import load
+    lib = load("synline")
+    if lib is None:
+        return False
+    import ctypes
+    buf, cc = c.buffer, c.cutcont
+    if not (buf.is_contiguous() and cc.is_contiguous() and buf.dtype == F and cc.dtype == F):
+        return False
+    h = c.h1tab.contiguous()
+    arrs = [lay.to(torch.int64).contiguous(), kappa0.to(F).contiguous(), adamp.to(F).contiguous(),
+            dopwl.to(F).contiguous(), wcon.to(D).contiguous(), wtail.to(D).contiguous()]
+    P = lambda t: ctypes.c_void_p(t.data_ptr())  # noqa: E731
+    lib.xl_normal(ctypes.c_int(lay.numel()), *[P(t) for t in arrs], ctypes.c_float(float(wl4)),
+                  ctypes.c_double(wl), ctypes.c_int64(nbuff), ctypes.c_int64(c.length), ctypes.c_double(c.wbegin),
+                  ctypes.c_double(c.ratio), ctypes.c_double(c.wlend), P(buf), P(cc), P(h),
+                  ctypes.c_int(torch.get_num_threads()))
+    return True
+
+
 class XLinop:
     def __init__(self, ctx):
         self.c = ctx
@@ -304,6 +328,8 @@ class XLinop:
         kapcen = kappa0 * voigt(torch.zeros_like(adamp), adamp, c.h1tab)
         self._f15(iline, lay, kapcen)
         dopwl = c.dopple[lay, nel] * float(wl4)
+        if _native_normal(c, lay, kappa0, adamp, dopwl, wcon, wtail, wl4, wl, nbuff):
+            return
         wcon2, wtail2 = wcon.unsqueeze(1), wtail.unsqueeze(1)
         k0, a2, dw2 = kappa0.unsqueeze(1), adamp.unsqueeze(1), dopwl.unsqueeze(1)
 
@@ -387,6 +413,8 @@ class XLinop:
 
         if ncon == 0 or nbup == nblo + 1 or nbup == nblo + 2:
             beta = (ncon != 0 and nbup == nblo + 2)
+            if self._native_h(lay, kappa0, wl, nbuff, nblo, nbup, 1 if beta else 0, not wl > c.wlend):
+                return
 
             def evr(lj, ib, w):
                 sel = self._sel(lay, lj)
@@ -448,6 +476,8 @@ class XLinop:
         if c.ifvac == 0:
             wl = float(vacair(1.e7 / (ehyd[nbup - 1] - ehyd[nblo - 1]))) * dopratio
         wc2, wt2 = wcon.unsqueeze(1), wtail.unsqueeze(1)
+        if self._native_h_general(lay, kappa0, wl, nbuff, nblo, nbup, dopratio, wcon, wtail):
+            return
 
         def tail(k, w, sel):
             tl = w.unsqueeze(0) < wt2[sel]
@@ -515,6 +545,85 @@ class XLinop:
             stop_b = stop_b.expand_as(k)
             return k, torch.zeros_like(stop_b), stop_b, k < self.cc(lj, ib)
         self._walk_blue(lay, min(c.length + 1, nbuff), evb2)
+
+    # ------------------------------------------------------------ native hydrogen walk (native/synline.c)
+    use_native_h = True
+
+    def _native_h_general(self, lay, kappa0, wl, nbuff, nblo, nbup, dopratio, wcon, wtail) -> bool:
+        """Parameters of the general (series-merging) path as computed below, then _native_h."""
+        c = self.c
+        if not self._native_h_ok():
+            return False
+        ehyd = self.ehyd
+
+        def vac(x):
+            return float(vacair(x)) if c.ifvac == 0 else x
+        prm = dict(
+            redcut=vac(1.e7 / (109678.764 - 109677.576 / (nbup - 0.8) ** 2 - ehyd[nblo - 1])) * dopratio,
+            wlm1=vac(1.e7 / (ehyd[nbup - 2] - ehyd[nblo - 1])) * dopratio,
+            wlm2=vac(1.e7 / (ehyd[nbup - 3] - ehyd[nblo - 1])) * dopratio,
+            bluecut=vac(1.e7 / (109678.764 - 109677.576 / (nbup + 0.8) ** 2 - ehyd[nblo - 1])) * dopratio,
+            wlp1=vac(1.e7 / (ehyd[nbup] - ehyd[nblo - 1])) * dopratio,
+            wlp2=vac(1.e7 / (ehyd[nbup + 1] - ehyd[nblo - 1])) * dopratio)
+        k0red = ((kappa0 * float(hfnm(nblo, nbup - 2)) / float(hfnm(nblo, nbup))).to(D) /
+                 (ehyd[nbup - 3] - ehyd[nblo - 1]) * (ehyd[nbup - 1] - ehyd[nblo - 1])).to(F)
+        k0blue = ((kappa0 * float(hfnm(nblo, nbup + 2)) / float(hfnm(nblo, nbup))).to(D) /
+                  (ehyd[nbup + 1] - ehyd[nblo - 1]) * (ehyd[nbup - 1] - ehyd[nblo - 1])).to(F)
+        do_red = not wl > c.wlend and not c.wbegin > float(self.alphahyd[nblo - 1])
+        return self._native_h(lay, kappa0, wl, nbuff, nblo, nbup, 2, do_red, k0red=k0red, k0blue=k0blue,
+                              wcon=wcon, wtail=wtail, **prm)
+
+    def _native_h_ok(self) -> bool:
+        c = self.c
+        if not self.use_native_h or c.device.type != "cpu" or c.buffer is None or c.cutcont is None:
+            return False
+        from ..native import load
+        return load("synline") is not None
+
+    def _native_h(self, lay, kappa0, wl, nbuff, nblo, nbup, path, do_red, k0red=None, k0blue=None, wcon=None,
+                  wtail=None, **prm) -> bool:
+        """Both wings of a hydrogen line for the layers `lay` through native/synline.c xl_hydrogen (transcribes
+        the walks below and HProf4 operation by operation; bit-identical)."""
+        if not self._native_h_ok():
+            return False
+        import ctypes
+        from ..native import load
+        from ..native.hydro_ct import SHL, depth_struct, setup_struct
+        c = self.c
+        buf, cc = c.buffer, c.cutcont
+        if not (buf.is_contiguous() and cc.is_contiguous() and buf.dtype == F and cc.dtype == F
+                and c.dopph.is_contiguous()):
+            return False
+        hp = c.hprof4
+        if getattr(self, "_h_shd", None) is None or self._h_shd[0] is not hp:
+            self._h_shd = (hp, depth_struct(hp, c.dopph, c.extab), {})
+        _, H, setups = self._h_shd
+
+        def S(n, m):
+            if (n, m) not in setups:
+                setups[(n, m)] = setup_struct(hp, n, m)
+            return setups[(n, m)]
+        L = SHL()
+        keep = [lay.to(torch.int64).contiguous(), kappa0.to(F).contiguous()]
+        L.nl, L.path, L.do_red = lay.numel(), path, int(bool(do_red))
+        L.lay, L.k0 = keep[0].data_ptr(), keep[1].data_ptr()
+        L.nbuff, L.length = nbuff, c.length
+        L.wl, L.wbegin, L.ratio, L.alphahyd = float(wl), float(c.wbegin), float(c.ratio), float(self.alphahyd[nblo - 1])
+        s_main = S(nblo, nbup)
+        L.s_main = L.s_red = L.s_blue = ctypes.addressof(s_main)
+        if path == 2:
+            for k, v in prm.items():
+                setattr(L, k, float(v))
+            more = [k0red.to(F).contiguous(), k0blue.to(F).contiguous(), wcon.to(D).contiguous(),
+                    wtail.to(D).contiguous()]
+            keep += more
+            L.k0red, L.k0blue, L.wcon, L.wtail = (t.data_ptr() for t in more)
+            s_red, s_blue = S(nblo, nbup - 2), S(nblo, nbup + 2)
+            L.s_red, L.s_blue = ctypes.addressof(s_red), ctypes.addressof(s_blue)
+        L.buffer, L.cutcont = buf.data_ptr(), cc.data_ptr()
+        load("synline").xl_hydrogen(ctypes.byref(H), ctypes.byref(L), ctypes.c_int(torch.get_num_threads()))
+        del keep
+        return True
 
     def _walk_red_track(self, lay, minred, ev, k_alpha):
         """Red walk that also reports, per layer of `lay`, whether the walk ended at the ALPHAHYD limit

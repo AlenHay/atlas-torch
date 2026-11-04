@@ -369,7 +369,7 @@ def _t(s: State, key: str) -> torch.Tensor:
 
 
 def spectrv(state: State, inp: SpectrvInputs, *, chunk: int = 8192, device=None,
-            libm: str = "auto") -> SpectrvResult:
+            libm: str = "auto", native: bool | None = None) -> SpectrvResult:
     """PROGRAM SPECTRV after CALL READIN(20): `state` holds the COMMONs READIN produced.
 
     libm: "torch" (torch exp/pow everywhere), "glibc" (glibc scalar exp/pow for every point, as the
@@ -379,6 +379,9 @@ def spectrv(state: State, inp: SpectrvInputs, *, chunk: int = 8192, device=None,
     2-lane _ZGVbN2v_exp/_ZGVbN2vv_pow on layer pairs, scalar glibc otherwise; bitwise = stock, which differs
     from -O0 only in the deepest line cores, e.g. 9 points of Ca II H&K at <= 5e-15).
     chunk: points per batch (two JOSH rows per point).
+    native: use the C point loop (atlas_torch.synthe.native, spectrv.c; bit-identical to this torch path) when
+    built: None = when available and applicable (CPU, IFSURF=1, libm "libmvec"/"glibc"), False = torch only,
+    True = required (error if not applicable).
     """
     dev = torch.device(device) if device is not None else torch.device("cpu")
     s = state
@@ -503,7 +506,12 @@ def spectrv(state: State, inp: SpectrvInputs, *, chunk: int = 8192, device=None,
             rc, rl = rc[:, None].expand(B, nmu), rl[:, None].expand(B, nmu)
         return rc, rl, thick[:B] | thick[B:]
 
-    for c0 in range(0, len(nu_keep), chunk):
+    nat = _native_kernel(native, dev, ifsurf, libm)
+    if nat is not None:
+        nk = int((nu_t <= nplot).sum())
+        resid_plot = _native_points(nat, f9, nu_keep, wave_all, iedge_all, wledge, halfedge, deledge, t10, hkt,
+                                    rhox, bfudge, fscat, ifscat, libm, nrhox, nmu, q, nk, chunk=max(chunk, 1 << 16))
+    for c0 in (range(0, len(nu_keep), chunk) if nat is None else ()):
         sl = slice(c0, c0 + chunk)
         wave = wave_all[sl]; iedge = iedge_all[sl]
         asy = torch.as_tensor(np.asarray(f9.asynth[nu_keep[sl] - 1, :nrhox]), device=dev).to(F64)
@@ -550,6 +558,60 @@ def spectrv(state: State, inp: SpectrvInputs, *, chunk: int = 8192, device=None,
         deltaw=deltaw, numnu=numnu, ifsurf=ifsurf, nmu=nmu, angle=angle20, nedge=f9.nedge,
         wledge=wledge.copy(), nu=nu_keep, wave=wave_np, q=q, n910=n910, line_records=line_records,
         fort17=fort17, stdout=hdr_card + "\n" + "\n".join(out) + "\n")
+
+
+def _native_kernel(native, dev, ifsurf, libm):
+    """The ctypes spectrv kernel if it applies (see spectrv(native=...)), else None."""
+    if native is False:
+        return None
+    ok = dev.type == "cpu" and ifsurf == 1 and libm in ("libmvec", "glibc")
+    from .native import load
+    lib = load("spectrv") if ok else None
+    if lib is None and native:
+        raise RuntimeError("native SPECTRV kernel requested but not built/applicable (CPU, IFSURF=1, "
+                           "libm libmvec/glibc; build with `make native`)")
+    return lib
+
+
+def _native_points(lib, f9, nu_keep, wave_all, iedge_all, wledge, halfedge, deledge, t10, hkt, rhox, bfudge,
+                   fscat, ifscat, libm, nrhox, nmu, q, nk, chunk):
+    """DO 25 for every kept point through spectrv.c (both JOSH calls, IFSURF=1): fills q as the torch path
+    (Q(MU)=RESID*SURF, Q(MU+NMU)=SURF with RESID=HNU/SURF) and returns RESID of the first nk points."""
+    import ctypes
+    from .josh import josh_tables
+    T = josh_tables("cpu")
+    c = lambda a, dt: np.ascontiguousarray(a, dtype=dt)  # noqa: E731
+    P = lambda a: a.ctypes.data_as(ctypes.c_void_p)  # noqa: E731
+    keep = dict(wledge=c(wledge, np.float64), half=c(halfedge, np.float64), dele=c(deledge, np.float64),
+                ca=c(t10["contabs"], np.float64), cs=c(t10["contscat"], np.float64),
+                hkt=c(hkt.cpu().numpy(), np.float64), rhox=c(rhox.cpu().numpy(), np.float64),
+                bf=c(bfudge.cpu().numpy(), np.float64), fs=c(fscat.cpu().numpy(), np.float64),
+                cj=c(T["coefj"].numpy(), np.float32),          # [K-1, M-1] = COEFJ(K,M), row K contiguous
+                ch=c(T["ch"].numpy(), np.float32), xt=c(T["xtau8"].numpy(), np.float64))
+    wave = c(wave_all.cpu().numpy(), np.float64)
+    iedge = c(iedge_all.cpu().numpy(), np.int64)
+    nthreads = max(1, torch.get_num_threads())
+    resid1 = []
+    n = len(nu_keep)
+    for c0 in range(0, n, chunk):
+        sl = slice(c0, min(n, c0 + chunk))
+        m = sl.stop - sl.start
+        asy = c(np.asarray(f9.asynth[nu_keep[sl] - 1, :nrhox]), np.float32)
+        surf = np.empty(m); line = np.empty(m); thick = np.empty(m, dtype=np.int32)
+        w, ie = wave[sl], iedge[sl]
+        rc = lib.spectrv_points(
+            ctypes.c_int64(m), ctypes.c_int(nrhox), ctypes.c_int(ifscat), ctypes.c_int(1 if libm == "libmvec" else 0),
+            P(w), P(ie), P(keep["wledge"]), P(keep["half"]), P(keep["dele"]), P(keep["ca"]), P(keep["cs"]),
+            P(keep["hkt"]), P(keep["rhox"]), P(keep["bf"]), P(keep["fs"]), P(asy), ctypes.c_int64(nrhox),
+            P(keep["cj"]), P(keep["ch"]), P(keep["xt"]), P(surf), P(line), P(thick), ctypes.c_int(nthreads))
+        if rc != 0:
+            raise RuntimeError(f"spectrv_points failed ({rc})")
+        resid = line / surf
+        q[sl, :nmu] = (resid * surf)[:, None]
+        q[sl, nmu:] = surf[:, None]
+        if c0 < nk:
+            resid1.extend(resid[:max(0, nk - c0)].tolist())
+    return resid1
 
 
 # ----------------------------------------------------------------------------------------------- lines (LINOUT > 0)

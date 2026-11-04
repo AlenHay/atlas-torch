@@ -15,3 +15,4 @@ results/fmap/
 results/.pytest.xml
 reference/*.for
 src/atlas_torch/dfsynthe/lines/native/*.sha256
+src/atlas_torch/synthe/native/*.sha256

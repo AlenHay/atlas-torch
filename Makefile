@@ -13,9 +13,10 @@ stage:           ## stage tier: per-milestone end-to-end checks
 full:            ## full tier: everything
 	$(DX) '$(PY) -m pytest -q tests'
 
-native:          ## build the DFSYNTHE line-accumulation C kernel (bit-identical to the torch fallback)
+native:          ## build the optional C kernels (DFSYNTHE line accumulation/DFCALC/hydrogen, SYNTHE/SPECTRV loops, ATLAS9 helpers; bit-identical fallbacks)
 	$(DX) '$(PY) -m atlas_torch.dfsynthe.lines.native'
 	$(DX) '$(PY) -m atlas_torch.atlas9.native'
+	$(DX) '$(PY) -m atlas_torch.synthe.native'
 
 score: native    ## scoreboard vs frozen tolerances -> results/scoreboard.jsonl, RESULTS.md
 	$(DX) '$(PY) tools/score/score.py $(ARGS)'

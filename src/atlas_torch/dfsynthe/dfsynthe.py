@@ -75,7 +75,24 @@ class Config:
 
 
 # ------------------------------------------------------------------------------------------ broadening
-def broaden(b0: torch.Tensor, ivt: int, tabs: dict, bin_chunk: int = 0) -> torch.Tensor:
+def _broaden_native(b0, nvt, vtc, vtp):
+    """broaden() through lines/native/odfcalc.c broaden_rows (same REAL*4 terms in the same order), or None."""
+    if b0.device.type != "cpu" or b0.dtype != F32 or not b0.is_contiguous() or nvt < 1:
+        return None
+    from .lines.native import load_extra
+    lib = load_extra("odfcalc")
+    if lib is None:
+        return None
+    import ctypes
+    out = torch.empty((b0.shape[0], LENGTH), dtype=F32)
+    w = vtp.to("cpu", F32).contiguous()
+    rc = lib.broaden_rows(ctypes.c_int(b0.shape[0]), ctypes.c_int64(b0.shape[1]), ctypes.c_int64(LENGTH),
+                          ctypes.c_int(nvt), ctypes.c_float(float(vtc)), ctypes.c_void_p(w.data_ptr()),
+                          ctypes.c_void_p(b0.data_ptr()), ctypes.c_void_p(out.data_ptr()))
+    return out if rc == 0 else None
+
+
+def broaden(b0: torch.Tensor, ivt: int, tabs: dict, bin_chunk: int = 0, native: bool | None = None) -> torch.Tensor:
     """Turbulent broadening of the saved 0 km/s spectrum (MAIN labels 381-420), [NL, LENBUFF] -> [NL, LENGTH].
 
     The Fortran adds B10000(I)*VTPROF/VTCENTER record by record (10000 points); for a target bin b the terms
@@ -88,6 +105,10 @@ def broaden(b0: torch.Tensor, ivt: int, tabs: dict, bin_chunk: int = 0) -> torch
     vtc = tabs["vtcenter"][ivt - 1]
     vtp = tabs["vtprof"][:nvt, ivt - 1]
     nl = b0.shape[0]
+    if native is not False:
+        r = _broaden_native(b0, nvt, vtc, vtp)
+        if r is not None:
+            return r
     C = bin_chunk if bin_chunk and bin_chunk < 200_000 else 16384
     out = torch.empty((nl, LENGTH), dtype=F32, device=dev)
     tmp = torch.empty((nl, C), dtype=F32, device=dev)
@@ -195,7 +216,30 @@ def _dfcalc_plan(tabs_np):
     return _DFC_CACHE[key][1]
 
 
-def dfcalc(buf: torch.Tensor, tabs_np, fl: Flavor, rows: int = 5) -> torch.Tensor:
+def _dfcalc_native(buf, tabs_np, fl, rows, out) -> bool:
+    """DFCALC through lines/native/odfcalc.c (integer-exact, same ISTEPS); False if not built or a row has a
+    non-finite LOG10 (then the reference path below runs)."""
+    from .lines.native import load_extra
+    lib = load_extra("odfcalc")
+    if lib is None:
+        return False
+    import ctypes
+    c = lambda a: np.ascontiguousarray(a, dtype=np.int64)  # noqa: E731
+    nbeg, nend, nsteps = c(tabs_np.nbeg), c(tabs_np.nend), c(tabs_np.nsteps)
+    assert nsteps.shape == (13, 1540)
+    P = lambda a: a.ctypes.data_as(ctypes.c_void_p)  # noqa: E731
+    for r0 in range(0, buf.shape[0], rows):
+        v = (fl.log10f(buf[r0:r0 + rows]) * 1000.0).to("cpu", torch.float32).contiguous().numpy()
+        o = np.empty((v.shape[0], 1540, 12), dtype=np.int16)
+        rc = lib.dfcalc_rows(ctypes.c_int(v.shape[0]), ctypes.c_int64(v.shape[1]), ctypes.c_int64(v.shape[1]),
+                             P(v), P(nbeg), P(nend), P(nsteps), P(o))
+        if rc != 0:
+            return False
+        out[r0:r0 + v.shape[0]] = o
+    return True
+
+
+def dfcalc(buf: torch.Tensor, tabs_np, fl: Flavor, rows: int = 5, native: bool | None = None) -> torch.Tensor:
     """DFCALC: buf [B, LENGTH] float32 -> ISTEPS int16 [B, 1540, 12].
 
     IBUFFER = NINT(1000*LOG10(BUFFER)); per interval BISORT (radix sort of IBUFFER+30000) and integer averages
@@ -204,6 +248,8 @@ def dfcalc(buf: torch.Tensor, tabs_np, fl: Flavor, rows: int = 5) -> torch.Tenso
     dev = buf.device
     B = buf.shape[0]
     out = np.empty((B, 1540, 12), dtype=np.int16)
+    if native is not False and _dfcalc_native(buf, tabs_np, fl, rows, out):
+        return torch.from_numpy(out).to(dev)
     plan = _dfcalc_plan(tabs_np)
     for r0 in range(0, B, rows):
         x = buf[r0:r0 + rows]

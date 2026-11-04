@@ -4,6 +4,7 @@ exists (Config.native), otherwise the torch path."""
 from __future__ import annotations
 
 import ctypes
+import hashlib
 import os
 import subprocess
 import sys
@@ -26,10 +27,38 @@ def _src_sha() -> str:
     return hashlib.sha256(SRC.read_bytes()).hexdigest()
 
 
+# further kernels (same flags, own library + sha256 stamp): name -> source file
+EXTRA = {"odfcalc": HERE / "odfcalc.c",      # DFCALC rank sums + turbulent broadening (dfsynthe.py)
+         "hline": HERE / "hline.c"}          # XLINOP hydrogen lines (lines/xlinop.py XLinop._h_native)
+
+
+def _build_one(cc: str, src: Path, lib: Path, sha: Path) -> Path:
+    tmp = lib.with_name(f".{lib.name}.{os.getpid()}.tmp")
+    subprocess.run([cc, *CFLAGS, "-o", str(tmp), str(src), "-lm"], check=True)
+    os.replace(tmp, lib)                      # new inode: running workers keep their mapping
+    sha.write_text(hashlib.sha256(src.read_bytes()).hexdigest())
+    return lib
+
+
 def build(cc: str = "gcc") -> Path:
-    subprocess.run([cc, *CFLAGS, "-o", str(LIB), str(SRC)], check=True)
-    SHA.write_text(_src_sha())
+    _build_one(cc, SRC, LIB, SHA)
+    for name, src in EXTRA.items():
+        _build_one(cc, src, HERE / f"lib{name}.so", HERE / f"lib{name}.so.sha256")
     return LIB
+
+
+@lru_cache(maxsize=None)
+def load_extra(name: str):
+    """ctypes library of an EXTRA kernel, or None (disabled, missing or stale)."""
+    if os.environ.get("ATLAS_TORCH_NO_NATIVE"):
+        return None
+    src, lib, sha = EXTRA[name], HERE / f"lib{name}.so", HERE / f"lib{name}.so.sha256"
+    if not lib.exists() or not sha.exists() or sha.read_text().strip() != hashlib.sha256(src.read_bytes()).hexdigest():
+        return None
+    try:
+        return ctypes.CDLL(str(lib))
+    except OSError:
+        return None
 
 
 @lru_cache(maxsize=1)

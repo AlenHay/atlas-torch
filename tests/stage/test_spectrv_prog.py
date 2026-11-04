@@ -198,3 +198,26 @@ def test_libmvec_mode_bitwise_vs_stock(runs, state, win):
     print(f"\n{win}: libmvec mode vs stock: {int((_points(got, n) != _points(ref, n)).sum())} values differ; "
           f"auto (-O0) mode vs stock: {int((_points(runs[win]['bytes'], n) != _points(ref, n)).sum())}")
     assert got == ref
+
+
+@pytest.mark.parametrize("libm", ["libmvec", "glibc"])
+@pytest.mark.parametrize("win", WINDOWS)
+def test_native_point_loop_equals_torch(runs, state, win, libm):
+    """The C point loop (atlas_torch.synthe.native spectrv.c, IFSURF=1) == the torch JOSH path, byte for byte,
+    for both libm modes it implements, single- and multi-threaded, with a mask."""
+    from atlas_torch.synthe.native import load
+    if load("spectrv") is None:
+        pytest.skip("spectrv kernel not built (make native)")
+    inp = sp.load_inputs(runs[win]["wd"])
+    ref = sp.spectrv(state, inp, libm=libm, native=False).to_bytes()
+    nt = torch.get_num_threads()
+    try:
+        for t in (1, 4):
+            torch.set_num_threads(t)
+            assert sp.spectrv(state, inp, libm=libm, native=True).to_bytes() == ref
+    finally:
+        torch.set_num_threads(nt)
+    m = (np.random.default_rng(5).random(inp.fort9.stat().st_size) < 0.4).astype(np.int8)
+    inp.mask = m
+    assert sp.spectrv(state, inp, libm=libm, native=True).to_bytes() == \
+        sp.spectrv(state, inp, libm=libm, native=False).to_bytes()

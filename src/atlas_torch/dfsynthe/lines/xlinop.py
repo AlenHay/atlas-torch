@@ -87,6 +87,19 @@ class XLinop:
         self.block = block
         self.stats = {"normal_items": 0, "h_samples": 0, "contribs": 0, "h_reruns": 0}
 
+    def _wave_start1(self, nb: int) -> float:
+        """wave_start of one bin; stock: the powidf2_np product sequence on Python floats (IEEE double)."""
+        if self.fl.name != "stock":
+            return float(self.wave_start([nb])[0])
+        n = int(nb) - 1
+        b, r, aa = abs(n), 1.0, RATIO
+        while b:
+            if b & 1:
+                r = r * aa
+            b >>= 1
+            aa = aa * aa
+        return WBEGIN * (1.0 / r if n < 0 else r)
+
     def wave_start(self, nb) -> np.ndarray:
         """WBEGIN*RATIO**(NB-1) as compiled."""
         return WBEGIN * self.fl.powi8_np(RATIO, np.asarray(nb, np.int64) - 1)
@@ -556,6 +569,8 @@ class XLinop:
             g["wlplus2"] = 1.0e7 / (E[m + 1] - E[n - 1])
             g["k0blue"] = ((((kappa0 * float(hfnm(n, m + 2, fl))) / float(hfnm(n, m, fl))).to(F64)
                             / (E[m + 1] - E[n - 1])) * (E[m - 1] - E[n - 1])).to(F32)
+        if self._h_native(r, g, state, emit):
+            return []
         out = self._new_out()
         do_red = not (wl > WLEND)
         if path == "general" and do_red and WLBEG > self.alphahyd[n - 1]:
@@ -571,6 +586,75 @@ class XLinop:
         ib0 = min(LENGTH + 1, nb)
         out += self._h_wing(g, state, emit, -1, ib0, ib0 - 1)
         return out
+
+    use_native_h = True
+
+    def _h_native(self, r, g, state, emit) -> bool:
+        """The whole hydrogen line (both wings, all its layers, SOFBET state) through native/hline.c, which
+        transcribes _h_wing/Hydrogen operation by operation (bit-identical; tests/oracle/test_dfsynthe_xlinop.py).
+        Only for the stock flavour with the default transcendentals (float64 evaluated, rounded once)."""
+        fl = self.fl
+        if not self.use_native_h or self.dev.type != "cpu" or fl.name != "stock" or fl.libm is not None:
+            return False
+        from .native import load_extra
+        lib = load_extra("hline")
+        if lib is None:
+            return False
+        import ctypes
+        from .native.hline_ct import HSetup, HLine, depth_struct
+        if getattr(self, "_h_ct", None) is None:
+            self._h_ct = depth_struct(self.hyd, self.tabs, fl)
+        H = self._h_ct
+        hyd, nl, dev = self.hyd, self.nl, self.dev
+        n, m, wl, path, layers = g["n"], g["m"], g["wl"], g["path"], g["layers"]
+        nb = int(r["nbuff"])
+        keep = torch.zeros(nl, dtype=torch.uint8)
+        keep[layers] = 1
+        full = lambda v, dt: torch.zeros(nl, dtype=dt).index_put_((layers,), v.to(dt))  # noqa: E731
+        k0, dopph = full(g["k0"], F32), full(g["dopph"], F32)
+        general = path == "general"
+        L = HLine()
+        L.nl, L.path, L.nb, L.length = nl, {"alpha": 0, "beta": 1, "general": 2}[path], nb, LENGTH
+        do_red = not (wl > WLEND)
+        if general and do_red and WLBEG > self.alphahyd[n - 1]:
+            do_red = False
+        L.do_red = int(do_red)
+        L.wl, L.wlbeg, L.ratio, L.alphahyd_n = wl, WLBEG, RATIO, float(self.alphahyd[n - 1])
+        minred, ib0 = max(1, nb), min(LENGTH + 1, nb)
+        L.w0r, L.w0b = self._wave_start1(minred), self._wave_start1(ib0)
+        keepalive = [keep, k0, dopph]
+        s_main = HSetup.of(hyd.setup(n, m))
+        s_red = s_blue = s_main
+        if general:
+            wcon, wtail = full(g["wcon"], F64), full(g["wtail"], F64)
+            k0red, k0blue = full(g["k0red"], F32), full(g["k0blue"], F32)
+            keepalive += [wcon, wtail, k0red, k0blue]
+            for k in ("redcut", "wlminus1", "wlminus2", "bluecut", "wlplus1", "wlplus2"):
+                setattr(L, k, float(g[k]))
+            L.wcon, L.wtail = wcon.data_ptr(), wtail.data_ptr()
+            L.k0red, L.k0blue = k0red.data_ptr(), k0blue.data_ptr()
+            s_red, s_blue = HSetup.of(hyd.setup(n, m - 2)), HSetup.of(hyd.setup(n, m + 2))
+        L.keep, L.k0, L.dopph = keep.data_ptr(), k0.data_ptr(), dopph.data_ptr()
+        L.s_main, L.s_red, L.s_blue = (ctypes.addressof(x) for x in (s_main, s_red, s_blue))
+        cont = self.cont
+        assert cont.dtype == F32 and cont.stride(1) == 1
+        L.cont, L.cont_stride, L.cont_cols = cont.data_ptr(), cont.stride(0), cont.shape[1]
+        if emit:
+            buf = self._stream
+            assert buf is not None and buf.is_contiguous() and buf.dtype == F32
+            L.buf, L.buf_stride, L.emit = buf.data_ptr(), LENBUFF, 1
+        st = {k: state[k] for k in ("idx", "p", "first", "change")}
+        assert st["idx"].dtype == I64 and st["p"].dtype == F32 and st["first"].dtype == I64
+        assert st["change"].dtype == torch.bool and all(v.is_contiguous() for v in st.values())
+        L.sidx, L.sp, L.first, L.change = (st[k].data_ptr() for k in ("idx", "p", "first", "change"))
+        rc = lib.h_line(ctypes.byref(H), ctypes.byref(L))
+        del keepalive
+        if rc != 0:
+            raise RuntimeError(f"h_line failed ({rc})")
+        self.stats["h_samples"] += int(L.stats[0])
+        self.stats["contribs"] += int(L.stats[1])
+        hyd.extab_oob += int(L.stats[2])
+        return True
 
     def _h_wing(self, g, state, emit, step, start, count):
         """Red (step +1: bins start.., IB counted over non-skipped bins) or blue (step -1: bins start-1..,

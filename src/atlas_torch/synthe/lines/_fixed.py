@@ -105,8 +105,44 @@ def _rows_str(a: np.ndarray, rows: np.ndarray) -> list[str]:
     return [bytes(a[r]).decode("latin1") for r in rows]
 
 
+def _native():
+    try:
+        from ..native import load
+    except ImportError:          # pragma: no cover
+        return None
+    return load("fixedcol")
+
+
+def _col_native(fn: str, a: np.ndarray, lo: int, hi: int, d: int | None):
+    """fcol/icol through native/fixedcol.c (same algorithm, bit-identical); (values, bad rows) or None."""
+    lib = _native()
+    if lib is None or a.dtype != np.uint8 or a.ndim != 2 or not a.flags.c_contiguous or not len(a):
+        return None
+    import ctypes
+    n = a.shape[0]
+    out = np.empty(n, np.float64 if fn == "fcol_c" else np.int64)
+    bad = np.empty(n, np.uint8)
+    P = lambda x: x.ctypes.data_as(ctypes.c_void_p)  # noqa: E731
+    args = [P(a), ctypes.c_int64(n), ctypes.c_int64(a.shape[1]), ctypes.c_int(lo), ctypes.c_int(hi)]
+    if d is not None:
+        args.append(ctypes.c_int(d))
+    getattr(lib, fn)(*args, P(out), P(bad))
+    return out, np.flatnonzero(bad)
+
+
 def fcol(a: np.ndarray, lo: int, hi: int, d: int) -> np.ndarray:
     """Fortran Fw.d input of columns [lo, hi) of every row of `a` (float64)."""
+    r = _col_native("fcol_c", a, lo, hi, d)
+    if r is not None:
+        v, rows = r
+        if rows.size:
+            v[rows] = [fread(s, d) for s in _rows_str(a[:, lo:hi], rows)]
+        return v
+    return fcol_ref(a, lo, hi, d)
+
+
+def fcol_ref(a: np.ndarray, lo: int, hi: int, d: int) -> np.ndarray:
+    """fcol, numpy reference implementation."""
     c = a[:, lo:hi]
     n, w = c.shape
     isd = (c >= 48) & (c <= 57)
@@ -142,6 +178,17 @@ def fcol(a: np.ndarray, lo: int, hi: int, d: int) -> np.ndarray:
 
 def icol(a: np.ndarray, lo: int, hi: int) -> np.ndarray:
     """Fortran Iw input of columns [lo, hi) of every row of `a` (int64)."""
+    r = _col_native("icol_c", a, lo, hi, None)
+    if r is not None:
+        v, rows = r
+        if rows.size:
+            v[rows] = [iread(s) for s in _rows_str(a[:, lo:hi], rows)]
+        return v
+    return icol_ref(a, lo, hi)
+
+
+def icol_ref(a: np.ndarray, lo: int, hi: int) -> np.ndarray:
+    """icol, numpy reference implementation."""
     c = a[:, lo:hi]
     n, w = c.shape
     isd = (c >= 48) & (c <= 57)

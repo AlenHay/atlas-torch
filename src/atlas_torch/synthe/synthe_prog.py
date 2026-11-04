@@ -531,6 +531,8 @@ class SyntheProgram:
         ctx = self.ctx
         dev = self.device
         length = ctx.length
+        if _native_accumulate(ctx, jj, nbs, kapcen, core, nstep, n10, x):
+            return
         lo = torch.clamp(nbs - nstep, min=1)
         hi = torch.clamp(nbs + nstep, max=length)
         cnt = torch.clamp(hi - lo + 1, min=0)
@@ -756,6 +758,27 @@ class SyntheProgram:
         out = np.zeros((n, KW), F32)
         out[:, :ctx.nrhox] = a.cpu().numpy()
         return out
+
+
+def _native_accumulate(ctx, jj, nbs, kapcen, core, nstep, n10, x) -> bool:
+    """SyntheProgram._accumulate through the C kernel (native/synline.c main_accumulate, bit-identical: the same
+    REAL*4 terms added in the same order); False if not built / not applicable."""
+    buf = ctx.buffer
+    if buf is None or buf.device.type != "cpu" or not buf.is_contiguous() or buf.dtype != F:
+        return False
+    from .native import load
+    lib = load("synline")
+    if lib is None:
+        return False
+    import ctypes
+    i64 = lambda t: t.to(torch.int64).contiguous()  # noqa: E731
+    f32 = lambda t: t.to(F).contiguous()  # noqa: E731
+    arrs = [i64(jj), i64(nbs), i64(nstep), i64(n10), f32(kapcen), f32(x)]
+    cr = f32(core)
+    P = lambda t: ctypes.c_void_p(t.data_ptr())  # noqa: E731
+    lib.main_accumulate(ctypes.c_int64(jj.numel()), *[P(t) for t in arrs], P(cr), ctypes.c_int64(cr.shape[1]),
+                        ctypes.c_int64(ctx.length), P(buf), ctypes.c_int(torch.get_num_threads()))
+    return True
 
 
 def ordered_add_sorted(buf: torch.Tensor, key: torch.Tensor, val: torch.Tensor) -> None:

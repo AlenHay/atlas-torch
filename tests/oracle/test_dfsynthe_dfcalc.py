@@ -110,3 +110,40 @@ def test_dfcalc_vs_fortran(seed, lo, span):
     idf = o.saved("dfcalc")["idfout"]
     last = idf[1:].view(np.int16)                       # ISTEPS of the last interval (IDF=1540)
     assert np.array_equal(st[1539], last)
+
+
+@settings(max_examples=8, deadline=None)
+@given(seed=st.integers(0, 2**31 - 1), lo=st.floats(-45, 2), span=st.floats(0.5, 40))
+def test_dfcalc_native_equals_reference(seed, lo, span):
+    """lines/native/odfcalc.c (radix fast path + literal BISORT for negative/wide keys) == the numpy/torch
+    reference path, including spectra below 1e-30 (IBUFFER+30000 < 0)."""
+    from atlas_torch.dfsynthe.lines.native import load_extra
+    if load_extra("odfcalc") is None:
+        pytest.skip("odfcalc kernel not built (make native)")
+    fl = S.oracle_flavor()
+    tnp = T.build_tables(fl)
+    rng = np.random.default_rng(seed)
+    x = (10.0 ** rng.uniform(lo, min(lo + span, 37.0), (2, T.LENGTH))).astype(np.float32)
+    x[1, rng.integers(0, T.LENGTH, 1000)] = np.float32(1e-38)          # isolated very small bins
+    xt = torch.from_numpy(x)
+    from atlas_torch.dfsynthe.dfsynthe import _dfcalc_native
+    out = np.empty((2, 1540, 12), np.int16)
+    assert _dfcalc_native(xt, tnp, fl, 2, out)                          # the kernel itself ran
+    a = out
+    b = dfcalc(xt, tnp, fl, native=False).numpy()
+    assert np.array_equal(a, b)
+
+
+@pytest.mark.parametrize("ivt", [1, 2, 4, 8])
+def test_broaden_native_equals_reference(ivt):
+    """lines/native/odfcalc.c broaden_rows == the torch broadening (bit for bit), random positive spectra."""
+    from atlas_torch.dfsynthe.lines.native import load_extra
+    if load_extra("odfcalc") is None:
+        pytest.skip("odfcalc kernel not built (make native)")
+    fl = S.oracle_flavor()
+    tabs = T.device_tables(torch.device("cpu"), fl)
+    rng = np.random.default_rng(ivt)
+    b0 = torch.from_numpy((10.0 ** rng.uniform(-30, 5, (2, T.LENBUFF))).astype(np.float32))
+    a = broaden(b0, ivt, tabs, native=True)
+    b = broaden(b0, ivt, tabs, native=False)
+    assert torch.equal(a.view(torch.int32), b.view(torch.int32))
