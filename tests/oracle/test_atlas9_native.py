@@ -139,9 +139,19 @@ def test_ttaup_native(ext, teff, logg, prad0, vt, iross):
     t = teff * (0.75 * (0.710 + tau - 0.1331 * np.exp(-3.4488 * tau))) ** 0.25
     a = [torch.from_numpy(x) for x in (t, tau, np.full(n, 3e-4), prad0 * (1 + np.linspace(0, 0.3, n)), np.zeros(n),
                                        np.full(n, vt))]
-    got = ttaup(*a, 10.0 ** logg, n, iross, R)
+    from atlas_torch.atlas9.errors import FortranExit
+
+    def outcome():
+        try:
+            return ttaup(*a, 10.0 ** logg, n, iross, R)
+        except FortranExit as e:   # e.g. HYDROFAIL on an unphysical random structure: both paths must stop alike
+            return ("exit", str(e))
+    got = outcome()
     with native.disabled():
-        ref = ttaup(*a, 10.0 ** logg, n, iross, R)
+        ref = outcome()
+    if isinstance(got, tuple) and got and got[0] == "exit" or isinstance(ref, tuple) and ref and ref[0] == "exit":
+        assert got == ref
+        return
     for g, r in zip(got, ref):
         assert _same(g, r)
 
