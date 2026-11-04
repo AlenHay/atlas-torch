@@ -7,7 +7,7 @@ stage-isolated inputs) is compared with the stock reference using atlas_torch.sc
 `quantum` is one unit of the output representation (1 ulp for binary float64, the last printed digit for
 text tables, 1 for integer ODF steps); it only matters when every variant agrees exactly.
 Writes results/noise_floor.json (all per-variant numbers) and results/tolerances.json, which is FROZEN:
-the tool refuses to overwrite it (gate changes must be argued in RESULTS.md, see BRIEF).
+the tool refuses to overwrite it (gate changes must be argued in RESULTS.md).
 """
 import hashlib
 import json
@@ -106,7 +106,7 @@ def main():
     print("stages without noise data:", missing)
     out = REPO / "results/tolerances.json"
     if out.exists() and "--write" in sys.argv:
-        sys.exit("results/tolerances.json is frozen; refusing to overwrite (see BRIEF: gates never weaken)")
+        sys.exit("results/tolerances.json is frozen; refusing to overwrite (gates never weaken; argue any change in RESULTS.md)")
     if "--write" in sys.argv:
         if missing:
             sys.exit(f"refusing to freeze with missing stages: {missing}")

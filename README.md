@@ -2,7 +2,7 @@
 
 PyTorch port of the Kurucz ATLAS9 / DFSYNTHE / KAPPA9 / SYNTHE suite, as a drop-in backend for
 [BasicATLAS](https://github.com/Roman-UCSD/BasicATLAS). Correctness (agreement with the Fortran within its
-own noise floor) comes first; see `RESULTS.md` for the current scoreboard and `BRIEF.md` for the plan.
+own noise floor) comes first; see `RESULTS.md` for the current scoreboard and the record of decisions.
 
 ## Layout
 
@@ -42,3 +42,11 @@ were produced there (glibc 2.39); the SteamOS host's glibc 2.43 has a different 
 * **Batched, float64, device-agnostic.** Layers (and later models) are tensor batch dimensions.
 * **Every routine has an oracle test** `tests/oracle/test_<variant>_<routine>.py`: golden-trace entry → port →
   trace exit, plus hypothesis inputs → port vs the Fortran routine through the ctypes oracle.
+
+## Acknowledgements and license
+
+The physics and numerics are a port of R. L. Kurucz's ATLAS9, DFSYNTHE, KAPPA9 and SYNTHE programs as distributed
+by F. Castelli (wwwuser.oats.inaf.it/castelli) and R. L. Kurucz (kurucz.harvard.edu); the Fortran sources and line
+lists are downloaded at build time and are not part of this repository. The Python API mirrors
+[BasicATLAS](https://github.com/Roman-UCSD/BasicATLAS) (Gerasimov et al.; Larkin et al. 2022), reimplemented without
+copying its code. This repository's own code is released under the MIT license (`LICENSE`).
