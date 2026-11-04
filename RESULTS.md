@@ -89,6 +89,27 @@ Fast tier: 405 passed, 0 failed, 1 skipped (268.8 s)
 * Seen before freezing: the DFSYNTHE port agent reported one temperature (5012 K): port vs stock max 18 steps,
   vs ifx-precise 1 step (the port reproduces the non-FTZ precise build). No full-table torch ODF exists yet.
 
+### Root cause of DFSYNTHE's cool-temperature ODF jumps (found 2026-11-04)
+
+* One statement in HPROF4 (label 52, the Lyman-alpha quasi-H2+ term
+  `HPROF4=HPROF4+CUTOFF4000/PRQSP4000*PRQS/FO(J)*DBETA*1.77245*DOP`, `PRQSP4000=SOFBET(BETA4000,...)*.5/FO(J)*DBETA`).
+  With `-fp-model fast` ifx inlines PRQSP4000 and evaluates the term as one numerator/denominator pair; at low
+  electron density both products fall below FLT_MIN, FTZ flushes them and the term becomes 0/0 = NaN (solar
+  2512 K: layers 1-7). The NaN then propagates through stock's compare/MAX instructions (`KAPPA.LT.CONTINUUM`
+  false, `maxss`/`maxps` select the non-NaN operand) so that **stock drops all line opacity in the sampled bins
+  blue of Lyman-alpha in those layers**. Precise/-O0 builds evaluate left to right and do not.
+* Evidence: H lines alone / Lyman lines alone / Ly-alpha alone each reproduce the full 6438-step difference; a
+  stock-flags build instrumented to print HPROF4 shows NaN there (and the NaN disappears when intermediates are
+  printed, i.e. the evaluation order changes); the machine code confirms the order.
+* The reference (stock) therefore contains a numerical artefact that the port reproduces deliberately
+  (`Flavor('stock')` in src/atlas_torch/dfsynthe, together with the other fast-math forms: VTTAB, TABVOIGT/SVML,
+  `rcpps` divisions with the reference CPU's measured table). With them the port is within 1 step of stock in all
+  but 5e-5 of the 5012 K entries (18 steps / 4.7e-4 without). Physically the precise builds are the more
+  defensible ODFs; BasicATLAS users get the stock behaviour.
+* Speed: the cool temperatures need ~2.5e11 profile points; the line accumulation runs in a small C kernel
+  (literal transcription of the Fortran loop, compiled in the container, loaded via ctypes, bit-identical to the
+  torch path, which stays as the portable fallback). Revisit in M7 (a pure-torch/GPU path is the brief's target).
+
 ### Findings so far
 
 * Correction (line readers, commit 44c6701): the claim "byte-identical except TABLOG fields" was wrong — the
