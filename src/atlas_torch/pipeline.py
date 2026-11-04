@@ -64,7 +64,8 @@ def atlas_stage(stage: str, ref: dict) -> Path:
     m = ref["models"][name]
     run = _need("atlas_torch.compat.atlas", "atlas")
     settings_cls = _need("atlas_torch.compat.settings", "Settings")
-    os.environ.setdefault("ATLAS_TORCH_BACKEND", "torch")
+    if "atlas9mem" not in _need("atlas_torch.compat.runners", "registered")():
+        raise NotImplementedError("no torch atlas9mem runner registered")
     s = settings_cls()
     s.zscale = ref["odfs"][m["odf"]]["zscale"]
     s.abun = dict(ref["odfs"][m["odf"]]["abun"])
@@ -73,8 +74,16 @@ def atlas_stage(stage: str, ref: dict) -> Path:
     if out.exists():
         shutil.rmtree(out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    run(str(out), s, restart=ref["atlas"]["restart"], niter=ref["atlas"]["niter"],
-        ODF=str(EXT / "runs/stock/odf" / m["odf"]), silent=True)
+    old = os.environ.get("ATLAS_TORCH_BACKEND")
+    os.environ["ATLAS_TORCH_BACKEND"] = "torch"          # every program of the run must be the torch port
+    try:
+        run(str(out), s, restart=ref["atlas"]["restart"], niter=ref["atlas"]["niter"],
+            ODF=str(EXT / "runs/stock/odf" / m["odf"]), silent=True)
+    finally:
+        if old is None:
+            os.environ.pop("ATLAS_TORCH_BACKEND", None)
+        else:
+            os.environ["ATLAS_TORCH_BACKEND"] = old
     return out
 
 
@@ -93,4 +102,20 @@ def synthe_stage(stage: str, ref: dict) -> Path:
     return model / "synthe_1"
 
 
-STAGES = {"kappa9": kappa9_stage, "odf": odf_stage, "atlas": atlas_stage, "synthe": synthe_stage}
+def api_stage(ref: dict) -> dict:
+    """Run BasicATLAS's example notebooks with the torch backend (scripts/run_examples.py torch); returns
+    {example: HOME dir}. Reuses an existing complete run unless ATLAS_TORCH_RERUN_EXAMPLES=1."""
+    import subprocess
+    import sys
+    repo = Path(__file__).resolve().parents[2]
+    base = EXT / "runs" / "torch" / "examples"
+    done = base / "timing.json"
+    if not done.exists() or os.environ.get("ATLAS_TORCH_RERUN_EXAMPLES") == "1":
+        env = dict(os.environ, ATLAS_TORCH_BACKEND="torch")
+        r = subprocess.run([sys.executable, str(repo / "scripts/run_examples.py"), "torch"], env=env)
+        if r.returncode != 0:
+            raise RuntimeError(f"examples failed (exit {r.returncode}); see run_examples output")
+    return {ex: base / ex for ex in ref["examples"]}
+
+
+STAGES = {"kappa9": kappa9_stage, "odf": odf_stage, "atlas": atlas_stage, "synthe": synthe_stage, "api": api_stage}

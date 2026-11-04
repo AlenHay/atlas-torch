@@ -107,3 +107,22 @@ def atlas_metrics(ref: Path, cand: Path) -> dict:
 
 def gated_keys(metrics: dict) -> list[str]:
     return [k for k in metrics if ":" in k and not k.split(":")[1].startswith(("rms_", "frac"))]
+
+
+def spectrum_batches_metrics(ref: Path, cand: Path) -> dict:
+    """An example's run dir with synthe_1, synthe_2, ... batches: per-quantity max over batches."""
+    ref, cand = Path(ref), Path(cand)
+    batches = sorted(p.name for p in ref.glob("synthe_*") if (p / "spectrum.bin").exists())
+    if not batches:
+        return {"error": f"no synthe batches in {ref}"}
+    out: dict = {}
+    for b in batches:
+        if not (cand / b / "spectrum.bin").exists():
+            return {"error": f"candidate lacks {b}"}
+        m = synthe_metrics(ref / b, cand / b)
+        if "error" in m:
+            return m
+        for k, v in m.items():
+            out[k] = max(out.get(k, 0.0), v)
+    out["batches"] = len(batches)
+    return out

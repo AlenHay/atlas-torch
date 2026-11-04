@@ -42,6 +42,13 @@ def quantum(key):
     return QUANTUM.get(q, 0.0)
 
 
+EXAMPLE_PRODUCTS = {  # example -> {product: path relative to the example HOME}
+    "sun_model": {"structure": "ATLAS_sun_model", "spectrum": "ATLAS_sun_model"},
+    "output": {"structure": "ATLAS_sun_model", "spectrum": "ATLAS_sun_model"},
+    "custom_abun": {"structure": "ATLAS_arcturus_test", "spectrum": "ATLAS_arcturus_test", "odf": "DFSYNTHE_ODF"},
+}
+
+
 def stage_pairs(ref):
     """yield (stage, metric_fn, stock_dir, {variant: dir})"""
     nv = ref["noise_variants"]

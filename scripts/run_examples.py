@@ -44,6 +44,13 @@ def main():
     import matplotlib
     matplotlib.use("Agg")
     if backend == "stock":
+        # BasicATLAS (pinned) predates NumPy 2: restore the two removed aliases it uses (np.alltrue in meta(),
+        # np.trapz in synphot). Behaviour-identical: np.all / np.trapezoid are the same functions.
+        import numpy as _np
+        if not hasattr(_np, "alltrue"):
+            _np.alltrue = _np.all
+        if not hasattr(_np, "trapz"):
+            _np.trapz = _np.trapezoid
         sys.path.insert(0, str(BA))
     elif backend == "torch":
         sys.path.insert(0, str(REPO / "src" / "atlas_torch" / "compat"))   # provides `atlas`

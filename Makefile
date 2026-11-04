@@ -1,5 +1,6 @@
 PY := .venv/bin/python
-DX := scripts/dx
+# inside the atlas-dev container run directly; on the host go through the container
+DX := $(if $(CONTAINER_ID),bash -c,scripts/dx)
 
 .PHONY: fast stage full score noise reference oracles
 

@@ -23,7 +23,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 sys.path.insert(0, str(REPO / "tools" / "score"))
-from noise_floor import stage_pairs  # noqa: E402
+from noise_floor import EXAMPLE_PRODUCTS, stage_pairs  # noqa: E402
 
 EXT = Path(os.environ.get("ATLAS_EXT", Path.home() / "atlas-ext"))
 
@@ -90,6 +90,29 @@ def main():
         stages[stage] = {"status": "pass" if (tol and not fails and "error" not in m) else "fail",
                          "metrics": m, "fails": fails, "seconds": round(time.time() - t0, 1),
                          "peak_rss_mb": round(max(r0, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) / 1024, 1)}
+    if "api" in want:
+        from atlas_torch.scoring import atlas_metrics, odf_metrics, spectrum_batches_metrics
+        fns = {"structure": atlas_metrics, "spectrum": spectrum_batches_metrics, "odf": odf_metrics}
+        t0 = time.time()
+        try:
+            homes = pipeline.STAGES["api"](ref)          # runs the example notebooks with the torch backend
+            err = None
+        except NotImplementedError as e:
+            homes, err = None, ("not_implemented", str(e))
+        except Exception as e:  # noqa: BLE001
+            homes, err = None, ("crash", f"{type(e).__name__}: {e}")
+        for ex, prods in EXAMPLE_PRODUCTS.items():
+            for prod, rel in prods.items():
+                stage = f"api/{ex}/{prod}"
+                if err:
+                    stages[stage] = {"status": err[0], "detail": err[1]}
+                    continue
+                sdir = EXT / "runs/stock/examples" / ex / rel
+                m = fns[prod](sdir, homes[ex] / rel)
+                tol = tols.get(stage, {})
+                fails = {k: (m.get(k), t["tol"]) for k, t in tol.items() if not (m.get(k, float("inf")) <= t["tol"])}
+                stages[stage] = {"status": "pass" if (tol and not fails and "error" not in m) else "fail",
+                                 "metrics": m, "fails": fails, "seconds": round(time.time() - t0, 1)}
     rec["stages"] = stages
     rec["summary"] = {s: sum(1 for v in stages.values() if v["status"] == s) for s in ("pass", "fail", "crash", "not_implemented")}
     with open(REPO / "results/scoreboard.jsonl", "a") as f:
