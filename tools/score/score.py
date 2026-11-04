@@ -51,7 +51,7 @@ def run_tests():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stages", default="synthe,odf,atlas,api")
+    ap.add_argument("--stages", default="synthe,odf,kappa9,atlas,api")
     ap.add_argument("--note", default="")
     ap.add_argument("--no-tests", action="store_true")
     a = ap.parse_args()
