@@ -576,3 +576,19 @@ rms normalised-flux residual 9.1e-4) and pyKurucz (Kim & Ting 2026, arXiv:2603.1
 Marigo & Aringer 2009; Meszaros et al. 2012). Key gates: normalised flux max 1e-2 / rms 1e-3 / p99 6e-3 at native
 R=600000; T(tau_Ross) 0.2 % over log tau_Ross -4..+1; n_e and kappa_Ross 0.01 dex; log kappa_Ross tables 0.05 dex.
 Values without literature support are marked "unsupported" in the file; the per-step ODF maxima are non-gating.
+
+### v2 pilot (spectrum synthesis): status
+
+Full v2 pipeline (EOS, continuum, lines, transfer) on the stock solar model vs stock spectra, `tools/score/score_v2.py`:
+
+| window | Kurucz-compatible configuration | v2 physics defaults |
+|---|---|---|
+| 500-510 nm | pass (cont 2.2e-4, normflux 5.3e-4) | fail: continuum 0.4 % (electron donors) |
+| 380-420 nm | pass (cont 2.1e-4, normflux 2.5e-3) | fail: donors, CH/OH partition functions, Ca II H/K opaque top, Voigt far wings, wing truncation, K I lowering |
+| 640-660 nm | pass (cont 8.9e-5, normflux 7.4e-4) | fail: continuum 0.35 % (electron donors) |
+| 1500-1600 nm | pass (cont 3.2e-4, normflux 3.3e-4) | fail: normflux max 1.1e-2 (line selection, K I lowering) |
+
+Open physics decisions for v2's defaults (each has a switch; the Kurucz-compatible setting reproduces SYNTHE):
+electron donors outside NMOLEC's network; Debye-cutoff partition functions with NMOLEC's lagged lowering; CH/OH
+partition functions; flux where the top layer is optically thick; exact Voigt far wings and wing truncation;
+line centres on grid points; He II Gaunt scaling; metal free-free coverage; H2O and H2 line-strength constants.
