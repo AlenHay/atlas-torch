@@ -241,6 +241,9 @@ def save_get(s: State, unit: str, var: str, shape=(), dtype=torch.float64, devic
     k = f"save.{unit}.{var}"
     if k in s:
         return s[k]
+    if device is None:  # follow the State's device (CPU State -> CPU, unchanged)
+        t = s.get("temp.t")
+        device = t.device if isinstance(t, torch.Tensor) else None
     return torch.zeros(shape if shape else (1,), dtype=dtype, device=device)
 
 
