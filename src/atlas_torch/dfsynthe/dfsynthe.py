@@ -16,6 +16,12 @@ ifx -fp-model fast generated for the stock dfsynthe.exe where it matters (read f
   * HPROF4 label 52 (Lyman alpha H2+ term): one numerator/denominator pair that underflows to 0/0 = NaN at low
     electron density -> the stock binary drops all opacity in the sampled bins of the Lyman-alpha wing
     (up to 3.6-dex ODF rows at cool T; lines/hydrogen.py _lya_h2plus_fast) - the qualitative one;
+  * HPROF4 Lyman alpha H2+ cutoff 4000-20000 cm-1 red of the centre: ((XNFPH(J,2)*K)*DOP)*10.**(CUTOFF-14.),
+    K=(1/C)*1.77245 folded; the source order's 10.**(CUTOFF-14.)/C is subnormal beyond ~13100 cm-1 and FTZ
+    would flush it (Hydrogen._lya_h2plus_cut_fast; 14-41-step ODF jumps at 12589-22387 K otherwise);
+  * XLINOP Inglis-Teller merging: NMERGE=XNE**(-2./15.)*1600.-1.5 (SVML powf), EMERGE=(1/NMERGE**2)*109737.312
+    with rcpps + Newton in the 4-wide vector loop (XLinop._merge_energies; one ulp of EMERGE decides whether the
+    He II Lyman far wings start at WCON in the densest layer: 119 steps at 112202 K otherwise);
   * HPROF4 Doppler core: D=|FREQ-(FINEST+FREQ0)|*(1/DOP), 4-lane sums (Hydrogen._doppler_fast);
   * TABVOIGT: (I-1)*(1/VSTEPS) and SVML expf for H0TAB (lines/tables.py, lines/svml.py); VTTAB: I*((1/V)*C),
     VTPROF*(1/SUM);
@@ -23,9 +29,11 @@ ifx -fp-model fast generated for the stock dfsynthe.exe where it matters (read f
     rcpps table of the reference CPU (lines/rcpps.py); ADAMP>.2 centres and far wings with one reciprocal 1/U
     (LineAccumulator._asym_fast), IV=NSTEP*(DVOIGT*200)+1.5.
   Not emulated (rounding level): SVML/libimf transcendentals elsewhere, rcpps in HPROF4's depth vectors, the
-  reorganised ATAB loop of TABVOIGT, HPROF4 Lorentz/Stark reorderings.  At 5012 K the port is within 1 step of
-  stock in 5e-5 of the ODF entries (ifx -O3 vs stock: 2e-7).  Flavor('stock', fastmath=False) reproduces the
-  ifx -fp-model precise build instead (within 1 step in <1e-5).
+  reorganised ATAB loop of TABVOIGT, HPROF4 Lorentz/Stark reorderings, the CUTOFF interpolations of HPROF4
+  (FREQ*(1/SPACING) forms), XLINOP's WTAIL/VVOIGT/taper reassociations.  At 5012, 12589, 22387 and 112202 K the
+  port is within 1 step of stock everywhere, with 2-8e-5 of the ODF entries differing by 1 step (ifx -O3 vs stock:
+  0-2e-6).  Flavor('stock', fastmath=False) reproduces the ifx -fp-model precise build instead (within 1 step in
+  <1e-5).
 
 Memory/speed: TAPE12 is streamed from the line lists (twice: AA pre-pass, accumulation) and never stored.  The
 two loops that dominate (TAPE12 line profiles: up to 2.5e11 profile points at 1995 K; XLINOP normal lines) run in

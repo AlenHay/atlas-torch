@@ -76,16 +76,44 @@ class XLinop:
         st = lay["st"]
         self.xne, self.txnxn = st["xne"], lay["txnxn"]
         self.xnfpel, self.xnfdop, self.dopple = lay["xnfpel"], lay["xnfdop"], lay["dopple"]
-        inglis = rdiv(1600.0, fl.powf(self.xne, torch.tensor(float(f4(f4(2.0) / f4(15.0))), dtype=F32)))
-        nmerge = inglis - 1.5
-        self.emerge = rdiv(L("109737.312"), nmerge * nmerge).to(F64)
-        self.emergeh = rdiv(L("109677.576"), nmerge * nmerge).to(F64)
+        self.emerge, self.emergeh = self._merge_energies(fl)
         self.ehyd, self.alphahyd = ehyd_tables()
         self.contx = np.asarray(table(SRC, "xlinop", "contx"), dtype=np.float64)     # (26,17)
         self.conth = np.asarray(table(SRC, "xlinop", "conth"), dtype=np.float64)
         self.hyd = Hydrogen(st, lay["xnfph"], tabs["extab"], tabs["h0tab"], fl)
         self.block = block
         self.stats = {"normal_items": 0, "h_samples": 0, "contribs": 0, "h_reruns": 0}
+
+    def _merge_energies(self, fl: Flavor):
+        """EMERGE, EMERGEH (REAL*8) of the Inglis-Teller merging (XLINOP DO 91):
+        INGLIS=1600./XNE**(2./15.); NMERGE=INGLIS-1.5; EMERGE=109737.312/NMERGE**2 (EMERGEH: 109677.576).
+        The stock ifx -fp-model fast build (dfsynthe.exe 0x408859..0x4089cf) computes
+            NMERGE = XNE**(-2./15.)*1600. + (-1.5)          XNE**y by SVML powf (powf4 lanes, powf1 remainder)
+            EMERGE = (1./NMERGE**2)*109737.312               1/x by rcpps + one Newton step (r + (1-x*r)*r) for
+                                                             the layers of the 4-wide vector loop (NRHOX&~3),
+                                                             by divss for the remaining layers.
+        It matters at the hottest temperatures: in the densest layer the normal lines just below a merged edge
+        (WL < WCON=1.E7/(CONTX-EMERGE)) start their tapered wing at the first bin redward of WCON, and whether
+        that first, tiny tapered KAPPA exceeds the continuum (or ends the wing at once) depends on where WCON
+        falls inside the bin: one ulp of EMERGE decides whether the far wings of He II Lyman 8..11 are added
+        (112202 K, layer 25, 22.8-34 nm: up to 119 ODF steps)."""
+        xne = self.xne
+        if fl.fastmath:
+            from . import svml
+            from .rcpps import rcpps
+            pw = svml.powf(xne.cpu().numpy(), f4(-(f4(2.0) / f4(15.0))))
+            if pw is not None:
+                pw = torch.from_numpy(pw).to(xne.device)
+                nmerge = pw * 1600.0 + L("-1.5")
+                x2 = nmerge * nmerge
+                nv = (x2.shape[0] // 4) * 4
+                r = rcpps(x2)
+                inv = torch.where(torch.arange(x2.shape[0], device=x2.device) < nv,
+                                  (1.0 - x2 * r) * r + r, rdiv(1.0, x2))
+                return (inv * L("109737.312")).to(F64), (inv * L("109677.576")).to(F64)
+        inglis = rdiv(1600.0, fl.powf(xne, torch.tensor(float(f4(f4(2.0) / f4(15.0))), dtype=F32)))
+        nmerge = inglis - 1.5
+        return rdiv(L("109737.312"), nmerge * nmerge).to(F64), rdiv(L("109677.576"), nmerge * nmerge).to(F64)
 
     def _wave_start1(self, nb: int) -> float:
         """wave_start of one bin; stock: the powidf2_np product sequence on Python floats (IEEE double)."""

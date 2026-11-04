@@ -3,7 +3,9 @@
    all layers, REAL*4 operation by operation as the torch port (lines/xlinop.py XLinop._h_wing, lines/hydrogen.py),
    which is the reference and the fallback.  Stock ifx -fp-model fast forms (Flavor.fastmath): Doppler core with
    D=|FREQ-(FINEST+FREQ0)|*(1/DOP) and 4-lane sums, BETA4000=(4000*C)*DBETA/FO, the Lyman-alpha label-52 term as one
-   numerator/denominator pair (0/0 = NaN under FTZ, see hydrogen.py _lya_h2plus_fast); else the source forms.
+   numerator/denominator pair (0/0 = NaN under FTZ, see hydrogen.py _lya_h2plus_fast), the H2+ cutoff 4000-20000
+   cm-1 red of Lyman alpha as ((XNFPH(J,2)*K)*DOP)*10**(CUTOFF-14) (no subnormal intermediate, _lya_h2plus_cut_fast);
+   else the source forms.
 
    SOFBET's SAVEd cache: per layer (INDEXSAVE, P of the last recompute) in sidx/sp (carry-in -> carry-out, the
    driver's state machine); a call with B<500 recomputes (P := PP(J)) iff INDEX != INDEXSAVE.  first/change record
@@ -276,8 +278,13 @@ static float hprof4(const hdepth_t *H, hline_t *L, const hsetup_t *s, int varian
                     float cutfreq = (float)icut * spacing + f15;
                     cut = (ch[icut + 1] - ch[icut]) / spacing * (freq - cutfreq) + ch[icut];
                 }
-                cut = (pow10f_t(cut - 14.f) / C10) * H->xnfph2[j];
-                hs = (cut * 1.77245f) * dop;
+                if (H->fastmath) {                           /* stock: ((XNFPH(J,2)*K)*DOP)*10**(CUTOFF-14) */
+                    const float k = (1.f / C10) * 1.77245f;     /* folded, 0x2E82030B (hydrogen.py _kh2plus) */
+                    hs = ((H->xnfph2[j] * k) * dop) * pow10f_t(cut - 14.f);
+                } else {
+                    cut = (pow10f_t(cut - 14.f) / C10) * H->xnfph2[j];
+                    hs = (cut * 1.77245f) * dop;
+                }
             }
         }
         float F = gam > 0.f ? (gam / 3.14159f) / (gam * gam + beta * beta) : 0.f;

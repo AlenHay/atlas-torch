@@ -8,6 +8,10 @@ solar xnfpdf.dat / xnfpdfmax.dat of the stock BasicATLAS run).
    port reproduces ifx -fp-model precise(-ftz) instead, which differs from stock by up to 18 steps here (the
    Lyman-alpha NaN wing of the stock binary).
 1b. Flavor('stock', fastmath=False) vs the ifx-precise-ftz build: max 1 step (measured 1 step in 2e-6).
+1c. hot temperatures 12589 K (ITEFF=33) and 112202 K (52) vs stock: max 1 step, measured 2-8e-5 of entries differ.
+   Before the two hot-temperature stock forms were emulated (test_dfsynthe_hot_fastmath.py) the port gave 14-15
+   steps at 12589 K (the H2+ cutoff flushed by FTZ: the ifx-precise-ftz result) and 119 at 112202 K (EMERGE
+   rounding: He II Lyman far wings in layer 25), like the ifx -O0/precise builds.
 2. O0 flavour + Intel libimf (the debug executable's semantics) vs the debug run's own fort.15/16/17/18/20:
    bit-identical ODF records (marked `full`: ~10 min, mostly ctypes libm calls).
 3. the five output files (vt*.bin) are byte-compatible records (32-byte, zero padded) and dfsortp of them equals
@@ -64,6 +68,19 @@ def test_vs_stock_odf(stock_run):
         d = np.abs(_as_rows(stock_run[v][1]).astype(int) - _stock_rows(v).astype(int))
         print(f"vt={v}: max |diff| {d.max()} steps, fraction differing {(d > 0).mean():.2e}")
         assert d.max() <= STOCK_MAX and (d > 0).mean() <= STOCK_FRAC, v
+
+
+@pytest.mark.parametrize("iteff", [33, 52])
+def test_hot_vs_stock_odf(iteff):
+    torch.set_num_threads(max(1, min(6, os.cpu_count() or 1)))
+    res = run_temperature(S.STOCK / "xnfpdf.dat", S.STOCK / "xnfpdfmax.dat", S.DATA, iteff,
+                          Config(flavor=Flavor("stock")))
+    for v in odf_io.VTURBS:
+        big = read_bdf(S.STOCK / f"p00big{v}.bdf")[:, iteff - 1]
+        lit = read_bdf(S.STOCK / f"p00lit{v}.bdf")[:, iteff - 1]
+        d = np.abs(_as_rows(res[v][1]).astype(int) - np.concatenate([big, lit]).astype(int))
+        print(f"ITEFF={iteff} vt={v}: max |diff| {d.max()} steps, fraction differing {(d > 0).mean():.2e}")
+        assert d.max() <= 1 and (d > 0).mean() <= STOCK_FRAC, v
 
 
 @pytest.mark.skipif(not (PRECISE / "p00lit8.bdf").exists(), reason="ifx-precise-ftz solar run missing")

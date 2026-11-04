@@ -269,6 +269,27 @@ class Hydrogen:
         den = (fo * dbeta) * (sb * 0.5)
         return num / den
 
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def _kh2plus() -> np.float32:
+        """Folded constant (1./2.99792458E10)*1.77245 of the stock binary (.rodata 0x489198 = 0x2E82030B)."""
+        c = f4(f4(f4(1.0) / f4(C10)) * lit("1.77245"))
+        assert c.view(np.uint32) == 0x2E82030B
+        return c
+
+    def _lya_h2plus_cut_fast(self, cut, dop, j):
+        """HPROF4 Lyman alpha quasi-H2+ cutoff, 4000-20000 cm-1 red of the centre, as the stock ifx build computes
+        `CUTOFF=(10.**(CUTOFF-14.))/2.99792458E10*XNFPH(J,2); HPROF4=HPROF4+CUTOFF*1.77245*DOP` (dfsynthe.exe
+        0x40c9a6..0x40c9cb, same in HPROF4m 0x40e0bf and HPROF4p 0x40fa86):
+            ((XNFPH(J,2) * K) * DOP) * 10.**(CUTOFF-14.),   K = (1./2.99792458E10)*1.77245 folded.
+        The source order forms 10.**(CUTOFF-14.)/2.99792458E10 first, which is subnormal (down to 2e-40) for the
+        tabulated CUTOFF < -13.45, i.e. 13100-15000 cm-1 and beyond from the centre: under FTZ it flushes to 0 and
+        the H2+ wing is lost (up to 5% of the opacity of dense hot layers, 15-step ODF jumps at 12589 K); the
+        stock binary never forms that intermediate."""
+        f = lambda x: torch.tensor(float(x), dtype=F32, device=self.dev)  # noqa: E731
+        pw = self.fl.powf(torch.full_like(cut, 10.0), cut - 14.0)
+        return ((self.xnfph[j, 1] * f(self._kh2plus())) * dop) * pw
+
     def _doppler_fast(self, s, freq, freq0, dop, zero):
         """Doppler core with fine structure (labels 32-33) as the stock binary computes it (hprof4_ 0x40bac5..
         0x40bf03, same in HPROF4m/p): D=|FREQ-(FINEST(I)+FREQ0)|*(1./DOP) (FINEST+FREQ0 is rounded at the
@@ -389,8 +410,11 @@ class Hydrogen:
             cutfreq = icut.to(F32) * spacing + f15
             hi = (ch[icut + 1] - ch[icut]) / spacing * (freq - cutfreq) + ch[icut]
             cut = torch.where(freq < f15, lo, hi)
-            cut = (fl.powf(torch.full_like(cut, 10.0), cut - 14.0) / f(C10)) * self.xnfph[j, 1]
-            mid = (cut * L("1.77245")) * dop
+            if fl.fastmath:
+                mid = self._lya_h2plus_cut_fast(cut, dop, j)
+            else:
+                cut = (fl.powf(torch.full_like(cut, 10.0), cut - 14.0) / f(C10)) * self.xnfph[j, 1]
+                mid = (cut * L("1.77245")) * dop
             prqsp4000 = (((sofbet(q["beta4000"], p4000, idx) * 0.5) / fo) * dbeta)
             cut4000 = (fl.powf(torch.full_like(cut, 10.0), torch.full_like(cut, f4(lit("-11.07") - f4(14.0))))
                        / f(C10)) * self.xnfph[j, 1]
