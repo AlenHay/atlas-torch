@@ -1,7 +1,8 @@
 """Spectrum synthesis: Atmosphere + Composition -> Populations -> continuum + line opacity -> transfer -> Spectrum.
 
     grid = LogWavelengthGrid.window(500.0, 510.0, 600000.0)
-    spec = synthesize(atm, comp, grid)             # v2 opacities (V2Opacity) by default
+    spec = synthesize(atm, comp, grid)             # v2 physics in every module (SynthesisConfig())
+    spec = synthesize(atm, comp, grid, kurucz=True)   # the stock Fortran's choices in every module
     spec.write("spectrum.bin")                     # BasicATLAS load_binary_spectrum / io.formats.read_spectrum_bin
 
 Opacity providers (atlas_torch.v2.opacity conventions: cm^2 g^-1, shape (..., L, F)):
@@ -11,7 +12,7 @@ Opacity providers (atlas_torch.v2.opacity conventions: cm^2 g^-1, shape (..., L,
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable
 
@@ -19,7 +20,7 @@ import torch
 
 from .atmosphere import Atmosphere
 from .composition import Composition
-from .constants import CODATA2018, PhysicalConstants
+from .constants import CODATA2018, KURUCZ, PhysicalConstants
 from .eos import ChemicalEquilibrium, Populations
 from .io.spectrum_bin import write_spectrum_bin
 from .opacity import Opacity, planck
@@ -68,37 +69,107 @@ class Spectrum:
                            edges_nm=edges_nm)
 
 
+@dataclass(frozen=True)
+class SynthesisConfig:
+    """Physics choices of every module. SynthesisConfig() = v2 physics; SynthesisConfig.kurucz() = the stock
+    Fortran's choice in each module (XNFPELSYN/NMOLEC, atlas7v.for KAPP, SYNTHE, SPECTRV), to attribute
+    differences.
+
+    const             constant set (EOS, opacities, Planck function)
+    eos               ChemicalEquilibrium keywords: network, debye, lagged_lowering
+    continuum         KuruczCompat switches of ContinuousOpacity
+    continuum_sampling  "exact": at every wavelength; "edges": at XNFPELSYN's three frequencies per continua.dat
+                      interval, quadratic in log10 kappa between them (xnfpelsyn.for loop 18, spectrv.for 2004-2006)
+    lines             LineOpacityOptions keywords (KURUCZ_OPTIONS)
+    selection         LineSelection rule ("wide" | "kurucz": the SYNTHE readers' wavelength ranges)
+    kurucz_isotopes   rmolecasc.for's isotopic fractions of the molecular lists
+    transfer          Transfer keywords
+    microturbulence   cm/s, added in quadrature to the model's (SYNTHE TURBV; BasicATLAS 1.5 km/s)"""
+    const: PhysicalConstants = CODATA2018
+    eos: dict = field(default_factory=dict)
+    continuum: object = None
+    continuum_sampling: str = "exact"
+    lines: dict = field(default_factory=dict)
+    selection: str = "wide"
+    kurucz_isotopes: bool = False
+    transfer: dict = field(default_factory=dict)
+    microturbulence: float = 1.5e5
+
+    @classmethod
+    def kurucz(cls, **changes) -> "SynthesisConfig":
+        from .opacity.continuum import KuruczCompat
+        from .opacity.lines import KURUCZ_OPTIONS
+        base = cls(const=KURUCZ, eos=dict(network="kurucz", debye="kurucz", lagged_lowering=True),
+                   continuum=KuruczCompat.all(), continuum_sampling="edges", lines=dict(KURUCZ_OPTIONS),
+                   selection="kurucz", kurucz_isotopes=True, transfer=dict(opaque_top="diffusion", tau_scheme="atlas"))
+        return replace(base, **changes)
+
+    def equation_of_state(self) -> ChemicalEquilibrium:
+        return ChemicalEquilibrium(const=self.const, **self.eos)
+
+    def transfer_solver(self) -> Transfer:
+        return Transfer(**self.transfer)
+
+    def opacity(self, grid: LogWavelengthGrid, line_list=None) -> "V2Opacity":
+        from .opacity.continuum import ContinuousOpacity, EdgeSampled, KuruczCompat
+        from .opacity.lines import LineOpacityOptions, LineSelection
+        cont = ContinuousOpacity(const=self.const, compat=self.continuum or KuruczCompat())
+        if self.continuum_sampling == "edges":
+            cont = EdgeSampled(cont)
+        elif self.continuum_sampling != "exact":
+            raise ValueError("continuum_sampling: 'exact' | 'edges'")
+        opt = LineOpacityOptions(microturbulence=self.microturbulence, const=self.const, **self.lines)
+        return V2Opacity(grid, continuum=cont, line_options=opt, selection=LineSelection(self.selection),
+                         line_list=line_list, kurucz_isotopes=self.kurucz_isotopes)
+
+    def describe(self) -> dict:
+        """JSON-able summary (scoreboard records)."""
+        c = self.continuum
+        return {"const": self.const.name, "eos": dict(self.eos),
+                "continuum": {} if c is None else {k: v for k, v in vars(c).items() if v},
+                "continuum_sampling": self.continuum_sampling, "lines": dict(self.lines),
+                "selection": self.selection, "kurucz_isotopes": self.kurucz_isotopes, "transfer": dict(self.transfer),
+                "microturbulence": self.microturbulence}
+
+
 def synthesize(atm: Atmosphere, comp: Composition, grid: LogWavelengthGrid, *,
                continuum: ContinuumOpacity | None = None, lines: LineOpacity | None = None,
                transfer: Transfer | None = None,
                eos: ChemicalEquilibrium | None = None, populations: Populations | None = None, mu=None,
-               const: PhysicalConstants = CODATA2018, title: str = "atlas_torch v2", vacuum: bool = True) -> Spectrum:
-    """Spectrum of `atm` (batch dims allowed) on `grid`: populations from `eos` (default ChemicalEquilibrium()),
-    opacities from the providers (default: V2Opacity(grid) for both; lines=None with an explicit continuum: no
-    lines), transfer (default Transfer()) of the continuum alone and of continuum + lines;
-    S_thermal is the absorption-weighted source function (Kurucz 1970 eq. 2.65). mu: emergent intensities at
-    these angles instead of the flux."""
-    transfer = transfer or Transfer()
+               config: SynthesisConfig | None = None, kurucz: bool = False,
+               const: PhysicalConstants | None = None, title: str = "atlas_torch v2", vacuum: bool = True) -> Spectrum:
+    """Spectrum of `atm` (batch dims allowed) on `grid`. Every module not given explicitly is built from `config`
+    (default SynthesisConfig(), or SynthesisConfig.kurucz() with kurucz=True): populations from `eos`, opacities
+    from the providers (default: config.opacity(grid) for both; lines=None with an explicit continuum: no
+    lines), transfer of the continuum alone and of continuum + lines; S_thermal is the absorption-weighted source
+    function (Kurucz 1970 eq. 2.65). mu: emergent intensities at these angles instead of the flux."""
+    config = config or (SynthesisConfig.kurucz() if kurucz else SynthesisConfig())
+    const = const or config.const
+    transfer = transfer or config.transfer_solver()
     if continuum is None:
-        v2 = V2Opacity(grid)
+        v2 = config.opacity(grid)
         continuum, lines = v2.continuum, lines or v2.lines
-    pops = populations if populations is not None else (eos or ChemicalEquilibrium()).solve(atm, comp)
+    pops = populations if populations is not None else (eos or config.equation_of_state()).solve(atm, comp)
     wl = grid.wavelengths(device=atm.T.device)
     nu = const.c / (wl * 1e-7)
     cont = continuum(pops, nu)
-    B = planck(nu, atm.T, const)
     line = lines(atm, pops, cont) if lines is not None else None
+    B = planck(nu, atm.T, const)
     lf = lambda v: v.transpose(-1, -2)                                   # (..., L, F) -> (..., F, L)
     rhox = atm.rhox[..., None, :]
     s_cont = B if cont.source is None else cont.source
-    c = transfer.solve(rhox, lf(cont.absorption), lf(cont.scattering), lf(s_cont), mu=mu)
+    pick = (lambda s: s.flux) if mu is None else (lambda s: s.intensity)
+    c = pick(transfer.solve(rhox, lf(cont.absorption), lf(cont.scattering), lf(s_cont), mu=mu))
     if line is None:
         r = c
     else:
         ab = cont.absorption + line
-        r = transfer.solve(rhox, lf(ab), lf(cont.scattering), lf((cont.absorption * s_cont + line * B) / ab), mu=mu)
-    pick = (lambda s: s.flux) if mu is None else (lambda s: s.intensity)
-    return Spectrum(grid, pick(r), pick(c), None if mu is None else tuple(float(m) for m in mu), atm.teff, atm.logg,
+        src = cont.absorption * s_cont
+        src += line * B
+        src /= ab
+        del line, B, s_cont
+        r = pick(transfer.solve(rhox, lf(ab), lf(cont.scattering), lf(src), mu=mu))
+    return Spectrum(grid, r, c, None if mu is None else tuple(float(m) for m in mu), atm.teff, atm.logg,
                     title, vacuum)
 
 
@@ -114,12 +185,13 @@ class V2Opacity:
     """The v2 opacity modules as providers: ContinuousOpacity (Kurucz 1970 ch. 5) and LineOpacity of the BasicATLAS
     line lists around the grid (Kurucz & Avrett 1981), atlas_torch.v2.opacity."""
 
-    def __init__(self, grid: LogWavelengthGrid, *, continuum=None, line_options=None, selection=None, line_list=None):
+    def __init__(self, grid: LogWavelengthGrid, *, continuum=None, line_options=None, selection=None, line_list=None,
+                 kurucz_isotopes: bool = False):
         from .opacity.continuum import ContinuousOpacity
         from .opacity.lines import LineOpacity, LineOpacityOptions, LineSelection, read_basicatlas_lines
         self.continuum = continuum or ContinuousOpacity()
-        ll = line_list if line_list is not None else read_basicatlas_lines(grid.wl_begin, grid.wl_end,
-                                                                           selection or LineSelection())
+        ll = line_list if line_list is not None else read_basicatlas_lines(
+            grid.wl_begin, grid.wl_end, selection or LineSelection(), kurucz_isotopes=kurucz_isotopes)
         self.line_opacity = LineOpacity(ll, grid, line_options or LineOpacityOptions())
 
     def lines(self, atm: Atmosphere, pops: Populations, continuum: Opacity) -> torch.Tensor:

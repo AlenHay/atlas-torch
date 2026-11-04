@@ -34,6 +34,20 @@ def test_fortran_equivalent_tier_matches_exact_port(solar_deck, solar_oracle):
     assert d["atoms"] < 2e-3 and d["molecules"] < 2e-3
 
 
+def test_lagged_lowering_matches_exact_port(solar_deck, solar_oracle):
+    """lagged_lowering=True reproduces NMOLEC/POPS for every element (spectators and Li, Be, B included), all
+    layers: n from the solve at the Newton-start lowering, U at the converged one."""
+    from atlas_torch.v2.constants import KURUCZ
+    from atlas_torch.v2.eos import ChemicalEquilibrium
+    eq = ChemicalEquilibrium(network="kurucz", debye="kurucz", lagged_lowering=True, const=KURUCZ)
+    d = deviations(eq.solve(solar_deck.atmosphere, solar_deck.composition), solar_oracle)
+    assert d["n_e"] < 1e-4 and d["n_nuclei"] < 1e-6 and d["rho"] < 1e-6
+    assert d["atoms"] < 1e-3 and d["atoms_n_over_u"] < 1e-3
+    assert d["molecules"] < 1e-3 and d["molecules_n_over_u"] < 1e-3
+    with pytest.raises(ValueError):
+        ChemicalEquilibrium(lagged_lowering=True)
+
+
 def test_v2_default_against_exact_port(v2_default, solar_oracle):
     """Physics differences (full species list, self-consistent lowering, CODATA constants) stay at the
     percent level for n_e and below 1e-3 for the mass density; layer 1 excluded for the atoms (NMOLEC's

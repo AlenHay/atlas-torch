@@ -2,7 +2,8 @@
 
     from atlas_torch.v2.opacity.continuum import ContinuousOpacity
     op = ContinuousOpacity()(pops, nu)       # pops: v2 Populations (..., L); nu (F,) Hz
-    op.absorption, op.scattering             # cm^2 g^-1, (..., L, F); op.absorbers["H- bf"], ...
+    op.absorption, op.scattering             # cm^2 g^-1, (..., L, F)
+    ContinuousOpacity()(pops, nu, parts=True).absorbers["H- bf"]   # per process
 
 Processes are listed in PROCESSES by name; KuruczCompat switches individual choices back to atlas7v.for's.
 Departure coefficients are 1 (LTE), so every absorber has the Planck source function (Opacity.source = None).
@@ -15,6 +16,7 @@ from ...constants import CODATA2018, PhysicalConstants
 from ...eos.equilibrium import Populations
 from .. import Opacity
 from . import helium, hydrogen, metals, molecules, scattering
+from .sampled import EdgeSampled
 from .state import Conditions, KuruczCompat
 
 # name -> (function of Conditions returning cm^-1, atlas7v.for routine)
@@ -60,24 +62,45 @@ class ContinuousOpacity:
 
     processes  names from PROCESSES (default: all)
     const      constant set (CODATA2018; KURUCZ for the atlas7v.for literals)
-    compat     KuruczCompat switches (default: v2 physics)"""
+    compat     KuruczCompat switches (default: v2 physics)
+    chunk      frequencies per evaluation block"""
 
-    def __init__(self, processes=None, const: PhysicalConstants = CODATA2018, compat: KuruczCompat = KuruczCompat()):
+    def __init__(self, processes=None, const: PhysicalConstants = CODATA2018, compat: KuruczCompat = KuruczCompat(),
+                 chunk: int = 4096):
         names = PROCESSES if processes is None else tuple(processes)
         unknown = set(names) - set(PROCESSES)
         if unknown:
             raise ValueError(f"unknown processes {sorted(unknown)}")
-        self.names, self.const, self.compat = names, const, compat
+        self.names, self.const, self.compat, self.chunk = names, const, compat, chunk
 
-    def __call__(self, pops: Populations, nu) -> Opacity:
+    def __call__(self, pops: Populations, nu, parts: bool = False) -> Opacity:
+        """Opacity (..., L, F); parts: also the per-process contributions (Opacity.absorbers, .scatterers).
+        Evaluated in blocks of `chunk` frequencies (memory bound)."""
         nu = torch.as_tensor(nu, dtype=torch.float64, device=pops.T.device)
+        blocks = [self._block(pops, nu[i:i + self.chunk], parts) for i in range(0, max(nu.shape[-1], 1), self.chunk)]
+        if len(blocks) == 1:
+            return blocks[0]
+        cat = lambda vs: torch.cat(vs, -1)                               # noqa: E731
+        each = lambda name: {k: cat([getattr(b, name)[k] for b in blocks]) for k in getattr(blocks[0], name)}
+        return Opacity(cat([b.absorption for b in blocks]), cat([b.scattering for b in blocks]), None,
+                       each("absorbers"), each("scatterers"))
+
+    def _block(self, pops: Populations, nu: torch.Tensor, parts: bool) -> Opacity:
         c = Conditions(pops, nu, self.const, self.compat)
         shape = c.T.shape[:-1] + nu.shape
-        per_mass = lambda f: (f(c) / c.rho).expand(shape)                # noqa: E731
-        a = {k: per_mass(ABSORBERS[k][0]) for k in self.names if k in ABSORBERS}
-        s = {k: per_mass(SCATTERERS[k][0]) for k in self.names if k in SCATTERERS}
-        zero = torch.zeros(shape, dtype=nu.dtype, device=nu.device)
-        return Opacity(sum(a.values(), zero), sum(s.values(), zero), None, a, s)
+        out = []
+        for table in (ABSORBERS, SCATTERERS):
+            total = torch.zeros(shape, dtype=nu.dtype, device=nu.device)
+            each = {}
+            for k in self.names:
+                if k in table:
+                    v = table[k][0](c) / c.rho
+                    total = total + v
+                    if parts:
+                        each[k] = v.expand(shape)
+            out.append((total, each))
+        (a, pa), (s, ps) = out
+        return Opacity(a, s, None, pa, ps)
 
 
-__all__ = ["ContinuousOpacity", "KuruczCompat", "PROCESSES", "ABSORBERS", "SCATTERERS"]
+__all__ = ["ContinuousOpacity", "EdgeSampled", "KuruczCompat", "PROCESSES", "ABSORBERS", "SCATTERERS"]

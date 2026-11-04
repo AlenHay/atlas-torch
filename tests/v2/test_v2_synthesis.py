@@ -55,3 +55,45 @@ def test_transfer_alone_vs_stock_window0(tmp_path):
     m = synthe_metrics_v2(STOCK / "window_0", tmp_path)
     assert m["cont:rel"] < 5e-4 and m["normflux:abs"] < 5e-4 and m["normflux:rms_abs"] < 1e-4
     assert open(tmp_path / "spectrum.bin", "rb").read(12) == open(STOCK / "window_0/spectrum.bin", "rb").read(12)
+
+
+def test_kurucz_configuration_reaches_every_module():
+    """SynthesisConfig.kurucz() switches the EOS, continuum, line opacity, line selection and transfer together."""
+    from atlas_torch.v2.opacity.continuum import ContinuousOpacity, EdgeSampled, KuruczCompat
+    from atlas_torch.v2.opacity.lines import KURUCZ_OPTIONS, LineList
+    from atlas_torch.v2.synthesis import SynthesisConfig
+    k = SynthesisConfig.kurucz()
+    eq = k.equation_of_state()
+    assert (eq.network, eq.debye_mode, eq.lagged, eq.const.name) == ("kurucz", "kurucz", True, "KURUCZ")
+    op = k.opacity(LogWavelengthGrid.window(500.0, 500.1, 600000.0), line_list=LineList.empty())
+    assert isinstance(op.continuum, EdgeSampled) and isinstance(op.continuum.continuum, ContinuousOpacity)
+    assert op.continuum.continuum.compat == KuruczCompat.all() and op.continuum.continuum.const.name == "KURUCZ"
+    opt = op.line_opacity.opt
+    assert opt.const.name == "KURUCZ" and all(getattr(opt, a) == v for a, v in KURUCZ_OPTIONS.items())
+    assert (k.selection, k.kurucz_isotopes) == ("kurucz", True)
+    tr = k.transfer_solver()
+    assert (tr.opaque_top, tr.tau_scheme) == ("diffusion", "atlas")
+    v = SynthesisConfig()
+    assert v.equation_of_state().network == "full" and v.const.name == "CODATA2018"
+    assert isinstance(v.opacity(LogWavelengthGrid.window(500.0, 500.1, 600000.0),
+                                line_list=LineList.empty()).continuum, ContinuousOpacity)
+
+
+@pytest.mark.stage
+def test_kurucz_compatible_pipeline_vs_stock_window0(tmp_path):
+    """The whole v2 pipeline in SynthesisConfig.kurucz() against stock spectrum.bin, window 0, gated by
+    tolerances.json stages.synthe (measured: cont 2.2e-4 rel, normalised flux 5.3e-4 max)."""
+    import json
+    from atlas_torch.scoring import gate_v2, synthe_metrics_v2
+    from atlas_torch.v2.io import read_atlas_deck, to_synthe_deck
+    from atlas_torch.v2.synthesis import deck_title, synthesize
+    if not (STOCK / "window_0/spectrum.bin").exists():
+        pytest.skip(f"missing {STOCK}")
+    deck = to_synthe_deck(read_atlas_deck(STOCK / "output_summary.out"))
+    with torch.no_grad():
+        spec = synthesize(deck.atmosphere, deck.composition, LogWavelengthGrid.window(500.0, 510.0, 600000.0),
+                          kurucz=True, title=deck_title(deck))
+    spec.write(tmp_path / "spectrum.bin")
+    tol = json.loads((Path(__file__).resolve().parents[2] / "results/v2/tolerances.json").read_text())
+    m = synthe_metrics_v2(STOCK / "window_0", tmp_path)
+    assert not gate_v2(m, tol["stages"]["synthe"]), m

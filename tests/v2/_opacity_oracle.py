@@ -155,7 +155,8 @@ def model_validation(name: str) -> dict:
     out, ops = {"tiers": {}, "switches": {}}, {}
     for tier, t in TIERS.items():
         p = pops[t["pops"]]
-        ops[tier] = op = ContinuousOpacity(const=getattr(constants, t["const"]), compat=compat[t["compat"]])(p, nu)
+        ops[tier] = op = ContinuousOpacity(const=getattr(constants, t["const"]),
+                                           compat=compat[t["compat"]])(p, nu, parts=True)
         out["tiers"][tier] = deviations(op, ok, add_floor=tier.startswith("A"), pops=p)
     lam = 2.99792458e17 / ok["freqset"]
     ref = np.log10(ops["A_kurucz_equivalent"].total.numpy())

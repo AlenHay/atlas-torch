@@ -125,7 +125,7 @@ class Transfer:
     opaque_top="formal": the surface flux of the formal solution; "diffusion": where tau_1 > 20, H(0) is the
     diffusion flux (1/3) dS/dtau of the top layer (JOSH's MAXJ=1 branch, eq. 2.76), Kurucz-compatible.
     tau_scheme: see optical_depth. method: "ali" | "direct" (see the module docstring); tol, max_iter: ALI
-    convergence. chunk: wavelengths per batch (default 8192 for ALI, 512 for the dense Lambda, ~100 chunk L^2 bytes).
+    convergence. chunk: wavelengths per batch (default 2048 for ALI, 512 for the dense Lambda, ~100 chunk L^2 bytes).
     """
 
     def __init__(self, n_mu: int = 6, *, scattering: str = "coherent", opaque_top: str = "formal",
@@ -137,7 +137,7 @@ class Transfer:
                              "method: 'ali'|'direct'")
         self.n_mu, self.scattering, self.opaque_top = n_mu, scattering, opaque_top
         self.tau_scheme, self.method, self.tol, self.max_iter = tau_scheme, method, tol, max_iter
-        self.chunk = chunk or (8192 if method == "ali" else 512)
+        self.chunk = chunk or (2048 if method == "ali" else 512)
 
     @staticmethod
     def _ray_weights(t, mus):

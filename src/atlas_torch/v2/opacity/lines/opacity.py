@@ -107,7 +107,7 @@ class LineOpacityOptions:
     max_wing_points: int | None = None
     cutoff_rule: str = "local"
     helium_ii: str = "voigt"
-    budget: int = 1 << 21
+    budget: int = 1 << 19
     const: PhysicalConstants = field(default=CODATA2018)
 
 

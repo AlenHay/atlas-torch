@@ -10,8 +10,13 @@ Molecules (and H-) are absent above t_molecules_max (NMOLEC: IF(T(J).GT.10000.)G
 network="full": all elements and tabulated stages, molecules of molecules.dat (v2 default).
 network="kurucz": NMOLEC's species list: the atoms/ions listed in molecules.dat and the neutral atoms of molecule
 components (READMOL; e.g. Li of LiH) are in the conservation equations; other elements are spectators at the
-solved n_e and N (POPS label 400); unlisted stages of listed elements are zero (POPS label 313).
+solved n_e and N (POPS label 400); unlisted stages of listed elements are zero (POPS label 313). Elements
+with no atom/ion line in molecules.dat (the spectators, and Li, Be, B, which enter only as molecule components)
+are reported from the Saha equation at the converged n_e, N and lowering, as POPS does (label 400).
 debye="kurucz": n_c = 2 n_e (+ He III excess) as in PFSAHA instead of the computed sum.
+lagged_lowering=True (with debye="kurucz"): NMOLEC's lowering. The equilibrium of layer J is solved with the
+lowering at the Newton start n_e(J-1) P(J)/P(J-1) (layer 1: P/kT/20); partition functions of n/U and molecular
+n/U use the lowering at the converged n_e (NMOLEC labels 120-136). The same holds for an explicit debye_n_e.
 """
 from __future__ import annotations
 
@@ -84,10 +89,13 @@ class ChemicalEquilibrium:
     """EOS solver: ChemicalEquilibrium().solve(atmosphere, composition) -> Populations."""
 
     def __init__(self, records: list[MoleculeRecord] | None = None, *, network: str = "full",
-                 debye: str = "exact", t_molecules_max: float = 1.0e4, const: PhysicalConstants = CODATA2018,
-                 tol: float = 1e-11, maxiter: int = 60, device=None):
+                 debye: str = "exact", lagged_lowering: bool = False, t_molecules_max: float = 1.0e4,
+                 const: PhysicalConstants = CODATA2018, tol: float = 1e-11, maxiter: int = 60, device=None):
         if network not in ("full", "kurucz") or debye not in ("exact", "kurucz"):
             raise ValueError("network: 'full'|'kurucz', debye: 'exact'|'kurucz'")
+        if lagged_lowering and debye != "kurucz":
+            raise ValueError("lagged_lowering requires debye='kurucz'")
+        self.lagged = lagged_lowering
         records = read_molecules_dat() if records is None else records
         self.network, self.debye_mode, self.const = network, debye, const
         self.t_mol_max, self.tol, self.maxiter = t_molecules_max, tol, maxiter
@@ -97,12 +105,14 @@ class ChemicalEquilibrium:
         self.molecules = MoleculeSet.from_records(records)
         exists = self.pf.exists.clone()
         balance = torch.ones(N_ELEMENTS, dtype=torch.bool, device=self.device)
+        self.reported = balance.clone()
         if network == "kurucz":
             listed = np.zeros((N_ELEMENTS, MAX_STAGES), dtype=bool)
             for r in records:
                 if r.code < 100.0:
                     z, s = parse_species(f"{r.code:.2f}")
                     listed[z - 1, s - 1] = True
+            self.reported = tt(listed.any(1), torch.bool)
             listed[self.molecules.elements - 1, 0] = True       # READMOL: every molecule component gets an equation
             bal = listed.any(1)
             balance = tt(bal, torch.bool)
@@ -229,7 +239,7 @@ class ChemicalEquilibrium:
     def solve(self, atm: Atmosphere, comp: Composition, debye_n_e: torch.Tensor | None = None) -> Populations:
         """Populations for every layer (and batch element) of `atm`. debye_n_e (debye="kurucz" only): electron
         density at which the lowering is evaluated instead of the solved one (NMOLEC uses its Newton start, the
-        previous layer's n_e scaled by the pressure ratio)."""
+        previous layer's n_e scaled by the pressure ratio; lagged_lowering=True computes it self-consistently)."""
         c = self.const
         T = atm.T.to(self.device, torch.float64)
         P = atm.P.to(self.device, torch.float64)
@@ -241,17 +251,41 @@ class ChemicalEquilibrium:
         ln_a = torch.log(torch.clamp(af, min=1e-40))
         if debye_n_e is not None and self.debye_mode != "kurucz":
             raise ValueError("debye_n_e requires debye='kurucz'")
+        if debye_n_e is not None and self.lagged:
+            raise ValueError("debye_n_e and lagged_lowering exclude each other")
         ln_ne_d = torch.full_like(tf, float("nan")) if debye_n_e is None else \
             torch.log(debye_n_e.to(self.device, torch.float64)).reshape(-1)
         with torch.no_grad():
             x0 = self._initial(tf.detach(), ln_ntot.detach(), ln_a.detach())
-        x = newton(self._residual, x0, (tf, ln_ntot, ln_a, ln_ne_d), tol=self.tol, maxiter=self.maxiter,
-                   linearize=self._linearize)
+        solve = lambda x_start, lag: newton(self._residual, x_start, (tf, ln_ntot, ln_a, lag), tol=self.tol,
+                                            maxiter=self.maxiter, linearize=self._linearize)
+        x = solve(x0, ln_ne_d)
+        if self.lagged:
+            nm = len(self.mol_z)
+            lag_of = lambda x: self._lagged_ne(x[..., nm].reshape(shape), torch.log(P), ln_ntot.reshape(shape))
+            for _ in range(shape[-1] + 1):
+                ln_ne_d = lag_of(x).reshape(-1)
+                x = solve(x.detach(), ln_ne_d)
+                if float((lag_of(x).reshape(-1) - ln_ne_d).abs().max()) < 1e-13:
+                    break
+            ln_ne_d = lag_of(x).reshape(-1)
         sp = self._species(x, tf, ln_ntot, ln_a, ln_ne_d)
+        ln_u, n_atom_ln = sp["ln_u"], sp["ln_atoms"]
+        mask = self.stage_mask
+        lagged = not bool(torch.isnan(ln_ne_d).all())
+        if lagged or self.network == "kurucz":
+            de = self._lowering(x, tf, ln_ntot, torch.full_like(tf, float("nan"))) if lagged else sp["de"]
+            ln_uf = torch.log(self.pf(tf, de)) if lagged else ln_u
+            if lagged:
+                ln_u = ln_uf
+            ln_r = log_stage_ratios(log_saha(tf, ln_uf, self.pf.chi, de, c), sp["ln_ne"], self.pf.exists)
+            free = ln_a + sp["ln_n"][..., None] - torch.logsumexp(ln_r, -1)
+            n_atom_ln = torch.where(self.reported[:, None], sp["ln_atoms"], free[..., None] + ln_r)
+            mask = torch.where(self.reported[:, None], self.stage_mask, self.pf.exists)
         off = (tf > self.t_mol_max)[..., None]
         zero = lambda v: torch.where(off, torch.zeros_like(v), v)
-        n_atom = torch.where(self.stage_mask, torch.exp(sp["ln_atoms"]), torch.zeros_like(sp["ln_atoms"]))
-        ln_nu = self.molecules.log_n_over_u(tf, sp["ln_n1"], sp["ln_u"][..., 0], sp["ln_ne"], c)
+        n_atom = torch.where(mask, torch.exp(n_atom_ln), torch.zeros_like(n_atom_ln))
+        ln_nu = self.molecules.log_n_over_u(tf, sp["ln_n1"], ln_u[..., 0], sp["ln_ne"], c)
         n_nuc = torch.exp(sp["ln_n"])
         rho = n_nuc * (af * self.mass).sum(-1) * c.amu
         ntot = torch.exp(ln_ntot)
@@ -260,5 +294,11 @@ class ChemicalEquilibrium:
         return Populations(
             T=T, P=P, n_total=r(ntot), n_e=r(torch.exp(sp["ln_ne"])), n_nuclei=r(n_nuc), rho=r(rho),
             mu=r(rho / (c.amu * ntot)), debye=r(sp["de"]), n_atom=r(n_atom, (N_ELEMENTS, MAX_STAGES)),
-            u_atom=r(torch.exp(sp["ln_u"]), (N_ELEMENTS, MAX_STAGES)), n_mol=r(zero(torch.exp(sp["ln_mol"])), (nmol,)),
+            u_atom=r(torch.exp(ln_u), (N_ELEMENTS, MAX_STAGES)), n_mol=r(zero(torch.exp(sp["ln_mol"])), (nmol,)),
             n_over_u_mol=r(zero(torch.exp(ln_nu)), (nmol,)), molecules=self.molecules)
+
+    @staticmethod
+    def _lagged_ne(ln_ne: torch.Tensor, ln_p: torch.Tensor, ln_ntot: torch.Tensor) -> torch.Tensor:
+        """ln of NMOLEC's Newton-start n_e per layer: n_e(J-1) P(J)/P(J-1), layer 1: (P/kT)/20 (loops 32-34)."""
+        first = ln_ntot[..., :1] - np.log(20.0)
+        return torch.cat([first, ln_ne[..., :-1] + ln_p[..., 1:] - ln_p[..., :-1]], -1)

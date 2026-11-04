@@ -33,7 +33,7 @@ def nu():
 
 
 def test_shapes_and_batching(solar_pops, nu):
-    op = ContinuousOpacity()(solar_pops, nu)
+    op = ContinuousOpacity()(solar_pops, nu, parts=True)
     n = solar_pops.T.shape[0]
     assert op.absorption.shape == op.scattering.shape == (n, nu.shape[0])
     assert set(op.absorbers) | set(op.scatterers) == set(PROCESSES)
@@ -70,10 +70,28 @@ def test_kurucz_tier_solar(solar_deck, solar_oracle):
     from atlas_torch.v2.io import format_atlas_deck
     ok = oracle_kapp(format_atlas_deck(solar_deck))
     pops = populations_from_oracle(solar_oracle, ChemicalEquilibrium().molecules)
-    op = ContinuousOpacity(const=constants.KURUCZ, compat=KuruczCompat.all())(pops, torch.as_tensor(ok["freqset"]))
+    op = ContinuousOpacity(const=constants.KURUCZ, compat=KuruczCompat.all())(pops, torch.as_tensor(ok["freqset"]),
+                                                                              parts=True)
     d = deviations(op, ok, add_floor=True, pops=pops)
     for g, v in d["groups"].items():
         if "all" in v["rel"] and g != "bhyd.ahyd":
             assert v["rel"]["all"]["max"] < 2e-4, g
     assert d["groups"]["bhyd.ahyd"]["rel"]["all"]["rms"] < 2e-3
     assert d["totals"]["continall"]["all"]["rms"] < 1e-4
+
+
+def test_chunked_evaluation_and_edge_sampling(solar_pops):
+    """Frequency blocks change the result only by round-off; EdgeSampled is exact at the interval midpoints (XNFPELSYN's
+    middle frequency) and within 0.5 % of the direct evaluation across 500-510 nm."""
+    from atlas_torch.v2.opacity.continuum import EdgeSampled
+    wl = torch.linspace(500.0, 510.0, 101, dtype=torch.float64)
+    nu = 2.99792458e17 / wl
+    one = ContinuousOpacity(chunk=1 << 20)(solar_pops, nu)
+    blocks = ContinuousOpacity(chunk=7)(solar_pops, nu)
+    torch.testing.assert_close(blocks.absorption, one.absorption, rtol=1e-13, atol=0)
+    torch.testing.assert_close(blocks.scattering, one.scattering, rtol=1e-13, atol=0)
+    es = EdgeSampled(ContinuousOpacity())
+    mid = torch.as_tensor(es.freqset[1::3][100:110])
+    torch.testing.assert_close(es(solar_pops, mid).total, ContinuousOpacity()(solar_pops, mid).total, rtol=1e-10, atol=0)
+    assert float((es(solar_pops, nu).total / one.total - 1).abs().max()) < 5e-3
+
