@@ -43,6 +43,10 @@ def main():
     names = sys.argv[2:] or ["sun_model", "output", "custom_abun"]
     import matplotlib
     matplotlib.use("Agg")
+    # the notebooks write to ~/..., so HOME is redirected per example below: pin every path that would
+    # otherwise default to ~ (Fortran sources/DATA tables, BasicATLAS data) before that happens
+    os.environ.setdefault("ATLAS_EXT", str(EXT))
+    os.environ.setdefault("ATLAS_TORCH_BASICATLAS", str(BA))
     if backend == "stock":
         # BasicATLAS (pinned) predates NumPy 2: restore the two removed aliases it uses (np.alltrue in meta(),
         # np.trapz in synphot). Behaviour-identical: np.all / np.trapezoid are the same functions.

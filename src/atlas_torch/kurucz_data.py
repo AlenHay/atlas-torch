@@ -990,7 +990,9 @@ def _load_tables(source_path: str | Path) -> dict[tuple[str, str], np.ndarray]:
     content = source_p.read_bytes()
     sha = hashlib.sha256(content).hexdigest()
 
-    cache_dir = Path.home() / ".cache" / "atlas_torch"
+    cache_dir = (Path(os.environ["ATLAS_TORCH_CACHE"]) if "ATLAS_TORCH_CACHE" in os.environ else
+                 Path(os.environ["ATLAS_EXT"]) / "cache" / "atlas_torch" if "ATLAS_EXT" in os.environ else
+                 Path.home() / ".cache" / "atlas_torch")
     cache_path = cache_dir / f"{sha}.v{PARSER_VERSION}.npz"
 
     if cache_path.exists():
