@@ -1,0 +1,7504 @@
+{
+ "synthe/w0/exact": {
+  "xnfpelsyn": {
+   "seconds": 0.6516797340009362,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.163513729807164e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 8.881784197001252e-15,
+    "xnfpel:rel": 1.1879360269312073e-10,
+    "dopple:rel": 0.0
+   },
+   "status": "ok",
+   "loadavg": 2.94,
+   "runs_s": [
+    1.0340954610001063,
+    0.6516797340009362
+   ],
+   "cold_s": 1.0340954610001063,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 1.1237093189993175,
+   "status": "ok",
+   "loadavg": 2.94,
+   "runs_s": [
+    1.150141229001747,
+    1.1237093189993175
+   ],
+   "cold_s": 1.150141229001747,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.1087818169980892,
+   "status": "ok",
+   "loadavg": 2.94,
+   "runs_s": [
+    0.10910964200593298,
+    0.1087818169980892
+   ],
+   "cold_s": 0.10910964200593298,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 1.8464842130051693,
+   "seconds_parts": {
+    "xnfpelsyn": 0.6108099699995364,
+    "synthe": 1.1278392820022418,
+    "spectrv": 0.10783496100339107
+   },
+   "status": "ok",
+   "loadavg": 2.87,
+   "runs_s": [
+    1.8464842130051693,
+    1.8511333420028677
+   ],
+   "cold_s": 1.8464842130051693,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w0/native": {
+  "xnfpelsyn": {
+   "seconds": 0.48544350000156555,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 3.06,
+   "runs_s": [
+    0.6986460690022795,
+    0.48544350000156555
+   ],
+   "cold_s": 0.6986460690022795,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 1.1353632980026305,
+   "status": "ok",
+   "loadavg": 2.97,
+   "runs_s": [
+    1.163013082004909,
+    1.1353632980026305
+   ],
+   "cold_s": 1.163013082004909,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.5103348010015907,
+   "status": "ok",
+   "loadavg": 2.97,
+   "runs_s": [
+    0.5103348010015907,
+    0.5216795169981197
+   ],
+   "cold_s": 0.5103348010015907,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 2.2675405999980285,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5102115200061235,
+    "synthe": 1.2728682140004821,
+    "spectrv": 0.5225617109972518
+   },
+   "status": "ok",
+   "loadavg": 2.97,
+   "runs_s": [
+    2.3056414450038574,
+    2.2675405999980285
+   ],
+   "cold_s": 2.3056414450038574,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w0/cpu32": {
+  "xnfpelsyn": {
+   "seconds": 5.093179704999784,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719587840353514,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 10.55,
+   "runs_s": [
+    5.9292636399986804,
+    5.093179704999784
+   ],
+   "cold_s": 5.9292636399986804,
+   "metrics": {
+    "flux:rel": 8.050697138009893e-05,
+    "cont:rel": 8.093633945692891e-05,
+    "normflux:abs": 3.430561831241352e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.093633945692891e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      8.050697138009893e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      3.430561831241352e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     82.82680191216019
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 3.54472639800224,
+   "status": "ok",
+   "loadavg": 10.5,
+   "runs_s": [
+    3.54472639800224,
+    3.6450035529996967
+   ],
+   "cold_s": 3.54472639800224,
+   "metrics": {
+    "flux:rel": 2.0592417068930953e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3051035951949785e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.09453528584944551
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 2.115298636999796,
+   "status": "ok",
+   "loadavg": 10.5,
+   "runs_s": [
+    2.115298636999796,
+    3.0808894199944916
+   ],
+   "cold_s": 2.115298636999796,
+   "metrics": {
+    "flux:rel": 2.805721317418917e-06,
+    "cont:rel": 3.132926753412622e-06,
+    "normflux:abs": 2.1892831374437094e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.132926753412622e-06,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      2.805721317418917e-06,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      2.1892831374437094e-06,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     3.206103776762782
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 9.220584242990299,
+   "seconds_parts": {
+    "xnfpelsyn": 4.106816408995655,
+    "synthe": 2.8452853049966507,
+    "spectrv": 2.2684825289979926
+   },
+   "status": "ok",
+   "loadavg": 10.34,
+   "runs_s": [
+    9.220584242990299,
+    11.038196768007765
+   ],
+   "cold_s": 9.220584242990299,
+   "metrics": {
+    "flux:rel": 8.255246454813893e-05,
+    "cont:rel": 8.335357883192458e-05,
+    "normflux:abs": 3.519119279871141e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.335357883192458e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      8.255246454813893e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      3.519119279871141e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     85.30050171413338
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w0/gpu64": {
+  "xnfpelsyn": {
+   "seconds": 0.5627305199959665,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 2.62,
+   "runs_s": [
+    1.2922895689989673,
+    0.5627305199959665
+   ],
+   "cold_s": 1.2922895689989673,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.2124934290040983,
+   "status": "ok",
+   "loadavg": 2.62,
+   "runs_s": [
+    0.28797725299955346,
+    0.2124934290040983
+   ],
+   "cold_s": 0.28797725299955346,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.1240432620033971,
+   "status": "ok",
+   "loadavg": 2.65,
+   "runs_s": [
+    0.1240432620033971,
+    0.12589712000044528
+   ],
+   "cold_s": 0.1240432620033971,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 0.8816480679961387,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5482714080062578,
+    "synthe": 0.22031305800192058,
+    "spectrv": 0.12039240400190465
+   },
+   "status": "ok",
+   "loadavg": 2.65,
+   "runs_s": [
+    0.8889768700100831,
+    0.8816480679961387
+   ],
+   "cold_s": 0.8889768700100831,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w0/gpu32": {
+  "xnfpelsyn": {
+   "seconds": 1.7770513630021014,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719563998495603,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 2.91,
+   "runs_s": [
+    2.8388365089995204,
+    1.7770513630021014
+   ],
+   "cold_s": 2.8388365089995204,
+   "metrics": {
+    "flux:rel": 8.054864686779617e-05,
+    "cont:rel": 8.093702622875298e-05,
+    "normflux:abs": 3.430561831241352e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.093702622875298e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      8.054864686779617e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      3.430561831241352e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     82.82750472518845
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.29007036800612696,
+   "status": "ok",
+   "loadavg": 2.91,
+   "runs_s": [
+    0.34041294299822766,
+    0.29007036800612696
+   ],
+   "cold_s": 0.34041294299822766,
+   "metrics": {
+    "flux:rel": 2.0592417068930953e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3051035951949785e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.09453528584944551
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.21374733099946752,
+   "status": "ok",
+   "loadavg": 2.91,
+   "runs_s": [
+    0.21374733099946752,
+    0.2204341180040501
+   ],
+   "cold_s": 0.21374733099946752,
+   "metrics": {
+    "flux:rel": 2.692445143400285e-06,
+    "cont:rel": 2.8066003669336266e-06,
+    "normflux:abs": 2.529772736403757e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      2.8066003669336266e-06,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      2.692445143400285e-06,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      2.529772736403757e-06,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     2.872155254344242
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 2.220621782995295,
+   "seconds_parts": {
+    "xnfpelsyn": 1.7467023889985285,
+    "synthe": 0.2587389210020774,
+    "spectrv": 0.2151804729946889
+   },
+   "status": "ok",
+   "loadavg": 2.91,
+   "runs_s": [
+    2.220621782995295,
+    2.44042965999688
+   ],
+   "cold_s": 2.220621782995295,
+   "metrics": {
+    "flux:rel": 8.277320195012355e-05,
+    "cont:rel": 8.315042198512821e-05,
+    "normflux:abs": 3.525449995622765e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.315042198512821e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      8.277320195012355e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      3.525449995622765e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     85.09259965160365
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w0/cpu32p": {
+  "xnfpelsyn": {
+   "seconds": 3.1310896889990545,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "metrics": {
+    "flux:rel": 3.042810578039781e-05,
+    "cont:rel": 3.054983036358084e-05,
+    "normflux:abs": 1.3055810718753946e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.054983036358084e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      3.042810578039781e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      1.3055810718753946e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     31.263394971315144
+    ],
+    "n_gated": 3
+   },
+   "status": "ok",
+   "loadavg": 3.26,
+   "runs_s": [
+    3.1310896889990545
+   ],
+   "cold_s": 3.1310896889990545
+  },
+  "synthe": {
+   "seconds": 3.0063848619975033,
+   "metrics": {
+    "flux:rel": 2.0592417068930953e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3051035951949785e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.09453528584944551
+    ],
+    "n_gated": 3
+   },
+   "status": "ok",
+   "loadavg": 3.24,
+   "runs_s": [
+    3.0063848619975033
+   ],
+   "cold_s": 3.0063848619975033
+  },
+  "spectrv": {
+   "seconds": 2.851196609000908,
+   "metrics": {
+    "flux:rel": 2.805721317418917e-06,
+    "cont:rel": 3.132926753412622e-06,
+    "normflux:abs": 2.1892831374437094e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.132926753412622e-06,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      2.805721317418917e-06,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      2.1892831374437094e-06,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     3.206103776762782
+    ],
+    "n_gated": 3
+   },
+   "status": "ok",
+   "loadavg": 3.3,
+   "runs_s": [
+    2.851196609000908
+   ],
+   "cold_s": 2.851196609000908
+  },
+  "chain": {
+   "seconds": 10.273673063995375,
+   "seconds_parts": {
+    "xnfpelsyn": 3.4231217429987737,
+    "synthe": 3.24641760999657,
+    "spectrv": 3.6041337110000313
+   },
+   "metrics": {
+    "flux:rel": 3.265227279449274e-05,
+    "cont:rel": 3.283290245860345e-05,
+    "normflux:abs": 1.3800646528006055e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.283290245860345e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      3.265227279449274e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      1.3800646528006055e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     33.59979369449004
+    ],
+    "n_gated": 3
+   },
+   "status": "ok",
+   "loadavg": 3.25,
+   "runs_s": [
+    10.273673063995375
+   ],
+   "cold_s": 10.273673063995375
+  }
+ },
+ "kappa9/solar/fortran": {
+  "seconds": 2.0635478149997653,
+  "runs_s": [
+   2.0635478149997653,
+   2.233518444998481
+  ],
+  "same_as_stock": true,
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 6,
+   "loadavg": [
+    3.01,
+    2.64,
+    1.7
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T09:57:22",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  }
+ },
+ "kappa9/solar/exact": {
+  "mode": "exact",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.55,
+    2.32,
+    2.77
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:10:14",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   5.056313130997296
+  ],
+  "timing": {
+   "continuum_v0": 2.733,
+   "rosseland_v0": 0.6,
+   "rosseland_v1": 0.431,
+   "rosseland_v2": 0.427,
+   "rosseland_v4": 0.426,
+   "rosseland_v8": 0.425,
+   "total": 5.054
+  },
+  "seconds": 5.056313130997296,
+  "cold_s": 5.056313130997296,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 2.51
+ },
+ "kappa9/solar/native": {
+  "mode": "native",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.04,
+    2.69,
+    1.75
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T09:57:53",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   13.639881032999256
+  ],
+  "timing": {
+   "continuum_v0": 10.441,
+   "rosseland_v0": 0.776,
+   "rosseland_v1": 0.753,
+   "rosseland_v2": 0.583,
+   "rosseland_v4": 0.54,
+   "rosseland_v8": 0.534,
+   "total": 13.638
+  },
+  "seconds": 13.639881032999256,
+  "cold_s": 13.639881032999256,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 3.52
+ },
+ "kappa9/solar/cpu32": {
+  "mode": "cpu32",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.28,
+    4.12,
+    2.63
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:02:26",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [],
+  "status": "fail_overflow",
+  "error": "ValueError: invalid literal for int() with base 10: '*****'",
+  "gate": {
+   "pass": false,
+   "worst": [
+    "kapk print overflow",
+    Infinity
+   ]
+  },
+  "loadavg_end": 3.63
+ },
+ "kappa9/solar/cpu32p": {
+  "mode": "cpu32p",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.43,
+    2.87,
+    1.86
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T09:58:39",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   48.21360871900106
+  ],
+  "timing": {
+   "continuum_v0": 33.263,
+   "rosseland_v0": 3.015,
+   "rosseland_v1": 2.807,
+   "rosseland_v2": 2.914,
+   "rosseland_v4": 3.075,
+   "rosseland_v8": 3.123,
+   "total": 48.213
+  },
+  "seconds": 48.21360871900106,
+  "cold_s": 48.21360871900106,
+  "metrics": {
+   "kapk_v0:abs": 1.0,
+   "kapk_v0:frac": 0.000835421888053467,
+   "kapk_v1:abs": 1.0,
+   "kapk_v1:frac": 0.0012531328320802004,
+   "kapk_v2:abs": 1.0,
+   "kapk_v2:frac": 0.000835421888053467,
+   "kapk_v4:abs": 1.0,
+   "kapk_v4:frac": 0.0012531328320802004,
+   "kapk_v8:abs": 1.0,
+   "kapk_v8:frac": 0.0004177109440267335,
+   "logkappa_ros:abs": 0.001000000000000334
+  },
+  "gate": {
+   "pass": false,
+   "fails": {
+    "logkappa_ros:abs": [
+     0.001000000000000334,
+     0.001
+    ]
+   },
+   "worst": [
+    "logkappa_ros:abs",
+    1.000000000000334
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 5.22
+ },
+ "kappa9/solar/gpu64": {
+  "mode": "gpu64",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.51,
+    2.32,
+    2.77
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:10:20",
+   "commit": "508af9f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   9.93852569199953
+  ],
+  "device_coercions": {
+   "src/atlas_torch/atlas9/physics/opacity.py:1078 (kapp) [__setitem__]": 3164,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [add]": 1011,
+   "src/atlas_torch/atlas9/physics/opacity.py:514 (he2op) [add]": 702,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [div]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [add]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1092 (kapp) [__setitem__]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:275 (hminop) [add]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [sub]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [mul]": 315,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [mul]": 259,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [mul]": 237,
+   "src/atlas_torch/atlas9/physics/opacity.py:234 (h2plop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:655 (si1op) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:1075 (kapp) [__setitem__]": 234,
+   "src/atlas_torch/kappa9/kappa9_prog.py:193 (populations) [__setitem__]": 210,
+   "src/atlas_torch/atlas9/physics/opacity.py:878 (h2collop) [mul]": 168,
+   "src/atlas_torch/atlas9/physics/opacity.py:427 (he1op) [div]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:428 (he1op) [sub]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [add]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:511 (he2op) [div]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:512 (he2op) [sub]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [add]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [add]": 66,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [add]": 44,
+   "src/atlas_torch/kappa9/kappa9_prog.py:196 (populations) [__setitem__]": 42,
+   "src/atlas_torch/atlas9/physics/opacity.py:217 (hop) [div]": 22,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [sub]": 22,
+   "src/atlas_torch/kappa9/kappa9_prog.py:322 (rosseland) [tolist of a device tensor]": 5,
+   "src/atlas_torch/kappa9/kappa9_prog.py:347 (rosseland) [tolist of a device tensor]": 5
+  },
+  "timing": {
+   "continuum_v0": 9.384,
+   "rosseland_v0": 0.139,
+   "rosseland_v1": 0.101,
+   "rosseland_v2": 0.101,
+   "rosseland_v4": 0.1,
+   "rosseland_v8": 0.102,
+   "total": 9.938
+  },
+  "seconds": 9.93852569199953,
+  "cold_s": 9.93852569199953,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 3.24
+ },
+ "kappa9/solar/gpu32": {
+  "mode": "gpu32",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.63,
+    3.98,
+    2.64
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:03:01",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [],
+  "status": "fail_overflow",
+  "error": "ValueError: invalid literal for int() with base 10: '*****'",
+  "gate": {
+   "pass": false,
+   "worst": [
+    "kapk print overflow",
+    Infinity
+   ]
+  },
+  "loadavg_end": 2.12
+ },
+ "kappa9/solar/gpu32p": {
+  "mode": "gpu32p",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.03,
+    3.46,
+    2.54
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:03:59",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   66.40558869499364
+  ],
+  "device_coercions": {
+   "src/atlas_torch/atlas9/physics/opacity.py:1078 (kapp) [__setitem__]": 3164,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [add]": 1011,
+   "src/atlas_torch/atlas9/physics/opacity.py:514 (he2op) [add]": 702,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [div]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [add]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1092 (kapp) [__setitem__]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:275 (hminop) [add]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [sub]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [mul]": 315,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [mul]": 259,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [mul]": 237,
+   "src/atlas_torch/atlas9/physics/opacity.py:234 (h2plop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:655 (si1op) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:1075 (kapp) [__setitem__]": 234,
+   "src/atlas_torch/kappa9/kappa9_prog.py:193 (populations) [__setitem__]": 210,
+   "src/atlas_torch/atlas9/physics/opacity.py:878 (h2collop) [mul]": 168,
+   "src/atlas_torch/atlas9/physics/opacity.py:427 (he1op) [div]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:428 (he1op) [sub]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [add]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:511 (he2op) [div]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:512 (he2op) [sub]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [add]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [add]": 66,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [add]": 44,
+   "src/atlas_torch/kappa9/kappa9_prog.py:196 (populations) [__setitem__]": 42,
+   "src/atlas_torch/atlas9/physics/opacity.py:217 (hop) [div]": 22,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [sub]": 22
+  },
+  "timing": {
+   "continuum_v0": 64.461,
+   "rosseland_v0": 0.363,
+   "rosseland_v1": 0.364,
+   "rosseland_v2": 0.366,
+   "rosseland_v4": 0.424,
+   "rosseland_v8": 0.417,
+   "total": 66.405
+  },
+  "seconds": 66.40558869499364,
+  "cold_s": 66.40558869499364,
+  "metrics": {
+   "kapk_v0:abs": 1.0,
+   "kapk_v0:frac": 0.000835421888053467,
+   "kapk_v1:abs": 1.0,
+   "kapk_v1:frac": 0.0012531328320802004,
+   "kapk_v2:abs": 1.0,
+   "kapk_v2:frac": 0.000835421888053467,
+   "kapk_v4:abs": 1.0,
+   "kapk_v4:frac": 0.0012531328320802004,
+   "kapk_v8:abs": 1.0,
+   "kapk_v8:frac": 0.0004177109440267335,
+   "logkappa_ros:abs": 0.001000000000000334
+  },
+  "gate": {
+   "pass": false,
+   "fails": {
+    "logkappa_ros:abs": [
+     0.001000000000000334,
+     0.001
+    ]
+   },
+   "worst": [
+    "logkappa_ros:abs",
+    1.000000000000334
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 3.08
+ },
+ "atlas/sun/fortran": {
+  "mode": "fortran",
+  "model": "sun",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.55,
+    2.52,
+    2.66
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:18:25",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 5.552350938000018,
+  "loadavg": 2.53,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/sun/exact": {
+  "mode": "exact",
+  "model": "sun",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.51,
+    2.51,
+    2.66
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:18:33",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 9.570580118997896,
+  "loadavg": 2.5,
+  "iterations": 14,
+  "iteration_median_s": 0.5979793829974369,
+  "iteration_first_s": 0.7280082430006587,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/sun/native": {
+  "mode": "native",
+  "model": "sun",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.46,
+    2.5,
+    2.65
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:18:44",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 9.178299595005228,
+  "loadavg": 2.44,
+  "iterations": 14,
+  "iteration_median_s": 0.5769651510054246,
+  "iteration_first_s": 0.6803724630008219,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 1.0961558908802604e-06,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 1.0000000000000026e-05,
+   "FLXDRV:abs": 0.009999999999999787,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": false,
+   "fails": {
+    "FLXDRV:abs": [
+     0.009999999999999787,
+     0.0
+    ],
+    "FLXERR:abs": [
+     1.0000000000000026e-05,
+     0.0
+    ]
+   },
+   "worst": [
+    "FLXDRV:abs",
+    Infinity
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w1/exact": {
+  "xnfpelsyn": {
+   "seconds": 0.6144678429991473,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.163513729807164e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 8.881784197001252e-15,
+    "xnfpel:rel": 1.1879360269312073e-10,
+    "dopple:rel": 0.0
+   },
+   "status": "ok",
+   "loadavg": 2.25,
+   "runs_s": [
+    0.8250061520011513,
+    0.6144678429991473
+   ],
+   "cold_s": 0.8250061520011513,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 4.575167278002482,
+   "status": "ok",
+   "loadavg": 2.15,
+   "runs_s": [
+    4.580002283997601,
+    4.575167278002482
+   ],
+   "cold_s": 4.580002283997601,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.5674028620051104,
+   "status": "ok",
+   "loadavg": 2.15,
+   "runs_s": [
+    0.5674028620051104,
+    0.5686619010011782
+   ],
+   "cold_s": 0.5674028620051104,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 5.78459324099822,
+   "seconds_parts": {
+    "xnfpelsyn": 0.612898542000039,
+    "synthe": 4.602623159997165,
+    "spectrv": 0.5690715390010155
+   },
+   "status": "ok",
+   "loadavg": 1.97,
+   "runs_s": [
+    5.78459324099822,
+    5.795954292007082
+   ],
+   "cold_s": 5.78459324099822,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/sun/cpu32": {
+  "mode": "cpu32",
+  "model": "sun",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.47,
+    3.15,
+    2.63
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:07:53",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 89.24842569300381,
+  "loadavg": 2.77,
+  "iterations": 14,
+  "iteration_median_s": 6.055967952001083,
+  "iteration_first_s": 6.284795541003405,
+  "metrics": {
+   "RHOX:rel": 0.0010857604705286341,
+   "T:rel": 8.917921678365026e-05,
+   "P:rel": 0.0010606483512101406,
+   "XNE:rel": 0.0012078147180850647,
+   "RHO:rel": 0.0010479076018862724,
+   "ABROSS:rel": 0.0011161604081958768,
+   "TAUROS:rel": 2.3713709132438524e-06,
+   "FLXERR:abs": 0.84505,
+   "FLXDRV:abs": 1.8599999999999994,
+   "HEIGHT:abs": 0.08999999999991815,
+   "FLXCNV_over_total:abs": 0.008354879675026239,
+   "deck_T:rel": 8.917921678365026e-05,
+   "deck_P:rel": 0.0013175230566536036,
+   "deck_XNE:rel": 0.001568627450980392,
+   "deck_ABROSS:rel": 0.0015673981191222386
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": false,
+   "fails": {
+    "ABROSS:rel": [
+     0.0011161604081958768,
+     1e-05
+    ],
+    "FLXCNV_over_total:abs": [
+     0.008354879675026239,
+     1e-05
+    ],
+    "FLXDRV:abs": [
+     1.8599999999999994,
+     0.0
+    ],
+    "FLXERR:abs": [
+     0.84505,
+     0.0
+    ],
+    "HEIGHT:abs": [
+     0.08999999999991815,
+     0.0
+    ],
+    "P:rel": [
+     0.0010606483512101406,
+     1e-05
+    ],
+    "RHO:rel": [
+     0.0010479076018862724,
+     1e-05
+    ],
+    "RHOX:rel": [
+     0.0010857604705286341,
+     1e-05
+    ],
+    "T:rel": [
+     8.917921678365026e-05,
+     2e-05
+    ],
+    "XNE:rel": [
+     0.0012078147180850647,
+     1e-05
+    ],
+    "deck_ABROSS:rel": [
+     0.0015673981191222386,
+     0.001
+    ],
+    "deck_P:rel": [
+     0.0013175230566536036,
+     0.001
+    ],
+    "deck_T:rel": [
+     8.917921678365026e-05,
+     1e-05
+    ],
+    "deck_XNE:rel": [
+     0.001568627450980392,
+     0.001
+    ]
+   },
+   "worst": [
+    "FLXDRV:abs",
+    Infinity
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w2/exact": {
+  "xnfpelsyn": {
+   "seconds": 0.6059973880037433,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.163513729807164e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 8.881784197001252e-15,
+    "xnfpel:rel": 1.1879360269312073e-10,
+    "dopple:rel": 0.0
+   },
+   "status": "ok",
+   "loadavg": 1.59,
+   "runs_s": [
+    0.6059973880037433,
+    0.6090395760038518
+   ],
+   "cold_s": 0.6059973880037433,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 1.4025229079998098,
+   "status": "ok",
+   "loadavg": 1.54,
+   "runs_s": [
+    1.4025229079998098,
+    1.4149617019938887
+   ],
+   "cold_s": 1.4025229079998098,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.14896558500186075,
+   "status": "ok",
+   "loadavg": 1.54,
+   "runs_s": [
+    0.14896558500186075,
+    0.15066109300096286
+   ],
+   "cold_s": 0.14896558500186075,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 2.1682735859940294,
+   "seconds_parts": {
+    "xnfpelsyn": 0.6047581859966158,
+    "synthe": 1.414714163998724,
+    "spectrv": 0.14880123599868966
+   },
+   "status": "ok",
+   "loadavg": 1.54,
+   "runs_s": [
+    2.1682735859940294,
+    2.181883026001742
+   ],
+   "cold_s": 2.1682735859940294,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w3/exact": {
+  "xnfpelsyn": {
+   "seconds": 0.6112399990015547,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.163513729807164e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 8.881784197001252e-15,
+    "xnfpel:rel": 1.1879360269312073e-10,
+    "dopple:rel": 0.0
+   },
+   "status": "ok",
+   "loadavg": 2.57,
+   "runs_s": [
+    0.6193957150026108,
+    0.6112399990015547
+   ],
+   "cold_s": 0.6193957150026108,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 2.581721988004574,
+   "status": "ok",
+   "loadavg": 2.44,
+   "runs_s": [
+    2.581721988004574,
+    2.715766713001358
+   ],
+   "cold_s": 2.581721988004574,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.303250755998306,
+   "status": "ok",
+   "loadavg": 2.44,
+   "runs_s": [
+    0.30404831200576155,
+    0.303250755998306
+   ],
+   "cold_s": 0.30404831200576155,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 3.5053482729999814,
+   "seconds_parts": {
+    "xnfpelsyn": 0.6098075219997554,
+    "synthe": 2.5976047049989575,
+    "spectrv": 0.30100932200002717
+   },
+   "status": "ok",
+   "loadavg": 2.44,
+   "runs_s": [
+    3.50842154899874,
+    3.5053482729999814
+   ],
+   "cold_s": 3.50842154899874,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/sun/cpu32p": {
+  "mode": "cpu32p",
+  "model": "sun",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.06,
+    3.17,
+    2.69
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:09:25",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 145.35965732500335,
+  "loadavg": 3.29,
+  "iterations": 14,
+  "iteration_median_s": 9.050090513999749,
+  "iteration_first_s": 12.132001069003309,
+  "metrics": {
+   "RHOX:rel": 0.0003478680386717772,
+   "T:rel": 0.0001787608299269464,
+   "P:rel": 0.00017012759569677257,
+   "XNE:rel": 0.001319209416642455,
+   "RHO:rel": 0.00027310244376116833,
+   "ABROSS:rel": 0.0013883235448043187,
+   "TAUROS:rel": 2.3713709132438524e-06,
+   "FLXERR:abs": 0.3858,
+   "FLXDRV:abs": 0.9100000000000001,
+   "HEIGHT:abs": 0.029999999999972715,
+   "FLXCNV_over_total:abs": 0.003700472396502952,
+   "deck_T:rel": 0.0001787608299269464,
+   "deck_P:rel": 0.0005714285714285715,
+   "deck_XNE:rel": 0.001488095238095238,
+   "deck_ABROSS:rel": 0.0014534883720929922
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": false,
+   "fails": {
+    "ABROSS:rel": [
+     0.0013883235448043187,
+     1e-05
+    ],
+    "FLXCNV_over_total:abs": [
+     0.003700472396502952,
+     1e-05
+    ],
+    "FLXDRV:abs": [
+     0.9100000000000001,
+     0.0
+    ],
+    "FLXERR:abs": [
+     0.3858,
+     0.0
+    ],
+    "HEIGHT:abs": [
+     0.029999999999972715,
+     0.0
+    ],
+    "P:rel": [
+     0.00017012759569677257,
+     1e-05
+    ],
+    "RHO:rel": [
+     0.00027310244376116833,
+     1e-05
+    ],
+    "RHOX:rel": [
+     0.0003478680386717772,
+     1e-05
+    ],
+    "T:rel": [
+     0.0001787608299269464,
+     2e-05
+    ],
+    "XNE:rel": [
+     0.001319209416642455,
+     1e-05
+    ],
+    "deck_ABROSS:rel": [
+     0.0014534883720929922,
+     0.001
+    ],
+    "deck_T:rel": [
+     0.0001787608299269464,
+     1e-05
+    ],
+    "deck_XNE:rel": [
+     0.001488095238095238,
+     0.001
+    ]
+   },
+   "worst": [
+    "FLXDRV:abs",
+    Infinity
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w1/native": {
+  "xnfpelsyn": {
+   "seconds": 0.7428413440065924,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 3.14,
+   "runs_s": [
+    1.0678500680005527,
+    0.7428413440065924
+   ],
+   "cold_s": 1.0678500680005527,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 12.795594277005875,
+   "status": "ok",
+   "loadavg": 3.18,
+   "runs_s": [
+    13.026410544996907,
+    12.795594277005875
+   ],
+   "cold_s": 13.026410544996907,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 3.221483162997174,
+   "status": "ok",
+   "loadavg": 3.25,
+   "runs_s": [
+    3.221483162997174,
+    5.096536607998132
+   ],
+   "cold_s": 3.221483162997174,
+   "metrics": {
+    "flux:rel": 4.9003732444271085e-15,
+    "cont:rel": 0.0,
+    "normflux:abs": 5.285485590866834e-19
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     1.4083576122308967e-11
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 17.512088437993953,
+   "seconds_parts": {
+    "xnfpelsyn": 0.817199745994003,
+    "synthe": 12.280676592999953,
+    "spectrv": 4.414212098999997
+   },
+   "status": "ok",
+   "loadavg": 3.55,
+   "runs_s": [
+    17.512088437993953,
+    21.55024496200349
+   ],
+   "cold_s": 17.512088437993953,
+   "metrics": {
+    "flux:rel": 4.9003732444271085e-15,
+    "cont:rel": 0.0,
+    "normflux:abs": 5.285485590866834e-19
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     1.4083576122308967e-11
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/sun/gpu64/max2": {
+  "mode": "gpu64",
+  "model": "sun",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    5.29,
+    3.92,
+    3.07
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:13:18",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "stopped_after": 2,
+  "seconds": 36.213817770003516,
+  "loadavg": 5.15,
+  "iterations": 2,
+  "iteration_median_s": 17.147667801000352,
+  "iteration_first_s": 14.443627818000095,
+  "status": "ok",
+  "device_coercions": {
+   "src/atlas_torch/interp.py:29 (g) [__getitem__]": 2776,
+   "src/atlas_torch/atlas9/physics/molec.py:611 (_edens_molecular) [where]": 1088,
+   "src/atlas_torch/atlas9/physics/molec.py:612 (_edens_molecular) [where]": 1088,
+   "src/atlas_torch/atlas9/physics/molec.py:621 (_edens_molecular) [add]": 672,
+   "src/atlas_torch/atlas9/physics/molec.py:621 (_edens_molecular) [mul]": 672,
+   "src/atlas_torch/atlas9/physics/molec.py:622 (_edens_molecular) [where]": 672,
+   "src/atlas_torch/atlas9/physics/molec.py:608 (_edens_molecular) [where]": 544,
+   "src/atlas_torch/atlas9/physics/molec.py:609 (_edens_molecular) [where]": 544,
+   "src/atlas_torch/atlas9/physics/molec.py:615 (_edens_molecular) [add]": 480,
+   "src/atlas_torch/atlas9/physics/molec.py:615 (_edens_molecular) [mul]": 480,
+   "src/atlas_torch/atlas9/physics/molec.py:616 (_edens_molecular) [where]": 480,
+   "src/atlas_torch/interp.py:19 (map1) [searchsorted]": 347,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:448 (parts) [__or__]": 256,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:449 (parts) [where]": 256,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:450 (parts) [where]": 256,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:274 (_blk) [div]": 200,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:427 (__init__) [__setitem__]": 168,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:376 (potlow_of) [div]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:376 (potlow_of) [sub]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:377 (potlow_of) [add]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:377 (potlow_of) [where]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:379 (potlow_of) [div]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:444 (parts) [mul]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:446 (parts) [div]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:447 (parts) [sub]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:447 (parts) [mul]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:447 (parts) [add]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:454 (parts) [where]": 128,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:429 (__init__) [__setitem__]": 96,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:431 (__init__) [__setitem__]": 72,
+   "src/atlas_torch/atlas9/physics/opacity.py:175 (<lambda>) [__getitem__]": 64,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:126 (pfiron_stage2) [gather]": 24,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:127 (pfiron_stage2) [gather]": 24,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:453 (parts) [where]": 24,
+   "src/atlas_torch/atlas9/putout.py:46 (<lambda>) [tolist of a device tensor]": 24,
+   "src/atlas_torch/atlas9/putout.py:118 (punch_model) [tolist of a device tensor]": 20,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:197 (_peach_op) [__getitem__]": 12,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:253 (_molop) [__getitem__]": 12,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:256 (_molop) [__getitem__]": 12,
+   "src/atlas_torch/atlas9/physics/opacity.py:185 (linter) [__getitem__]": 8,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:199 (_peach_op) [__getitem__]": 8,
+   "src/atlas_torch/atlas9/physics/molec.py:530 (_edens_molecular) [div]": 8,
+   "src/atlas_torch/atlas9/physics/molec.py:531 (_edens_molecular) [mul]": 8,
+   "src/atlas_torch/atlas9/physics/molec.py:623 (_edens_molecular) [div]": 8,
+   "src/atlas_torch/atlas9/physics/api.py:97 (continuum) [tolist of a device tensor]": 4,
+   "src/atlas_torch/atlas9/physics/opacity.py:183 (linter) [searchsorted]": 4,
+   "src/atlas_torch/atlas9/physics/opacity.py:186 (linter) [__getitem__]": 4,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:281 (h2collop) [__getitem__]": 4,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:282 (h2collop) [__getitem__]": 4,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:107 (hminop) [div]": 2,
+   "src/atlas_torch/atlas9/main.py:120 (frequency_integration) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/linop.py:102 (line_opacity) [__getitem__]": 2,
+   "src/atlas_torch/atlas9/main.py:142 (frequency_integration) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/main.py:143 (frequency_integration) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/main.py:147 (frequency_integration) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/main.py:148 (frequency_integration) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/putout.py:112 (punch_model) [tolist of a device tensor]": 2,
+   "src/atlas_torch/atlas9/readin.py:81 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:82 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:83 (readmol) [numpy of a device tensor]": 1
+  },
+  "device_coercion_sites": 63
+ },
+ "synthe/w2/native": {
+  "xnfpelsyn": {
+   "seconds": 0.539734985002724,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 5.75,
+   "runs_s": [
+    0.539734985002724,
+    0.5418442579975817
+   ],
+   "cold_s": 0.539734985002724,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 1.8198610040053609,
+   "status": "ok",
+   "loadavg": 5.75,
+   "runs_s": [
+    2.6703418830002192,
+    1.8198610040053609
+   ],
+   "cold_s": 2.6703418830002192,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.880283676997351,
+   "status": "ok",
+   "loadavg": 5.75,
+   "runs_s": [
+    0.880283676997351,
+    1.3040414300048724
+   ],
+   "cold_s": 0.880283676997351,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 3.094630044994119,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5938862249968224,
+    "synthe": 1.632931047002785,
+    "spectrv": 0.9520562820034684
+   },
+   "status": "ok",
+   "loadavg": 5.61,
+   "runs_s": [
+    3.1788735540030757,
+    3.094630044994119
+   ],
+   "cold_s": 3.1788735540030757,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w3/native": {
+  "xnfpelsyn": {
+   "seconds": 0.48421939299441874,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 2.59,
+   "runs_s": [
+    0.48659042000508634,
+    0.48421939299441874
+   ],
+   "cold_s": 0.48659042000508634,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 2.58055600499938,
+   "status": "ok",
+   "loadavg": 2.54,
+   "runs_s": [
+    2.58055600499938,
+    2.6174524779999047
+   ],
+   "cold_s": 2.58055600499938,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 1.6663528219942236,
+   "status": "ok",
+   "loadavg": 2.54,
+   "runs_s": [
+    1.6663528219942236,
+    1.8784657559954212
+   ],
+   "cold_s": 1.6663528219942236,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 4.77362734900089,
+   "seconds_parts": {
+    "xnfpelsyn": 0.4767359280012897,
+    "synthe": 2.826332573997206,
+    "spectrv": 1.6482858790041064
+   },
+   "status": "ok",
+   "loadavg": 2.5,
+   "runs_s": [
+    4.951354381002602,
+    4.77362734900089
+   ],
+   "cold_s": 4.951354381002602,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w1/cpu32": {
+  "xnfpelsyn": {
+   "seconds": 3.125723721997929,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719587840353514,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 7.55,
+   "runs_s": [
+    3.5987751339998795,
+    3.125723721997929
+   ],
+   "cold_s": 3.5987751339998795,
+   "metrics": {
+    "flux:rel": 8.602560604217555e-05,
+    "cont:rel": 8.94456927720056e-05,
+    "normflux:abs": 3.136360236610791e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.94456927720056e-05,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     59.76432726564734
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 10.41656891599996,
+   "status": "ok",
+   "loadavg": 6.62,
+   "runs_s": [
+    10.41656891599996,
+    12.185535966003954
+   ],
+   "cold_s": 10.41656891599996,
+   "metrics": {
+    "flux:rel": 0.0016717404891993365,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.000596695287663207
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      0.0016717404891993365,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.000596695287663207,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     4.804549217380558
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 6.8967778160003945,
+   "status": "ok",
+   "loadavg": 6.41,
+   "runs_s": [
+    6.8967778160003945,
+    7.413991416004137
+   ],
+   "cold_s": 6.8967778160003945,
+   "metrics": {
+    "flux:rel": 2.020908769976048e-05,
+    "cont:rel": 6.612672387187562e-06,
+    "normflux:abs": 5.4855300766210036e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.612672387187562e-06,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     4.418344857093843
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 21.17754319300002,
+   "seconds_parts": {
+    "xnfpelsyn": 1.4845869749988196,
+    "synthe": 11.120162851002533,
+    "spectrv": 8.572793366998667
+   },
+   "status": "ok",
+   "loadavg": 6.11,
+   "runs_s": [
+    21.17754319300002,
+    29.871221386005345
+   ],
+   "cold_s": 21.17754319300002,
+   "metrics": {
+    "flux:rel": 0.0016743004893495538,
+    "cont:rel": 9.438473120144824e-05,
+    "normflux:abs": 0.0005767339889722889
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      9.438473120144824e-05,
+      1.496640167543878e-06
+     ],
+     "flux:rel": [
+      0.0016743004893495538,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.0005767339889722889,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     63.064411371734145
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/sun/gpu64": {
+  "mode": "gpu64",
+  "model": "sun",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.39,
+    2.48,
+    2.64
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:18:55",
+   "commit": "508af9f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 31.83092889299587,
+  "loadavg": 2.36,
+  "iterations": 14,
+  "iteration_median_s": 2.0201856429994223,
+  "iteration_first_s": 2.983016726997448,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 4.584443150585485e-06,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 1.0000000000000026e-05,
+   "FLXDRV:abs": 0.010000000000000009,
+   "HEIGHT:abs": 0.0010000000000047748,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": false,
+   "fails": {
+    "FLXDRV:abs": [
+     0.010000000000000009,
+     0.0
+    ],
+    "FLXERR:abs": [
+     1.0000000000000026e-05,
+     0.0
+    ],
+    "HEIGHT:abs": [
+     0.0010000000000047748,
+     0.0
+    ]
+   },
+   "worst": [
+    "FLXDRV:abs",
+    Infinity
+   ],
+   "n_gated": 15
+  },
+  "status": "ok",
+  "device_coercions": {
+   "src/atlas_torch/interp.py:29 (g) [__getitem__]": 2776,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:515 (parts) [__or__]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:517 (parts) [where]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:516 (parts) [where]": 1440,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:295 (_blk) [div]": 1369,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [sub]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [add]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:400 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:511 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:513 (parts) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:521 (parts) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:492 (<lambda>) [stack]": 900,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [sub]": 540,
+   "src/atlas_torch/atlas9/physics/opacity.py:175 (<lambda>) [__getitem__]": 480,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [add]": 480,
+   "src/atlas_torch/interp.py:19 (map1) [searchsorted]": 347,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:520 (parts) [where]": 180,
+   "src/atlas_torch/atlas9/putout.py:46 (<lambda>) [tolist of a device tensor]": 180,
+   "src/atlas_torch/atlas9/putout.py:118 (punch_model) [tolist of a device tensor]": 150,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:197 (_peach_op) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:253 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:256 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity.py:185 (linter) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:199 (_peach_op) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/physics/molec.py:650 (_edens_molecular_impl) [__setitem__]": 60,
+   "src/atlas_torch/atlas9/numerics.py:143 (g) [gather]": 60,
+   "src/atlas_torch/atlas9/physics/api.py:97 (continuum) [tolist of a device tensor]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:183 (linter) [searchsorted]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:186 (linter) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:281 (h2collop) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:282 (h2collop) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:107 (hminop) [div]": 15,
+   "src/atlas_torch/atlas9/main.py:120 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/linop.py:102 (line_opacity) [__getitem__]": 15,
+   "src/atlas_torch/atlas9/main.py:142 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:143 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:147 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:148 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/putout.py:112 (punch_model) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/readin.py:81 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:82 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:83 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:84 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:85 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:272 (_title_overflow) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:748 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:749 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:752 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:753 (_ttaup_into) [__setitem__]": 1
+  },
+  "device_coercion_sites": 52
+ },
+ "synthe/w2/cpu32": {
+  "xnfpelsyn": {
+   "seconds": 2.017004444001941,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719587840353514,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 7.17,
+   "runs_s": [
+    4.17255388799822,
+    2.017004444001941
+   ],
+   "cold_s": 4.17255388799822,
+   "metrics": {
+    "flux:rel": 6.633097736326181e-05,
+    "cont:rel": 6.881129980150834e-05,
+    "normflux:abs": 4.0464664418315976e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.881129980150834e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     42.44625028256042
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 2.307935300996178,
+   "status": "ok",
+   "loadavg": 6.91,
+   "runs_s": [
+    2.7674856309968163,
+    2.307935300996178
+   ],
+   "cold_s": 2.7674856309968163,
+   "metrics": {
+    "flux:rel": 0.0009158497568711573,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0004867216045334466
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.8191549698153378
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 1.999776157004817,
+   "status": "ok",
+   "loadavg": 6.91,
+   "runs_s": [
+    1.999776157004817,
+    2.236287716004881
+   ],
+   "cold_s": 1.999776157004817,
+   "metrics": {
+    "flux:rel": 6.770704749812663e-05,
+    "cont:rel": 7.116909820606712e-05,
+    "normflux:abs": 3.4091352111298434e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.116909820606712e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     43.9006582284125
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 5.635559077003563,
+   "seconds_parts": {
+    "xnfpelsyn": 1.871313789000851,
+    "synthe": 1.9199028920047567,
+    "spectrv": 1.8443423959979555
+   },
+   "status": "ok",
+   "loadavg": 6.68,
+   "runs_s": [
+    5.635559077003563,
+    6.785289636005473
+   ],
+   "cold_s": 5.635559077003563,
+   "metrics": {
+    "flux:rel": 0.000914999878892388,
+    "cont:rel": 0.00013889895144152676,
+    "normflux:abs": 0.0005177050330673616
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.00013889895144152676,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     85.67981819670578
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/t4500g25/fortran": {
+  "mode": "fortran",
+  "model": "t4500g25",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.12,
+    7.05,
+    6.52
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:58:22",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 6.716349769005319,
+  "loadavg": 8.45,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t4500g25/exact": {
+  "mode": "exact",
+  "model": "t4500g25",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    9.2,
+    7.34,
+    6.62
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:58:34",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 29.623756428001798,
+  "loadavg": 10.06,
+  "iterations": 14,
+  "iteration_median_s": 1.9422987889993237,
+  "iteration_first_s": 2.5321521919977386,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t4500g25/native": {
+  "mode": "native",
+  "model": "t4500g25",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    10.77,
+    7.9,
+    6.84
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:59:09",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 20.36747616699722,
+  "loadavg": 10.66,
+  "iterations": 14,
+  "iteration_median_s": 1.26285752900003,
+  "iteration_first_s": 1.7208360329968855,
+  "metrics": {
+   "RHOX:rel": 1.7830460845985137e-06,
+   "T:rel": 0.0,
+   "P:rel": 3.657443812510906e-06,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.00010000000000000286,
+   "FLXDRV:abs": 0.010000000000000009,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "FLXERR:abs",
+    0.3333333333333333
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t6500g40m10/fortran": {
+  "mode": "fortran",
+  "model": "t6500g40m10",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    7.03,
+    5.94,
+    4.37
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:20:37",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 6.8522110499980045,
+  "loadavg": 7.33,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "dfsynthe/solar/t33/fortran": {
+  "seconds": 26.752772607003863,
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.57,
+    2.44,
+    2.78
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:11:35",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "status": "ok"
+ },
+ "atlas/t6500g40m10/exact": {
+  "mode": "exact",
+  "model": "t6500g40m10",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    7.99,
+    6.2,
+    4.48
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:20:49",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 29.68032097499963,
+  "loadavg": 8.2,
+  "iterations": 14,
+  "iteration_median_s": 1.8061164259997895,
+  "iteration_first_s": 2.2211816319977515,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t6500g40m10/native": {
+  "mode": "native",
+  "model": "t6500g40m10",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.47,
+    6.53,
+    4.65
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:21:25",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 42.08112338199862,
+  "loadavg": 8.99,
+  "iterations": 14,
+  "iteration_median_s": 2.948266778999823,
+  "iteration_first_s": 3.7278993430008995,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 1.0000000000000243e-06,
+   "FLXDRV:abs": 0.0010000000000000009,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "FLXDRV:abs",
+    0.016666666666666666
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t9000g40/fortran": {
+  "mode": "fortran",
+  "model": "t9000g40",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    9.39,
+    7.03,
+    4.91
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:22:12",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 18.00376344400138,
+  "loadavg": 9.72,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 30,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w3/cpu32": {
+  "xnfpelsyn": {
+   "seconds": 2.1533851089989184,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719587840353514,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 5.43,
+   "runs_s": [
+    2.1533851089989184,
+    5.009094305001781
+   ],
+   "cold_s": 2.1533851089989184,
+   "metrics": {
+    "flux:rel": 0.0009055288650201074,
+    "cont:rel": 0.0009160961890935243,
+    "normflux:abs": 0.0005743815108463224
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.0009160961890935243,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      0.0009055288650201074,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      0.0005743815108463224,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     549.8976695845778
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 18.663902467997104,
+   "status": "ok",
+   "loadavg": 5.17,
+   "runs_s": [
+    18.663902467997104,
+    37.362305463000666
+   ],
+   "cold_s": 18.663902467997104,
+   "metrics": {
+    "flux:rel": 1.427275939434764e-05,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3697623295283456e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      1.427275939434764e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.3697623295283456e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     8.336140239724338
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 4.427560497999366,
+   "status": "ok",
+   "loadavg": 5.15,
+   "runs_s": [
+    4.427560497999366,
+    6.431936212000437
+   ],
+   "cold_s": 4.427560497999366,
+   "metrics": {
+    "flux:rel": 2.4125685169458814e-06,
+    "cont:rel": 2.5091896342976113e-06,
+    "normflux:abs": 2.0879553390695804e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      2.5091896342976113e-06,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.4125685169458814e-06,
+      1.7121544244581488e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     1.5061710209834438
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 46.73246448299324,
+   "seconds_parts": {
+    "xnfpelsyn": 5.523763252997014,
+    "synthe": 41.088453042000765,
+    "spectrv": 5.2626731249984005
+   },
+   "status": "ok",
+   "loadavg": 7.64,
+   "runs_s": [
+    51.87488941999618,
+    46.73246448299324
+   ],
+   "cold_s": 51.87488941999618,
+   "metrics": {
+    "flux:rel": 0.0009054008892789989,
+    "cont:rel": 0.0009161864905763835,
+    "normflux:abs": 0.0005738861405180096
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.0009161864905763835,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      0.0009054008892789989,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      0.0005738861405180096,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     549.9518741272617
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "dfsynthe/solar/t33/exact": {
+  "mode": "exact",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    2.49,
+    1.88,
+    2.82
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:05:53",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 14.134373280998261,
+  "loadavg": 2.43,
+  "timing": {
+   "selectlines": 0.03,
+   "continuum": 2.69,
+   "xlinop": 4.79,
+   "lines": 2.27,
+   "broaden+dfcalc": 4.33
+  },
+  "metrics": {
+   "odf_v0:abs": 14,
+   "odf_v0:share_gt1": 0.000538961038961039,
+   "odf_v0:p999": 1.0,
+   "odf_v0:frac": 0.001106060606060606,
+   "odf_v1:abs": 15,
+   "odf_v1:share_gt1": 0.0005476190476190477,
+   "odf_v1:p999": 1.0,
+   "odf_v1:frac": 0.0011168831168831168,
+   "odf_v2:abs": 14,
+   "odf_v2:share_gt1": 0.0005411255411255411,
+   "odf_v2:p999": 1.0,
+   "odf_v2:frac": 0.001054112554112554,
+   "odf_v4:abs": 15,
+   "odf_v4:share_gt1": 0.0005,
+   "odf_v4:p999": 1.0,
+   "odf_v4:frac": 0.0010216450216450216,
+   "odf_v8:abs": 14,
+   "odf_v8:share_gt1": 0.0004761904761904762,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 0.0009935064935064936,
+   "worst_ratio_vs_table_gates": 0.06335180814482838,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "atlas/t9000g40/exact": {
+  "mode": "exact",
+  "model": "t9000g40",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    10.05,
+    7.38,
+    5.09
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:22:36",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 92.03415976499673,
+  "loadavg": 10.27,
+  "iterations": 29,
+  "iteration_median_s": 2.9265646010026103,
+  "iteration_first_s": 2.642797193999286,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 30,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "dfsynthe/solar/t33/gpu_lines": {
+  "mode": "gpu_lines",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.22,
+    2.49,
+    2.82
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:10:39",
+   "commit": "508af9f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 19.97478262599907,
+  "loadavg": 3.07,
+  "timing": {
+   "selectlines": 0.01,
+   "continuum": 2.72,
+   "xlinop": 4.65,
+   "lines": 6.9,
+   "broaden+dfcalc": 5.58
+  },
+  "metrics": {
+   "odf_v0:abs": 14,
+   "odf_v0:share_gt1": 0.000538961038961039,
+   "odf_v0:p999": 1.0,
+   "odf_v0:frac": 0.001106060606060606,
+   "odf_v1:abs": 15,
+   "odf_v1:share_gt1": 0.0005476190476190477,
+   "odf_v1:p999": 1.0,
+   "odf_v1:frac": 0.0011147186147186148,
+   "odf_v2:abs": 14,
+   "odf_v2:share_gt1": 0.0005411255411255411,
+   "odf_v2:p999": 1.0,
+   "odf_v2:frac": 0.001054112554112554,
+   "odf_v4:abs": 15,
+   "odf_v4:share_gt1": 0.0005,
+   "odf_v4:p999": 1.0,
+   "odf_v4:frac": 0.0010238095238095238,
+   "odf_v8:abs": 14,
+   "odf_v8:share_gt1": 0.0004761904761904762,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 0.0009935064935064936,
+   "worst_ratio_vs_table_gates": 0.06335180814482838,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "atlas/t9000g40/native": {
+  "mode": "native",
+  "model": "t9000g40",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    10.29,
+    8.22,
+    5.62
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:24:15",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 63.85163310899952,
+  "loadavg": 9.37,
+  "iterations": 29,
+  "iteration_median_s": 1.8977457050059456,
+  "iteration_first_s": 2.508463104997645,
+  "metrics": {
+   "RHOX:rel": 1.058822906605208e-06,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 7.926254131559966e-06,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.00010000000000000286,
+   "FLXDRV:abs": 0.0020000000000000018,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 3.3602150537366543e-13,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 30,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "FLXDRV:abs",
+    0.3333333333333333
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t5000g45m20/fortran": {
+  "mode": "fortran",
+  "model": "t5000g45m20",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.49,
+    8.12,
+    5.78
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:25:25",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 4.22436662200198,
+  "loadavg": 8.43,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t5000g45m20/exact": {
+  "mode": "exact",
+  "model": "t5000g45m20",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.18,
+    8.07,
+    5.79
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:25:35",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 29.476794718000747,
+  "loadavg": 8.35,
+  "iterations": 14,
+  "iteration_median_s": 1.7466800580004929,
+  "iteration_first_s": 3.496024779997242,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t5000g45m20/native": {
+  "mode": "native",
+  "model": "t5000g45m20",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    9.04,
+    8.26,
+    5.94
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:26:09",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 28.561987850996957,
+  "loadavg": 8.72,
+  "iterations": 14,
+  "iteration_median_s": 1.7763030360001721,
+  "iteration_first_s": 2.00376200699975,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 1.0000000000000026e-05,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "FLXDRV:abs",
+    0.003333333333333339
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t5500g40alpha/fortran": {
+  "mode": "fortran",
+  "model": "t5500g40alpha",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.25,
+    8.15,
+    5.99
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:26:43",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 3.842991539997456,
+  "loadavg": 8.25,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "atlas/t5500g40alpha/exact": {
+  "mode": "exact",
+  "model": "t5500g40alpha",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    7.99,
+    8.1,
+    5.98
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:26:51",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 38.08195418499963,
+  "loadavg": 8.32,
+  "iterations": 14,
+  "iteration_median_s": 2.303724172001239,
+  "iteration_first_s": 1.108427932995255,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 0.0,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.0,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.0
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w1/cpu32p": {
+  "xnfpelsyn": {
+   "seconds": 5.227551844000118,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 10.08,
+   "runs_s": [
+    15.569813382004213,
+    5.227551844000118
+   ],
+   "cold_s": 15.569813382004213,
+   "metrics": {
+    "flux:rel": 4.210330072411242e-05,
+    "cont:rel": 4.3833038267931716e-05,
+    "normflux:abs": 1.5908458045776896e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      4.3833038267931716e-05,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     29.28762652406002
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 23.46316615700198,
+   "status": "ok",
+   "loadavg": 9.95,
+   "runs_s": [
+    39.19440103999659,
+    23.46316615700198
+   ],
+   "cold_s": 39.19440103999659,
+   "metrics": {
+    "flux:rel": 0.0016717404891993365,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.000596695287663207
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      0.0016717404891993365,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.000596695287663207,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     4.804549217380558
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 20.007430345998728,
+   "status": "ok",
+   "loadavg": 9.38,
+   "runs_s": [
+    26.687712134997128,
+    20.007430345998728
+   ],
+   "cold_s": 26.687712134997128,
+   "metrics": {
+    "flux:rel": 2.020908769976048e-05,
+    "cont:rel": 6.316016559411166e-06,
+    "normflux:abs": 5.4855300766210036e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.316016559411166e-06,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     4.220130326834886
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 54.142153480999696,
+   "seconds_parts": {
+    "xnfpelsyn": 8.477869791000558,
+    "synthe": 25.839865754998755,
+    "spectrv": 19.824417935000383
+   },
+   "status": "ok",
+   "loadavg": 7.85,
+   "runs_s": [
+    54.142153480999696,
+    70.81041008899774
+   ],
+   "cold_s": 54.142153480999696,
+   "metrics": {
+    "flux:rel": 0.001672038164309974,
+    "cont:rel": 4.8927730983592396e-05,
+    "normflux:abs": 0.0005922129241214824
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      4.8927730983592396e-05,
+      1.496640167543878e-06
+     ],
+     "flux:rel": [
+      0.001672038164309974,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.0005922129241214824,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     32.69171310822643
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/t5500g40alpha/native": {
+  "mode": "native",
+  "model": "t5500g40alpha",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    8.76,
+    8.26,
+    6.14
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:27:37",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 35.752096381998854,
+  "loadavg": 8.82,
+  "iterations": 14,
+  "iteration_median_s": 2.3522003940015566,
+  "iteration_first_s": 5.118550649000099,
+  "metrics": {
+   "RHOX:rel": 0.0,
+   "T:rel": 0.0,
+   "P:rel": 2.052915961900336e-06,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 7.785191009615188e-06,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 9.9999999999997e-07,
+   "FLXDRV:abs": 0.0010000000000000009,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.0
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "ABROSS:rel",
+    0.7785191009615187
+   ],
+   "n_gated": 15
+  },
+  "status": "ok"
+ },
+ "synthe/w2/cpu32p": {
+  "xnfpelsyn": {
+   "seconds": 3.0516932160026045,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 8.26,
+   "runs_s": [
+    9.12911425299535,
+    3.0516932160026045
+   ],
+   "cold_s": 9.12911425299535,
+   "metrics": {
+    "flux:rel": 8.935974175680606e-06,
+    "cont:rel": 9.647007423265024e-06,
+    "normflux:abs": 4.499315775396973e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      9.647007423265024e-06,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     5.95075652904103
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 2.573768801004917,
+   "status": "ok",
+   "loadavg": 7.92,
+   "runs_s": [
+    2.70268731899705,
+    2.573768801004917
+   ],
+   "cold_s": 2.70268731899705,
+   "metrics": {
+    "flux:rel": 0.0009158497568711573,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0004867216045334466
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.8191549698153378
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 4.113071747000504,
+   "status": "ok",
+   "loadavg": 7.53,
+   "runs_s": [
+    4.113071747000504,
+    4.439621703000739
+   ],
+   "cold_s": 4.113071747000504,
+   "metrics": {
+    "flux:rel": 6.781589389022337e-05,
+    "cont:rel": 7.116909820606712e-05,
+    "normflux:abs": 3.38713928499379e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.116909820606712e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     43.9006582284125
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 10.15404302499519,
+   "seconds_parts": {
+    "xnfpelsyn": 2.7890575700002955,
+    "synthe": 2.726657499995781,
+    "spectrv": 4.638327954999113
+   },
+   "status": "ok",
+   "loadavg": 7.14,
+   "runs_s": [
+    10.15404302499519,
+    14.631719172997691
+   ],
+   "cold_s": 10.15404302499519,
+   "metrics": {
+    "flux:rel": 0.0009159559916185033,
+    "cont:rel": 7.94214857519891e-05,
+    "normflux:abs": 0.0004853987846367147
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.94214857519891e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     48.991143486114474
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "dfsynthe/solar/t33/gpu64": {
+  "mode": "gpu64",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    9.03,
+    8.2,
+    5.76
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:25:04",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 341.231113337999,
+  "loadavg": 7.42,
+  "timing": {
+   "selectlines": 0.07,
+   "continuum": 3.11,
+   "xlinop": 311.2,
+   "lines": 21.63,
+   "broaden+dfcalc": 5.22
+  },
+  "metrics": {
+   "odf_v0:abs": 1,
+   "odf_v0:share_gt1": 0.0,
+   "odf_v0:p999": 0.0,
+   "odf_v0:frac": 5.844155844155844e-05,
+   "odf_v1:abs": 1,
+   "odf_v1:share_gt1": 0.0,
+   "odf_v1:p999": 0.0,
+   "odf_v1:frac": 5.194805194805195e-05,
+   "odf_v2:abs": 1,
+   "odf_v2:share_gt1": 0.0,
+   "odf_v2:p999": 0.0,
+   "odf_v2:frac": 4.112554112554113e-05,
+   "odf_v4:abs": 1,
+   "odf_v4:share_gt1": 0.0,
+   "odf_v4:p999": 0.0,
+   "odf_v4:frac": 3.0303030303030302e-05,
+   "odf_v8:abs": 1,
+   "odf_v8:share_gt1": 0.0,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 4.329004329004329e-05,
+   "worst_ratio_vs_table_gates": 0.0028735632183908046,
+   "within_table_gates": true
+  },
+  "status": "ok",
+  "device_coercions": {
+   "src/atlas_torch/dfsynthe/lines/accumulate.py:498 (_emit) [tolist of a device tensor]": 38,
+   "src/atlas_torch/dfsynthe/lines/xlinop.py:136 (_true_carry) [tolist of a device tensor]": 6
+  },
+  "device_coercion_sites": 2
+ },
+ "dfsynthe/solar/t33/exact_noftz": {
+  "mode": "exact_noftz",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    5.2,
+    7.22,
+    6.21
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:31:18",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 26.97761337400152,
+  "loadavg": 5.21,
+  "timing": {
+   "selectlines": 0.04,
+   "continuum": 3.59,
+   "xlinop": 8.48,
+   "lines": 3.95,
+   "broaden+dfcalc": 10.88
+  },
+  "metrics": {
+   "odf_v0:abs": 1,
+   "odf_v0:share_gt1": 0.0,
+   "odf_v0:p999": 0.0,
+   "odf_v0:frac": 5.6277056277056274e-05,
+   "odf_v1:abs": 1,
+   "odf_v1:share_gt1": 0.0,
+   "odf_v1:p999": 0.0,
+   "odf_v1:frac": 5.411255411255411e-05,
+   "odf_v2:abs": 1,
+   "odf_v2:share_gt1": 0.0,
+   "odf_v2:p999": 0.0,
+   "odf_v2:frac": 4.112554112554113e-05,
+   "odf_v4:abs": 1,
+   "odf_v4:share_gt1": 0.0,
+   "odf_v4:p999": 0.0,
+   "odf_v4:frac": 2.8138528138528137e-05,
+   "odf_v8:abs": 1,
+   "odf_v8:share_gt1": 0.0,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 4.329004329004329e-05,
+   "worst_ratio_vs_table_gates": 0.0028735632183908046,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "synthe/w3/cpu32p": {
+  "xnfpelsyn": {
+   "seconds": 7.125445330995717,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 7.28,
+   "runs_s": [
+    7.210601101003704,
+    7.125445330995717
+   ],
+   "cold_s": 7.210601101003704,
+   "metrics": {
+    "flux:rel": 1.0436719476467217e-05,
+    "cont:rel": 1.063200439247272e-05,
+    "normflux:abs": 7.0096293087740236e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      1.063200439247272e-05,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      1.0436719476467217e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      7.0096293087740236e-06,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     6.381987511834167
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 30.378164295005263,
+   "status": "ok",
+   "loadavg": 7.72,
+   "runs_s": [
+    39.99681274300383,
+    30.378164295005263
+   ],
+   "cold_s": 39.99681274300383,
+   "metrics": {
+    "flux:rel": 1.427275939434764e-05,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3697623295283456e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      1.427275939434764e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.3697623295283456e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     8.336140239724338
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 10.277758295997046,
+   "status": "ok",
+   "loadavg": 7.38,
+   "runs_s": [
+    10.277758295997046,
+    12.832296771004621
+   ],
+   "cold_s": 10.277758295997046,
+   "metrics": {
+    "flux:rel": 2.4125685169458814e-06,
+    "cont:rel": 2.5091896342976113e-06,
+    "normflux:abs": 2.0879553390695804e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      2.5091896342976113e-06,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.4125685169458814e-06,
+      1.7121544244581488e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     1.5061710209834438
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 41.15637741499813,
+   "seconds_parts": {
+    "xnfpelsyn": 6.840397143998416,
+    "synthe": 23.45850779399916,
+    "spectrv": 10.857472477000556
+   },
+   "status": "ok",
+   "loadavg": 5.1,
+   "runs_s": [
+    41.15637741499813,
+    46.92242433800129
+   ],
+   "cold_s": 41.15637741499813,
+   "metrics": {
+    "flux:rel": 2.1467003996459918e-05,
+    "cont:rel": 1.092496920663654e-05,
+    "normflux:abs": 1.226585472824393e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      1.092496920663654e-05,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.1467003996459918e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.226585472824393e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     12.53800690510358
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "dfsynthe/solar/t33/native": {
+  "mode": "native",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.8,
+    6.87,
+    6.14
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:32:01",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 143.31850191400008,
+  "loadavg": 4.73,
+  "timing": {
+   "selectlines": 0.02,
+   "continuum": 5.88,
+   "xlinop": 80.46,
+   "lines": 17.87,
+   "broaden+dfcalc": 38.92
+  },
+  "metrics": {
+   "odf_v0:abs": 14,
+   "odf_v0:share_gt1": 0.000538961038961039,
+   "odf_v0:p999": 1.0,
+   "odf_v0:frac": 0.001106060606060606,
+   "odf_v1:abs": 15,
+   "odf_v1:share_gt1": 0.0005476190476190477,
+   "odf_v1:p999": 1.0,
+   "odf_v1:frac": 0.0011168831168831168,
+   "odf_v2:abs": 14,
+   "odf_v2:share_gt1": 0.0005411255411255411,
+   "odf_v2:p999": 1.0,
+   "odf_v2:frac": 0.001054112554112554,
+   "odf_v4:abs": 15,
+   "odf_v4:share_gt1": 0.0005,
+   "odf_v4:p999": 1.0,
+   "odf_v4:frac": 0.0010216450216450216,
+   "odf_v8:abs": 14,
+   "odf_v8:share_gt1": 0.0004761904761904762,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 0.0009935064935064936,
+   "worst_ratio_vs_table_gates": 0.06335180814482838,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "synthe/w1/gpu64": {
+  "xnfpelsyn": {
+   "seconds": 0.7024093590007396,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 2.27,
+   "runs_s": [
+    1.0881301209956291,
+    0.7024093590007396
+   ],
+   "cold_s": 1.0881301209956291,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 1.8430771909988835,
+   "status": "ok",
+   "loadavg": 2.25,
+   "runs_s": [
+    2.056675906002056,
+    1.8430771909988835
+   ],
+   "cold_s": 2.056675906002056,
+   "metrics": {
+    "flux:rel": 2.544672197554099e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.920954821876819e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.0015154010498057426
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.5794111659997725,
+   "status": "ok",
+   "loadavg": 2.25,
+   "runs_s": [
+    0.5794111659997725,
+    0.7709265839948785
+   ],
+   "cold_s": 0.5794111659997725,
+   "metrics": {
+    "flux:rel": 4.9003732444271085e-15,
+    "cont:rel": 0.0,
+    "normflux:abs": 5.285485590866834e-19
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     1.4083576122308967e-11
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 2.9650456020026468,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5477907579988823,
+    "synthe": 1.848601026002143,
+    "spectrv": 0.5897321249940433
+   },
+   "status": "ok",
+   "loadavg": 2.25,
+   "runs_s": [
+    2.9861239089950686,
+    2.9650456020026468
+   ],
+   "cold_s": 2.9861239089950686,
+   "metrics": {
+    "flux:rel": 2.544672197554099e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.920954821876819e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.0015154010498057426
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w2/gpu64": {
+  "xnfpelsyn": {
+   "seconds": 0.5459652439967613,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 2.2,
+   "runs_s": [
+    0.5459652439967613,
+    0.5525102160027018
+   ],
+   "cold_s": 0.5459652439967613,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.19957109299866715,
+   "status": "ok",
+   "loadavg": 2.2,
+   "runs_s": [
+    0.20100243100023363,
+    0.19957109299866715
+   ],
+   "cold_s": 0.20100243100023363,
+   "metrics": {
+    "flux:rel": 1.1665434407945374e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.0797183014332745e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.00018171714680046907
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.16419016299914801,
+   "status": "ok",
+   "loadavg": 2.2,
+   "runs_s": [
+    0.2460129169994616,
+    0.16419016299914801
+   ],
+   "cold_s": 0.2460129169994616,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 0.9207451480033342,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5587374770038878,
+    "synthe": 0.20274718399741687,
+    "spectrv": 0.15926048700202955
+   },
+   "status": "ok",
+   "loadavg": 2.27,
+   "runs_s": [
+    0.9207451480033342,
+    0.9422150559985312
+   ],
+   "cold_s": 0.9207451480033342,
+   "metrics": {
+    "flux:rel": 1.1665434407945374e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.0797183014332745e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.00018171714680046907
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "dfsynthe/solar/t33/cpu32": {
+  "mode": "cpu32",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.69,
+    5.94,
+    5.89
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:34:28",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 99.71068145699974,
+  "loadavg": 6.67,
+  "timing": {
+   "selectlines": 0.05,
+   "continuum": 7.37,
+   "xlinop": 9.88,
+   "lines": 2.74,
+   "broaden+dfcalc": 79.6
+  },
+  "metrics": {
+   "odf_v0:abs": 40527,
+   "odf_v0:share_gt1": 0.1386883116883117,
+   "odf_v0:p999": 1731.0009999999893,
+   "odf_v0:frac": 0.22178571428571428,
+   "odf_v1:abs": 39628,
+   "odf_v1:share_gt1": 0.13877272727272727,
+   "odf_v1:p999": 1759.0009999999893,
+   "odf_v1:frac": 0.2222965367965368,
+   "odf_v2:abs": 38725,
+   "odf_v2:share_gt1": 0.1385995670995671,
+   "odf_v2:p999": 1784.0059999999357,
+   "odf_v2:frac": 0.22104761904761905,
+   "odf_v4:abs": 38610,
+   "odf_v4:share_gt1": 0.13767965367965368,
+   "odf_v4:p999": 2065.0049999999464,
+   "odf_v4:frac": 0.21925108225108225,
+   "odf_v8:abs": 38594,
+   "odf_v8:share_gt1": 0.1366991341991342,
+   "odf_v8:p999": 2199.0059999999357,
+   "odf_v8:frac": 0.21643506493506492,
+   "worst_ratio_vs_table_gates": 110.90229885057471,
+   "within_table_gates": false
+  },
+  "status": "ok"
+ },
+ "synthe/w3/gpu64": {
+  "xnfpelsyn": {
+   "seconds": 0.5482312300009653,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 1.162403506782539e-13,
+    "contabs:abs_dex": 1.2945200467129325e-13,
+    "contscat:abs_dex": 6.217248937900877e-15,
+    "xnfpel:rel": 6.324866583060553e-08,
+    "dopple:rel": 3.8197580689034986e-16
+   },
+   "status": "ok",
+   "loadavg": 2.52,
+   "runs_s": [
+    0.5482312300009653,
+    0.5537315950059565
+   ],
+   "cold_s": 0.5482312300009653,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 3.5439204909998807,
+   "status": "ok",
+   "loadavg": 2.56,
+   "runs_s": [
+    3.785073093000392,
+    3.5439204909998807
+   ],
+   "cold_s": 3.785073093000392,
+   "metrics": {
+    "flux:rel": 1.1576205757333324e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.1137562816454505e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.06761192560651696
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.297495651000645,
+   "status": "ok",
+   "loadavg": 2.56,
+   "runs_s": [
+    0.297495651000645,
+    0.31830333700054325
+   ],
+   "cold_s": 0.297495651000645,
+   "metrics": {
+    "flux:rel": 0.0,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "cont:rel",
+     0.0
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 4.554666524003551,
+   "seconds_parts": {
+    "xnfpelsyn": 0.5548823529970832,
+    "synthe": 3.7592128949981998,
+    "spectrv": 0.28246982199925696
+   },
+   "status": "ok",
+   "loadavg": 2.52,
+   "runs_s": [
+    4.59656506999454,
+    4.554666524003551
+   ],
+   "cold_s": 4.59656506999454,
+   "metrics": {
+    "flux:rel": 1.1576205757333324e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.1137562816454505e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.06761192560651696
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w1/gpu32": {
+  "xnfpelsyn": {
+   "seconds": 3.084172769995348,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719563998495603,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 8.2,
+   "runs_s": [
+    7.6530923190002795,
+    3.084172769995348
+   ],
+   "cold_s": 7.6530923190002795,
+   "metrics": {
+    "flux:rel": 8.611692047718819e-05,
+    "cont:rel": 8.944887401117205e-05,
+    "normflux:abs": 3.137476244308157e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      8.944887401117205e-05,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     59.76645285283619
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 3.339033920005022,
+   "status": "ok",
+   "loadavg": 7.94,
+   "runs_s": [
+    5.309086104003654,
+    3.339033920005022
+   ],
+   "cold_s": 5.309086104003654,
+   "metrics": {
+    "flux:rel": 0.0016717404891993365,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.000596695287663207
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      0.0016717404891993365,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.000596695287663207,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     4.804549217380558
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 1.2555346790031763,
+   "status": "ok",
+   "loadavg": 7.94,
+   "runs_s": [
+    1.9688349800053402,
+    1.2555346790031763
+   ],
+   "cold_s": 1.9688349800053402,
+   "metrics": {
+    "flux:rel": 2.020908769976048e-05,
+    "cont:rel": 6.219785294986152e-06,
+    "normflux:abs": 5.224590543306817e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.219785294986152e-06,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     4.155832129771969
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 7.079660914998385,
+   "seconds_parts": {
+    "xnfpelsyn": 2.3431994170023245,
+    "synthe": 3.3448440479987767,
+    "spectrv": 1.391617449997284
+   },
+   "status": "ok",
+   "loadavg": 7.72,
+   "runs_s": [
+    7.079660914998385,
+    7.717590004998783
+   ],
+   "cold_s": 7.079660914998385,
+   "metrics": {
+    "flux:rel": 0.0016743004893495538,
+    "cont:rel": 9.410722441949052e-05,
+    "normflux:abs": 0.0005766428302514948
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      9.410722441949052e-05,
+      1.496640167543878e-06
+     ],
+     "flux:rel": [
+      0.0016743004893495538,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.0005766428302514948,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     62.87899153069571
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w2/gpu32": {
+  "xnfpelsyn": {
+   "seconds": 3.39132793200406,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719563998495603,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 6.33,
+   "runs_s": [
+    6.84724235899921,
+    3.39132793200406
+   ],
+   "cold_s": 6.84724235899921,
+   "metrics": {
+    "flux:rel": 6.633097736326181e-05,
+    "cont:rel": 6.88113514292182e-05,
+    "normflux:abs": 4.038680408968709e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.88113514292182e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     42.44628212911324
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.39896918600425124,
+   "status": "ok",
+   "loadavg": 6.33,
+   "runs_s": [
+    0.5681518099954701,
+    0.39896918600425124
+   ],
+   "cold_s": 0.5681518099954701,
+   "metrics": {
+    "flux:rel": 0.0009158497568711573,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0004867216045334466
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.8191549698153378
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.4361338250018889,
+   "status": "ok",
+   "loadavg": 6.33,
+   "runs_s": [
+    0.5673455150026712,
+    0.4361338250018889
+   ],
+   "cold_s": 0.5673455150026712,
+   "metrics": {
+    "flux:rel": 6.75982010823332e-05,
+    "cont:rel": 7.09547486626316e-05,
+    "normflux:abs": 3.415335540601916e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.09547486626316e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     43.76843671254431
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 3.4021838219923666,
+   "seconds_parts": {
+    "xnfpelsyn": 3.0238091749997693,
+    "synthe": 0.2973958619986661,
+    "spectrv": 0.43948830099543557
+   },
+   "status": "ok",
+   "loadavg": 6.22,
+   "runs_s": [
+    3.760693337993871,
+    3.4021838219923666
+   ],
+   "cold_s": 3.760693337993871,
+   "metrics": {
+    "flux:rel": 0.0009148936441450418,
+    "cont:rel": 0.00013900611166038353,
+    "normflux:abs": 0.00051758477463415
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.00013900611166038353,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     85.74591997770759
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w3/gpu32": {
+  "xnfpelsyn": {
+   "seconds": 1.8011924079983146,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363081922489782,
+    "contabs:abs_dex": 0.06719563998495603,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.6773434392454097e-07
+   },
+   "status": "ok",
+   "loadavg": 5.99,
+   "runs_s": [
+    2.392259116997593,
+    1.8011924079983146
+   ],
+   "cold_s": 2.392259116997593,
+   "metrics": {
+    "flux:rel": 0.0009056407231780208,
+    "cont:rel": 0.0009162000129256433,
+    "normflux:abs": 0.0005743815108463224
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.0009162000129256433,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      0.0009056407231780208,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      0.0005743815108463224,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     549.9599910787716
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 6.512524685000244,
+   "status": "ok",
+   "loadavg": 5.84,
+   "runs_s": [
+    8.238465266003914,
+    6.512524685000244
+   ],
+   "cold_s": 8.238465266003914,
+   "metrics": {
+    "flux:rel": 1.427275939434764e-05,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3697623295283456e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      1.427275939434764e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.3697623295283456e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     8.336140239724338
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.48270863599464064,
+   "status": "ok",
+   "loadavg": 5.84,
+   "runs_s": [
+    0.618780163997144,
+    0.48270863599464064
+   ],
+   "cold_s": 0.618780163997144,
+   "metrics": {
+    "flux:rel": 2.5138507712603466e-06,
+    "cont:rel": 2.728739002772508e-06,
+    "normflux:abs": 2.001204439494586e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      2.728739002772508e-06,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.5138507712603466e-06,
+      1.7121544244581488e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     1.6379581493662978
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 8.564062390003528,
+   "seconds_parts": {
+    "xnfpelsyn": 1.9864887750009075,
+    "synthe": 6.060043910001696,
+    "spectrv": 0.5175297050009249
+   },
+   "status": "ok",
+   "loadavg": 5.77,
+   "runs_s": [
+    8.564062390003528,
+    8.863689400001022
+   ],
+   "cold_s": 8.564062390003528,
+   "metrics": {
+    "flux:rel": 0.0009057271287106544,
+    "cont:rel": 0.0009162904136344013,
+    "normflux:abs": 0.0005742340033283444
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      0.0009162904136344013,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      0.0009057271287106544,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      0.0005742340033283444,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     550.0142551829854
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w1/gpu32p": {
+  "xnfpelsyn": {
+   "seconds": 2.5655007460009074,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 5.0,
+   "runs_s": [
+    3.1464814229984768,
+    2.5655007460009074
+   ],
+   "cold_s": 3.1464814229984768,
+   "metrics": {
+    "flux:rel": 4.210330072411242e-05,
+    "cont:rel": 4.3833038267931716e-05,
+    "normflux:abs": 1.5908458045776896e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      4.3833038267931716e-05,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     29.28762652406002
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 2.6688611690042308,
+   "status": "ok",
+   "loadavg": 5.0,
+   "runs_s": [
+    2.6688611690042308,
+    3.207621173001826
+   ],
+   "cold_s": 2.6688611690042308,
+   "metrics": {
+    "flux:rel": 0.0016717404891993365,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.000596695287663207
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      0.0016717404891993365,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.000596695287663207,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     4.804549217380558
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 1.5746252250028192,
+   "status": "ok",
+   "loadavg": 5.0,
+   "runs_s": [
+    1.5746252250028192,
+    1.646700311001041
+   ],
+   "cold_s": 1.5746252250028192,
+   "metrics": {
+    "flux:rel": 2.020908769976048e-05,
+    "cont:rel": 6.316016559411166e-06,
+    "normflux:abs": 5.4855300766210036e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      6.316016559411166e-06,
+      1.496640167543878e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     4.220130326834886
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 7.6875630150025245,
+   "seconds_parts": {
+    "xnfpelsyn": 3.05331749200559,
+    "synthe": 2.9699434939975617,
+    "spectrv": 1.6643020289993729
+   },
+   "status": "ok",
+   "loadavg": 4.84,
+   "runs_s": [
+    7.6875630150025245,
+    8.374469365997356
+   ],
+   "cold_s": 7.6875630150025245,
+   "metrics": {
+    "flux:rel": 0.001672038164309974,
+    "cont:rel": 4.8927730983592396e-05,
+    "normflux:abs": 0.0005922129241214824
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      4.8927730983592396e-05,
+      1.496640167543878e-06
+     ],
+     "flux:rel": [
+      0.001672038164309974,
+      0.00034794949818638143
+     ],
+     "normflux:abs": [
+      0.0005922129241214824,
+      0.00012676214142276487
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     32.69171310822643
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "synthe/w2/gpu32p": {
+  "xnfpelsyn": {
+   "seconds": 2.551682632001757,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 4.88,
+   "runs_s": [
+    2.551682632001757,
+    2.9226633210055297
+   ],
+   "cold_s": 2.551682632001757,
+   "metrics": {
+    "flux:rel": 8.935974175680606e-06,
+    "cont:rel": 9.647007423265024e-06,
+    "normflux:abs": 4.499315775396973e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      9.647007423265024e-06,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     5.95075652904103
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.31808772300428245,
+   "status": "ok",
+   "loadavg": 4.88,
+   "runs_s": [
+    0.31808772300428245,
+    0.3608072610004456
+   ],
+   "cold_s": 0.31808772300428245,
+   "metrics": {
+    "flux:rel": 0.0009158497568711573,
+    "cont:rel": 0.0,
+    "normflux:abs": 0.0004867216045334466
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "normflux:abs",
+     0.8191549698153378
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.41083355699811364,
+   "status": "ok",
+   "loadavg": 4.88,
+   "runs_s": [
+    0.41083355699811364,
+    0.41466349300026195
+   ],
+   "cold_s": 0.41083355699811364,
+   "metrics": {
+    "flux:rel": 6.781589389022337e-05,
+    "cont:rel": 7.116909820606712e-05,
+    "normflux:abs": 3.38713928499379e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.116909820606712e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     43.9006582284125
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 3.6525384099950315,
+   "seconds_parts": {
+    "xnfpelsyn": 2.9155104180026683,
+    "synthe": 0.3169831779960077,
+    "spectrv": 0.4200448139963555
+   },
+   "status": "ok",
+   "loadavg": 4.73,
+   "runs_s": [
+    3.6525384099950315,
+    3.823198242003855
+   ],
+   "cold_s": 3.6525384099950315,
+   "metrics": {
+    "flux:rel": 0.0009159559916185033,
+    "cont:rel": 7.94214857519891e-05,
+    "normflux:abs": 0.0004853987846367147
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      7.94214857519891e-05,
+      1.6211396611818108e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     48.991143486114474
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "dfsynthe/solar/t33/gpu32": {
+  "mode": "gpu32",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    5.99,
+    6.7,
+    6.34
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:40:13",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "status": "crash",
+  "error": "ValueError: 'minlength' must not be negative",
+  "device_coercions": {
+   "src/atlas_torch/dfsynthe/lines/accumulate.py:498 (_emit) [tolist of a device tensor]": 39,
+   "src/atlas_torch/dfsynthe/lines/xlinop.py:149 (_true_carry) [tolist of a device tensor]": 6
+  },
+  "device_coercion_sites": 2
+ },
+ "synthe/w3/gpu32p": {
+  "xnfpelsyn": {
+   "seconds": 2.6584989849943668,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 6.89,
+   "runs_s": [
+    2.6584989849943668,
+    2.82402138299949
+   ],
+   "cold_s": 2.6584989849943668,
+   "metrics": {
+    "flux:rel": 1.0436719476467217e-05,
+    "cont:rel": 1.063200439247272e-05,
+    "normflux:abs": 7.0096293087740236e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      1.063200439247272e-05,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      1.0436719476467217e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      7.0096293087740236e-06,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     6.381987511834167
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 8.301451990002533,
+   "status": "ok",
+   "loadavg": 6.92,
+   "runs_s": [
+    8.61890982499608,
+    8.301451990002533
+   ],
+   "cold_s": 8.61890982499608,
+   "metrics": {
+    "flux:rel": 1.427275939434764e-05,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3697623295283456e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "flux:rel": [
+      1.427275939434764e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.3697623295283456e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     8.336140239724338
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.9571305260033114,
+   "status": "ok",
+   "loadavg": 6.92,
+   "runs_s": [
+    1.2505696410007658,
+    0.9571305260033114
+   ],
+   "cold_s": 1.2505696410007658,
+   "metrics": {
+    "flux:rel": 2.4125685169458814e-06,
+    "cont:rel": 2.5091896342976113e-06,
+    "normflux:abs": 2.0879553390695804e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      2.5091896342976113e-06,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.4125685169458814e-06,
+      1.7121544244581488e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     1.5061710209834438
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 22.717648302997986,
+   "seconds_parts": {
+    "xnfpelsyn": 5.65956763199938,
+    "synthe": 16.27491784800077,
+    "spectrv": 0.7831628229978378
+   },
+   "status": "ok",
+   "loadavg": 7.29,
+   "runs_s": [
+    22.717648302997986,
+    25.84618432100251
+   ],
+   "cold_s": 22.717648302997986,
+   "metrics": {
+    "flux:rel": 2.1350968614540288e-05,
+    "cont:rel": 1.092496920663654e-05,
+    "normflux:abs": 1.2154492904592473e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      1.092496920663654e-05,
+      1.665939391570058e-06
+     ],
+     "flux:rel": [
+      2.1350968614540288e-05,
+      1.7121544244581488e-06
+     ],
+     "normflux:abs": [
+      1.2154492904592473e-05,
+      2.623192507877903e-06
+     ]
+    },
+    "worst": [
+     "flux:rel",
+     12.47023534182514
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "compile/spectrv_josh/cpu": {
+  "device": "cpu",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    6.76,
+    6.65,
+    6.37
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:45:34",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.33456065700011095,
+   "min_s": 0.3212925900006667,
+   "n": 5,
+   "loadavg": 6.76
+  },
+  "compile_first_call_s": 22.959480083001836,
+  "compiled": {
+   "median_s": 0.15264818700234173,
+   "min_s": 0.1323386650037719,
+   "n": 5,
+   "loadavg": 4.95
+  },
+  "compiled_vs_eager": {
+   "identical": true,
+   "max_abs": 0.0,
+   "max_rel": 0.0
+  },
+  "speedup": 2.191710648977302,
+  "graph_breaks": 5,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Unsupported Tensor.item() call with capture_scalar_outputs=False\n  Explanation: Dynamo does not support tracing `Tensor.item()` with config.capture_scalar_outputs=False.\n  Hint: Set `torch._dynamo.con"
+  ],
+  "status": "ok"
+ },
+ "compile/atlas9_josh/cpu": {
+  "device": "cpu",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.95,
+    6.22,
+    6.23
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:46:04",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.15007291599613382,
+   "min_s": 0.14912727299815742,
+   "n": 5,
+   "loadavg": 4.95
+  },
+  "compile_first_call_s": 33.23024922300101,
+  "compiled": {
+   "median_s": 0.7132055960028083,
+   "min_s": 0.7070592289965134,
+   "n": 5,
+   "loadavg": 4.08
+  },
+  "compiled_vs_eager": {
+   "identical": false,
+   "max_abs": 7.375993501949778e-06,
+   "max_rel": 1.9511966337722255
+  },
+  "speedup": 0.210420272691667,
+  "graph_breaks": 31,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Unsupported Tensor.item() call with capture_scalar_outputs=False\n  Explanation: Dynamo does not support tracing `Tensor.item()` with config.capture_scalar_outputs=False.\n  Hint: Set `torch._dynamo.con",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `open` with argument types ['PosixPath', 'str'] (has_kwargs True)\n  Hint: Avoid calling builtin `open",
+   "Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `posix.stat.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party ",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this ",
+   "Data dependent operator\n  Explanation: Operator `aten._local_scalar_dense.default` has a non-Tensor output whose value is dependent on the data of Tensor inputs.\n  Hint: Enable tracing of data-depende",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this "
+  ],
+  "status": "ok"
+ },
+ "compile/synthe_voigt/cpu": {
+  "device": "cpu",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.08,
+    5.86,
+    6.11
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:46:43",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.02048256600392051,
+   "min_s": 0.02041980799549492,
+   "n": 5,
+   "loadavg": 4.08
+  },
+  "compile_first_call_s": 2.764746754000953,
+  "compiled": {
+   "median_s": 0.014746517001185566,
+   "min_s": 0.013150254002539441,
+   "n": 5,
+   "loadavg": 4.08
+  },
+  "compiled_vs_eager": {
+   "identical": true,
+   "max_abs": 0.0,
+   "max_rel": 0.0
+  },
+  "speedup": 1.3889765293237575,
+  "graph_breaks": 32,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Unsupported Tensor.item() call with capture_scalar_outputs=False\n  Explanation: Dynamo does not support tracing `Tensor.item()` with config.capture_scalar_outputs=False.\n  Hint: Set `torch._dynamo.con",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `open` with argument types ['PosixPath', 'str'] (has_kwargs True)\n  Hint: Avoid calling builtin `open",
+   "Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `posix.stat.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party ",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this ",
+   "Data dependent operator\n  Explanation: Operator `aten._local_scalar_dense.default` has a non-Tensor output whose value is dependent on the data of Tensor inputs.\n  Hint: Enable tracing of data-depende",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this "
+  ],
+  "status": "ok"
+ },
+ "compile/dfsynthe_chunk/cpu": {
+  "device": "cpu",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    4.08,
+    5.86,
+    6.11
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:46:46",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.21160651399986818,
+   "min_s": 0.21044247099780478,
+   "n": 5,
+   "loadavg": 3.91
+  },
+  "compile_first_call_s": 48.93495392899786,
+  "compiled": {
+   "median_s": 0.21394551599951228,
+   "min_s": 0.2084439879981801,
+   "n": 5,
+   "loadavg": 4.52
+  },
+  "compiled_vs_eager": {
+   "identical": true,
+   "max_abs": 0.0,
+   "max_rel": 0.0
+  },
+  "speedup": 0.989067300668973,
+  "graph_breaks": 57,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Unsupported Tensor.item() call with capture_scalar_outputs=False\n  Explanation: Dynamo does not support tracing `Tensor.item()` with config.capture_scalar_outputs=False.\n  Hint: Set `torch._dynamo.con",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `open` with argument types ['PosixPath', 'str'] (has_kwargs True)\n  Hint: Avoid calling builtin `open",
+   "Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `posix.stat.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party ",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this ",
+   "Data dependent operator\n  Explanation: Operator `aten._local_scalar_dense.default` has a non-Tensor output whose value is dependent on the data of Tensor inputs.\n  Hint: Enable tracing of data-depende",
+   "call to a callable object with no traceable __call__\n  Explanation: Dynamo could not trace a Python `__call__` method on this object.\n  Hint: It may be possible to write Dynamo tracing rules for this ",
+   "Dynamic shape operator\n  Explanation: Operator `aten._unique2.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture"
+  ],
+  "status": "ok"
+ },
+ "compile/spectrv_josh/cuda": {
+  "device": "cuda",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    6.54,
+    6.41,
+    6.23
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:54:05",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.07215948499651859,
+   "min_s": 0.067514956004743,
+   "n": 5,
+   "loadavg": 6.48
+  },
+  "gpu_vs_cpu_eager": {
+   "identical": false,
+   "max_abs": 4.547473508864641e-13,
+   "max_rel": 5.063828080287843e-16
+  },
+  "compile_first_call_s": 59.4187613460017,
+  "compiled": {
+   "median_s": 0.0698877730028471,
+   "min_s": 0.06646376299613621,
+   "n": 5,
+   "loadavg": 6.77
+  },
+  "compiled_vs_eager": {
+   "identical": false,
+   "max_abs": 1.8189894035458565e-12,
+   "max_rel": 2.578821851053826e-07
+  },
+  "speedup": 1.032505142116618,
+  "graph_breaks": 5,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `bool` with argument types ['Tensor'] (has_kwargs False)\n  Hint: Avoid calling builtin `bool` with ar"
+  ],
+  "status": "ok"
+ },
+ "compile/atlas9_josh/cuda": {
+  "device": "cuda",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    6.77,
+    6.45,
+    6.25
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:55:20",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.14654892499675043,
+   "min_s": 0.11705189699569019,
+   "n": 5,
+   "loadavg": 6.77
+  },
+  "gpu_vs_cpu_eager": {
+   "identical": false,
+   "max_abs": 2.384185791015625e-07,
+   "max_rel": 3.868107285276278e-11
+  },
+  "status": "crash",
+  "error": "AssertionError: \n\nfrom user code:\n   File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/josh.py\", line 94, in torch_dynamo_resume_in_josh_at_83\n    xsbar8, maxj = map1b(taunu, snubar, xtau8)\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/numerics.py\", line 122, in map1b\n    lead = tuple(np.broadcast_shapes(xold.shape[:-1], fold.shape[:-1], xnew.shape[:-1]))\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer co"
+ },
+ "compile/synthe_voigt/cuda": {
+  "device": "cuda",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    6.77,
+    6.45,
+    6.25
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:55:21",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "eager": {
+   "median_s": 0.0023965239961398765,
+   "min_s": 0.0023847009942983277,
+   "n": 5,
+   "loadavg": 6.77
+  },
+  "gpu_vs_cpu_eager": {
+   "identical": true,
+   "max_abs": 0.0,
+   "max_rel": 0.0
+  },
+  "compile_first_call_s": 3.11197196199646,
+  "compiled": {
+   "median_s": 0.0009217479964718223,
+   "min_s": 0.0008985050008050166,
+   "n": 5,
+   "loadavg": 7.11
+  },
+  "compiled_vs_eager": {
+   "identical": false,
+   "max_abs": 8.940696716308594e-08,
+   "max_rel": 2.6251310268523776e-07
+  },
+  "speedup": 2.5999774399435194,
+  "graph_breaks": 7,
+  "graph_break_reasons": [
+   "Dynamic shape operator\n  Explanation: Operator `aten.nonzero.default`'s output shape depends on input Tensor data.\n  Hint: Enable tracing of dynamic shape operators with `torch._dynamo.config.capture_",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `bool` with argument types ['Tensor'] (has_kwargs False)\n  Hint: Avoid calling builtin `bool` with ar",
+   "Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `open` with argument types ['PosixPath', 'str'] (has_kwargs True)\n  Hint: Avoid calling builtin `open"
+  ],
+  "status": "ok"
+ },
+ "compile/dfsynthe_chunk/cuda": {
+  "status": "killed",
+  "error": "earlyoom SIGTERM during inductor compilation (host RAM; 2026-11-04 10:57); not retried (memory rule)"
+ },
+ "dfsynthe/solar/t33/xnfdf32": {
+  "status": "crash",
+  "error": "segfault (exit 139) in the native C line kernel on the xnfpdf.dat written by XNFDF under float32 emulation"
+ },
+ "dfsynthe/solar/t21/fortran": {
+  "seconds": 41.57284145500307,
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.3,
+    2.62,
+    2.7
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:17:31",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "status": "ok"
+ },
+ "dfsynthe/solar/t21/exact": {
+  "mode": "exact",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    3.09,
+    2.4,
+    2.64
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:16:34",
+   "commit": "508af9f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 13.095421138001257,
+  "loadavg": 3.19,
+  "timing": {
+   "selectlines": 0.01,
+   "continuum": 2.47,
+   "xlinop": 2.33,
+   "lines": 3.71,
+   "broaden+dfcalc": 4.54
+  },
+  "metrics": {
+   "odf_v0:abs": 1,
+   "odf_v0:share_gt1": 0.0,
+   "odf_v0:p999": 0.0,
+   "odf_v0:frac": 4.978354978354978e-05,
+   "odf_v1:abs": 1,
+   "odf_v1:share_gt1": 0.0,
+   "odf_v1:p999": 0.0,
+   "odf_v1:frac": 4.761904761904762e-05,
+   "odf_v2:abs": 1,
+   "odf_v2:share_gt1": 0.0,
+   "odf_v2:p999": 0.0,
+   "odf_v2:frac": 2.5974025974025975e-05,
+   "odf_v4:abs": 1,
+   "odf_v4:share_gt1": 0.0,
+   "odf_v4:p999": 0.0,
+   "odf_v4:frac": 1.948051948051948e-05,
+   "odf_v8:abs": 1,
+   "odf_v8:share_gt1": 0.0,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 3.896103896103896e-05,
+   "worst_ratio_vs_table_gates": 0.0028735632183908046,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "dfsynthe/solar/t21/exact_noftz": {
+  "mode": "exact_noftz",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    10.46,
+    8.1,
+    6.94
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:59:39",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 32.24005772500095,
+  "loadavg": 10.33,
+  "timing": {
+   "selectlines": 0.03,
+   "continuum": 7.61,
+   "xlinop": 4.71,
+   "lines": 7.21,
+   "broaden+dfcalc": 12.47
+  },
+  "metrics": {
+   "odf_v0:abs": 18,
+   "odf_v0:share_gt1": 3.246753246753247e-05,
+   "odf_v0:p999": 0.0,
+   "odf_v0:frac": 0.00034415584415584414,
+   "odf_v1:abs": 17,
+   "odf_v1:share_gt1": 2.1645021645021645e-05,
+   "odf_v1:p999": 0.0,
+   "odf_v1:frac": 0.0002943722943722944,
+   "odf_v2:abs": 15,
+   "odf_v2:share_gt1": 1.7316017316017315e-05,
+   "odf_v2:p999": 0.0,
+   "odf_v2:frac": 0.0002987012987012987,
+   "odf_v4:abs": 11,
+   "odf_v4:share_gt1": 1.7316017316017315e-05,
+   "odf_v4:p999": 0.0,
+   "odf_v4:frac": 0.0002619047619047619,
+   "odf_v8:abs": 2,
+   "odf_v8:share_gt1": 6.493506493506494e-06,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 0.00021428571428571427,
+   "worst_ratio_vs_table_gates": 0.043256997455470736,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "synthe/w0/gpu32p": {
+  "xnfpelsyn": {
+   "seconds": 9.90018264799437,
+   "xnfpelsyn_vs_fortran": {
+    "continall:abs_dex": 0.11363010396916051,
+    "contabs:abs_dex": 0.06828378237997557,
+    "contscat:abs_dex": 4.4938280655482306,
+    "xnfpel:rel": 1.0,
+    "dopple:rel": 1.4956066425152598e-07
+   },
+   "status": "ok",
+   "loadavg": 9.64,
+   "runs_s": [
+    12.526493072000449,
+    9.90018264799437
+   ],
+   "cold_s": 12.526493072000449,
+   "metrics": {
+    "flux:rel": 3.042810578039781e-05,
+    "cont:rel": 3.054983036358084e-05,
+    "normflux:abs": 1.3055810718753946e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.054983036358084e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      3.042810578039781e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      1.3055810718753946e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     31.263394971315144
+    ],
+    "n_gated": 3
+   }
+  },
+  "synthe": {
+   "seconds": 0.5458370720007224,
+   "status": "ok",
+   "loadavg": 9.64,
+   "runs_s": [
+    1.050934735001647,
+    0.5458370720007224
+   ],
+   "cold_s": 1.050934735001647,
+   "metrics": {
+    "flux:rel": 2.0592417068930953e-07,
+    "cont:rel": 0.0,
+    "normflux:abs": 1.3051035951949785e-07
+   },
+   "gate": {
+    "pass": true,
+    "fails": {},
+    "worst": [
+     "flux:rel",
+     0.09453528584944551
+    ],
+    "n_gated": 3
+   }
+  },
+  "spectrv": {
+   "seconds": 0.7371058640055708,
+   "status": "ok",
+   "loadavg": 9.64,
+   "runs_s": [
+    1.0936416059994372,
+    0.7371058640055708
+   ],
+   "cold_s": 1.0936416059994372,
+   "metrics": {
+    "flux:rel": 2.805721317418917e-06,
+    "cont:rel": 3.132926753412622e-06,
+    "normflux:abs": 2.1892831374437094e-06
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.132926753412622e-06,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      2.805721317418917e-06,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      2.1892831374437094e-06,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     3.206103776762782
+    ],
+    "n_gated": 3
+   }
+  },
+  "chain": {
+   "seconds": 10.737930654002412,
+   "seconds_parts": {
+    "xnfpelsyn": 9.495113356002548,
+    "synthe": 0.5505123350012582,
+    "spectrv": 0.6923049629986053
+   },
+   "status": "ok",
+   "loadavg": 9.41,
+   "runs_s": [
+    10.737930654002412,
+    14.806844361002732
+   ],
+   "cold_s": 10.737930654002412,
+   "metrics": {
+    "flux:rel": 3.265227279449274e-05,
+    "cont:rel": 3.283290245860345e-05,
+    "normflux:abs": 1.3800646528006055e-05
+   },
+   "gate": {
+    "pass": false,
+    "fails": {
+     "cont:rel": [
+      3.283290245860345e-05,
+      9.771757159326742e-07
+     ],
+     "flux:rel": [
+      3.265227279449274e-05,
+      2.178278394559034e-06
+     ],
+     "normflux:abs": [
+      1.3800646528006055e-05,
+      1.6146422925356063e-06
+     ]
+    },
+    "worst": [
+     "cont:rel",
+     33.59979369449004
+    ],
+    "n_gated": 3
+   }
+  }
+ },
+ "atlas/t4500g25/gpu64": {
+  "mode": "gpu64",
+  "model": "t4500g25",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    10.5,
+    8.07,
+    6.92
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T10:59:34",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 140.95137717499892,
+  "loadavg": 9.79,
+  "iterations": 14,
+  "iteration_median_s": 7.596038108997163,
+  "iteration_first_s": 16.02403533799952,
+  "metrics": {
+   "RHOX:rel": 1.7830460845985137e-06,
+   "T:rel": 0.0,
+   "P:rel": 3.657443812510906e-06,
+   "XNE:rel": 0.0,
+   "RHO:rel": 0.0,
+   "ABROSS:rel": 0.0,
+   "TAUROS:rel": 0.0,
+   "FLXERR:abs": 0.0,
+   "FLXDRV:abs": 0.010000000000000009,
+   "HEIGHT:abs": 0.0,
+   "FLXCNV_over_total:abs": 0.0,
+   "deck_T:rel": 0.0,
+   "deck_P:rel": 0.0,
+   "deck_XNE:rel": 0.0,
+   "deck_ABROSS:rel": 0.00011592858798989536
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "RHOX:rel",
+    0.17830460845985135
+   ],
+   "n_gated": 15
+  },
+  "status": "ok",
+  "device_coercions": {
+   "src/atlas_torch/interp.py:29 (g) [__getitem__]": 2776,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:515 (parts) [__or__]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:517 (parts) [where]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:516 (parts) [where]": 1440,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:295 (_blk) [div]": 1368,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [sub]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [add]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:400 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:511 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:513 (parts) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:521 (parts) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:492 (<lambda>) [stack]": 900,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [sub]": 540,
+   "src/atlas_torch/atlas9/physics/opacity.py:175 (<lambda>) [__getitem__]": 480,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [add]": 480,
+   "src/atlas_torch/interp.py:19 (map1) [searchsorted]": 347,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:520 (parts) [where]": 180,
+   "src/atlas_torch/atlas9/putout.py:46 (<lambda>) [tolist of a device tensor]": 180,
+   "src/atlas_torch/atlas9/putout.py:118 (punch_model) [tolist of a device tensor]": 150,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:197 (_peach_op) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:253 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:256 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity.py:185 (linter) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:199 (_peach_op) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/physics/molec.py:650 (_edens_molecular_impl) [__setitem__]": 60,
+   "src/atlas_torch/atlas9/numerics.py:143 (g) [gather]": 60,
+   "src/atlas_torch/atlas9/physics/api.py:97 (continuum) [tolist of a device tensor]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:183 (linter) [searchsorted]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:186 (linter) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:281 (h2collop) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:282 (h2collop) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:107 (hminop) [div]": 15,
+   "src/atlas_torch/atlas9/main.py:120 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/linop.py:102 (line_opacity) [__getitem__]": 15,
+   "src/atlas_torch/atlas9/main.py:142 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:143 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:147 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/main.py:148 (frequency_integration) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/putout.py:112 (punch_model) [tolist of a device tensor]": 15,
+   "src/atlas_torch/atlas9/readin.py:81 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:82 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:83 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:84 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:85 (readmol) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:272 (_title_overflow) [numpy of a device tensor]": 1,
+   "src/atlas_torch/atlas9/readin.py:748 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:749 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:752 (_ttaup_into) [__setitem__]": 1,
+   "src/atlas_torch/atlas9/readin.py:753 (_ttaup_into) [__setitem__]": 1
+  },
+  "device_coercion_sites": 52
+ },
+ "kappa9/alpha/exact": {
+  "mode": "exact",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    7.58,
+    8.21,
+    7.38
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T11:05:01",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   22.63312675400084
+  ],
+  "timing": {
+   "continuum_v0": 15.06,
+   "rosseland_v0": 2.562,
+   "rosseland_v1": 1.295,
+   "rosseland_v2": 1.249,
+   "rosseland_v4": 1.216,
+   "rosseland_v8": 1.217,
+   "total": 22.623
+  },
+  "seconds": 22.63312675400084,
+  "cold_s": 22.63312675400084,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 8.16
+ },
+ "kappa9/alpha/native": {
+  "mode": "native",
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    9.27,
+    8.52,
+    7.51
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T11:05:29",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   19.374028000995168
+  ],
+  "timing": {
+   "continuum_v0": 13.055,
+   "rosseland_v0": 1.057,
+   "rosseland_v1": 1.482,
+   "rosseland_v2": 1.292,
+   "rosseland_v4": 1.105,
+   "rosseland_v8": 1.347,
+   "total": 19.368
+  },
+  "seconds": 19.374028000995168,
+  "cold_s": 19.374028000995168,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 9.06
+ },
+ "kappa9/alpha/fortran": {
+  "seconds": 7.31321806699998,
+  "runs_s": [
+   7.31321806699998
+  ],
+  "same_as_stock": true,
+  "env": {
+   "torch": "2.15.0+cpu",
+   "python": "3.12.16",
+   "threads": 6,
+   "loadavg": [
+    9.06,
+    8.53,
+    7.55
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T11:06:00",
+   "commit": "f6a611f",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  }
+ },
+ "atlas/sun/gpu32": {
+  "mode": "gpu32",
+  "model": "sun",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    7.98,
+    8.37,
+    7.39
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T11:04:17",
+   "commit": "f6a611f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "inner_traceback": "Traceback (most recent call last):\n  File \"/home/deck/atlas-torch/tools/bench/gpu_atlas9.py\", line 66, in it\n    r = orig(*a, **k)\n        ^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/main.py\", line 294, in iteration\n    s = s.updated(putout.mode5(s, stdout, punch))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/deck/atlas-torch/src/atlas_torch/atlas9/putout.py\", line 93, in mode5\n    raise FortranExit(\"REACHED GOLD TOLERANCES\", 0)\natlas_torch.atlas9.errors.FortranExit: REACHED GOLD TOLERANCES\n",
+  "seconds": 218.64825851799833,
+  "loadavg": 8.21,
+  "iterations": 14,
+  "iteration_median_s": 14.878375774002052,
+  "iteration_first_s": 25.477936630995828,
+  "metrics": {
+   "RHOX:rel": 0.0010618479880774917,
+   "T:rel": 0.0001478650560748962,
+   "P:rel": 0.0010606483512101406,
+   "XNE:rel": 0.0010316379388499216,
+   "RHO:rel": 0.0010282138976599976,
+   "ABROSS:rel": 0.0012960885209115896,
+   "TAUROS:rel": 2.3713709132438524e-06,
+   "FLXERR:abs": 0.5352,
+   "FLXDRV:abs": 1.58,
+   "HEIGHT:abs": 0.04099999999993997,
+   "FLXCNV_over_total:abs": 0.005570582238130006,
+   "deck_T:rel": 0.0001478650560748962,
+   "deck_P:rel": 0.0013175230566536036,
+   "deck_XNE:rel": 0.0015174506828528073,
+   "deck_ABROSS:rel": 0.0015673981191222386
+  },
+  "iterations_tables": 15,
+  "gate": {
+   "pass": false,
+   "fails": {
+    "ABROSS:rel": [
+     0.0012960885209115896,
+     1e-05
+    ],
+    "FLXCNV_over_total:abs": [
+     0.005570582238130006,
+     1e-05
+    ],
+    "FLXDRV:abs": [
+     1.58,
+     0.0
+    ],
+    "FLXERR:abs": [
+     0.5352,
+     0.0
+    ],
+    "HEIGHT:abs": [
+     0.04099999999993997,
+     0.0
+    ],
+    "P:rel": [
+     0.0010606483512101406,
+     1e-05
+    ],
+    "RHO:rel": [
+     0.0010282138976599976,
+     1e-05
+    ],
+    "RHOX:rel": [
+     0.0010618479880774917,
+     1e-05
+    ],
+    "T:rel": [
+     0.0001478650560748962,
+     2e-05
+    ],
+    "XNE:rel": [
+     0.0010316379388499216,
+     1e-05
+    ],
+    "deck_ABROSS:rel": [
+     0.0015673981191222386,
+     0.001
+    ],
+    "deck_P:rel": [
+     0.0013175230566536036,
+     0.001
+    ],
+    "deck_T:rel": [
+     0.0001478650560748962,
+     1e-05
+    ],
+    "deck_XNE:rel": [
+     0.0015174506828528073,
+     0.001
+    ]
+   },
+   "worst": [
+    "FLXDRV:abs",
+    Infinity
+   ],
+   "n_gated": 15
+  },
+  "status": "ok",
+  "device_coercions": {
+   "src/atlas_torch/atlas9/numerics.py:180 (gx) [__getitem__]": 3588,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:515 (parts) [__or__]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:517 (parts) [where]": 1920,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:516 (parts) [where]": 1440,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:295 (_blk) [div]": 1365,
+   "src/atlas_torch/atlas9/numerics.py:186 (gf) [gather]": 1196,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:397 (potlow_of) [sub]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [add]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:398 (potlow_of) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:400 (potlow_of) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:511 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:513 (parts) [div]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [mul]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:521 (parts) [where]": 960,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:492 (<lambda>) [stack]": 900,
+   "src/atlas_torch/atlas9/numerics.py:173 (map1_shared) [searchsorted]": 897,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [sub]": 540,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:217 (_special) [mul]": 510,
+   "src/atlas_torch/atlas9/physics/opacity.py:175 (<lambda>) [__getitem__]": 480,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:514 (parts) [add]": 480,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:131 (he1op) [mul]": 360,
+   "src/atlas_torch/atlas9/readin.py:649 (_dispatch) [__setitem__]": 335,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:520 (parts) [where]": 180,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:127 (he1op) [mul]": 150,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:156 (he2op) [mul]": 135,
+   "src/atlas_torch/atlas9/putout.py:46 (<lambda>) [tolist of a device tensor]": 135,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:67 (hop) [mul]": 120,
+   "src/atlas_torch/atlas9/convec.py:195 (convec) [__setitem__]": 120,
+   "src/atlas_torch/atlas9/numerics.py:143 (g) [gather]": 120,
+   "src/atlas_torch/atlas9/tcorr.py:230 (put) [__setitem__]": 105,
+   "src/atlas_torch/atlas9/physics/pfsaha.py:217 (_special) [add]": 102,
+   "src/atlas_torch/atlas9/numerics.py:164 (map1b) [mul]": 92,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:69 (hop) [mul]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:82 (hop) [div]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:83 (hop) [div]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:197 (_peach_op) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:253 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:256 (_molop) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/main.py:182 (pick) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/main.py:183 (pick) [__getitem__]": 90,
+   "src/atlas_torch/atlas9/main.py:185 (pick) [where]": 90,
+   "src/atlas_torch/atlas9/tcorr.py:244 (tcorr3) [__setitem__]": 90,
+   "src/atlas_torch/atlas9/putout.py:118 (punch_model) [tolist of a device tensor]": 90,
+   "src/atlas_torch/atlas9/numerics.py:137 (map1b) [searchsorted]": 61,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:199 (_peach_op) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/linop.py:105 (g) [__getitem__]": 60,
+   "src/atlas_torch/atlas9/physics/molec.py:650 (_edens_molecular_impl) [__setitem__]": 60,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:94 (h2plop) [mul]": 45,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:104 (hminop) [mul]": 45,
+   "src/atlas_torch/atlas9/main.py:191 (frequency_integration) [__getitem__]": 45,
+   "src/atlas_torch/atlas9/main.py:69 (hydrostatic) [sub]": 30,
+   "src/atlas_torch/atlas9/physics/pops.py:159 (_store) [__setitem__]": 30,
+   "src/atlas_torch/atlas9/physics/api.py:97 (continuum) [tolist of a device tensor]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:185 (linter) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:186 (linter) [__getitem__]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:109 (hminop) [mul]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:118 (hrayop) [mul]": 30,
+   "src/atlas_torch/atlas9/physics/opacity.py:848 (_xnh2) [mul]": 30,
+   "src/atlas_torch/atlas9/physics/opacity_batch.py:281 (h2collop) [__getitem__]": 30
+  },
+  "device_coercion_sites": 147
+ },
+ "dfsynthe/solar/t21/gpu_lines": {
+  "mode": "gpu_lines",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    0.72,
+    1.61,
+    2.8
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:04:56",
+   "commit": "508af9f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "seconds": 27.891298110000207,
+  "loadavg": 0.94,
+  "timing": {
+   "selectlines": 0.02,
+   "continuum": 2.13,
+   "xlinop": 2.09,
+   "lines": 18.16,
+   "broaden+dfcalc": 5.39
+  },
+  "metrics": {
+   "odf_v0:abs": 1,
+   "odf_v0:share_gt1": 0.0,
+   "odf_v0:p999": 0.0,
+   "odf_v0:frac": 4.978354978354978e-05,
+   "odf_v1:abs": 1,
+   "odf_v1:share_gt1": 0.0,
+   "odf_v1:p999": 0.0,
+   "odf_v1:frac": 4.545454545454545e-05,
+   "odf_v2:abs": 1,
+   "odf_v2:share_gt1": 0.0,
+   "odf_v2:p999": 0.0,
+   "odf_v2:frac": 2.380952380952381e-05,
+   "odf_v4:abs": 1,
+   "odf_v4:share_gt1": 0.0,
+   "odf_v4:p999": 0.0,
+   "odf_v4:frac": 2.1645021645021645e-05,
+   "odf_v8:abs": 1,
+   "odf_v8:share_gt1": 0.0,
+   "odf_v8:p999": 0.0,
+   "odf_v8:frac": 4.112554112554113e-05,
+   "worst_ratio_vs_table_gates": 0.0028735632183908046,
+   "within_table_gates": true
+  },
+  "status": "ok"
+ },
+ "kappa9/alpha/gpu64": {
+  "mode": "gpu64",
+  "env": {
+   "torch": "2.9.1+rocm6.4",
+   "python": "3.12.16",
+   "threads": 1,
+   "loadavg": [
+    1.2,
+    1.61,
+    2.75
+   ],
+   "host": "steamdeck",
+   "time": "2026-11-04T12:05:34",
+   "commit": "508af9f",
+   "gpu": "AMD Radeon Graphics",
+   "hip": "6.4.43484-123eb5128",
+   "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ]
+  },
+  "runs_s": [
+   10.216010174000985
+  ],
+  "device_coercions": {
+   "src/atlas_torch/atlas9/physics/opacity.py:1078 (kapp) [__setitem__]": 3164,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:221 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [mul]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:222 (hop) [div]": 2022,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [add]": 1011,
+   "src/atlas_torch/atlas9/physics/opacity.py:514 (he2op) [add]": 702,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [div]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [add]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:1092 (kapp) [__setitem__]": 674,
+   "src/atlas_torch/atlas9/physics/opacity.py:274 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:275 (hminop) [add]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [sub]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:276 (hminop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:951 (lukeop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1018 (hotop) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1083 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [mul]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [div]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:1086 (kapp) [where]": 337,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [mul]": 315,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [mul]": 259,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [mul]": 237,
+   "src/atlas_torch/atlas9/physics/opacity.py:234 (h2plop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:655 (si1op) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [mul]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:891 (coolop) [div]": 234,
+   "src/atlas_torch/atlas9/physics/opacity.py:1075 (kapp) [__setitem__]": 234,
+   "src/atlas_torch/kappa9/kappa9_prog.py:193 (populations) [__setitem__]": 210,
+   "src/atlas_torch/atlas9/physics/opacity.py:878 (h2collop) [mul]": 168,
+   "src/atlas_torch/atlas9/physics/opacity.py:427 (he1op) [div]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:428 (he1op) [sub]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:435 (he1op) [add]": 100,
+   "src/atlas_torch/atlas9/physics/opacity.py:511 (he2op) [div]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:512 (he2op) [sub]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:515 (he2op) [add]": 78,
+   "src/atlas_torch/atlas9/physics/opacity.py:889 (coolop) [add]": 66,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [add]": 44,
+   "src/atlas_torch/kappa9/kappa9_prog.py:196 (populations) [__setitem__]": 42,
+   "src/atlas_torch/atlas9/physics/opacity.py:217 (hop) [div]": 22,
+   "src/atlas_torch/atlas9/physics/opacity.py:218 (hop) [sub]": 22,
+   "src/atlas_torch/kappa9/kappa9_prog.py:322 (rosseland) [tolist of a device tensor]": 5,
+   "src/atlas_torch/kappa9/kappa9_prog.py:347 (rosseland) [tolist of a device tensor]": 5
+  },
+  "timing": {
+   "continuum_v0": 9.652,
+   "rosseland_v0": 0.14,
+   "rosseland_v1": 0.104,
+   "rosseland_v2": 0.103,
+   "rosseland_v4": 0.103,
+   "rosseland_v8": 0.103,
+   "total": 10.215
+  },
+  "seconds": 10.216010174000985,
+  "cold_s": 10.216010174000985,
+  "metrics": {
+   "kapk_v0:abs": 0.0,
+   "kapk_v0:frac": 0.0,
+   "kapk_v1:abs": 0.0,
+   "kapk_v1:frac": 0.0,
+   "kapk_v2:abs": 0.0,
+   "kapk_v2:frac": 0.0,
+   "kapk_v4:abs": 0.0,
+   "kapk_v4:frac": 0.0,
+   "kapk_v8:abs": 0.0,
+   "kapk_v8:frac": 0.0,
+   "logkappa_ros:abs": 0.0
+  },
+  "gate": {
+   "pass": true,
+   "fails": {},
+   "worst": [
+    "kapk_v0:abs",
+    0.0
+   ],
+   "n_gated": 6
+  },
+  "status": "ok",
+  "loadavg_end": 2.49
+ }
+}

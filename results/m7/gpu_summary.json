@@ -1,0 +1,1198 @@
+{
+ "rows": [
+  {
+   "label": "SYNTHE w0 xnfpelsyn",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.6516797340009362,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.48544350000156555,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.5627305199959665,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 82.82680191216019,
+     "pass": false,
+     "seconds": 5.093179704999784,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 82.82750472518845,
+     "pass": false,
+     "seconds": 1.7770513630021014,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 31.263394971315144,
+     "pass": false,
+     "seconds": 3.1310896889990545,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 31.263394971315144,
+     "pass": false,
+     "seconds": 9.90018264799437,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.11100849099602783,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w0 synthe",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.1237093189993175,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.1353632980026305,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.2124934290040983,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 0.09453528584944551,
+     "pass": true,
+     "seconds": 3.54472639800224,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 0.09453528584944551,
+     "pass": true,
+     "seconds": 0.29007036800612696,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 0.09453528584944551,
+     "pass": true,
+     "seconds": 3.0063848619975033,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 0.09453528584944551,
+     "pass": true,
+     "seconds": 0.5458370720007224,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 5.648281546004,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w0 spectrv",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.1087818169980892,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.5103348010015907,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.1240432620033971,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 3.206103776762782,
+     "pass": false,
+     "seconds": 2.115298636999796,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 2.872155254344242,
+     "pass": false,
+     "seconds": 0.21374733099946752,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 3.206103776762782,
+     "pass": false,
+     "seconds": 2.851196609000908,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 3.206103776762782,
+     "pass": false,
+     "seconds": 0.7371058640055708,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.14192515600007027,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w0 chain",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.8464842130051693,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 2.2675405999980285,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.8816480679961387,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 85.30050171413338,
+     "pass": false,
+     "seconds": 9.220584242990299,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 85.09259965160365,
+     "pass": false,
+     "seconds": 2.220621782995295,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 33.59979369449004,
+     "pass": false,
+     "seconds": 10.273673063995375,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 33.59979369449004,
+     "pass": false,
+     "seconds": 10.737930654002412,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w1 xnfpelsyn",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.6144678429991473,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.7428413440065924,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.7024093590007396,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 59.76432726564734,
+     "pass": false,
+     "seconds": 3.125723721997929,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 59.76645285283619,
+     "pass": false,
+     "seconds": 3.084172769995348,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 29.28762652406002,
+     "pass": false,
+     "seconds": 5.227551844000118,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 29.28762652406002,
+     "pass": false,
+     "seconds": 2.5655007460009074,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.1122828709994792,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w1 synthe",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 4.575167278002482,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 12.795594277005875,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0015154010498057426,
+     "pass": true,
+     "seconds": 1.8430771909988835,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 4.804549217380558,
+     "pass": false,
+     "seconds": 10.41656891599996,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 4.804549217380558,
+     "pass": false,
+     "seconds": 3.339033920005022,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 4.804549217380558,
+     "pass": false,
+     "seconds": 23.46316615700198,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 4.804549217380558,
+     "pass": false,
+     "seconds": 2.6688611690042308,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 9.866168508997362,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w1 spectrv",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.5674028620051104,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 1.4083576122308967e-11,
+     "pass": true,
+     "seconds": 3.221483162997174,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 1.4083576122308967e-11,
+     "pass": true,
+     "seconds": 0.5794111659997725,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 4.418344857093843,
+     "pass": false,
+     "seconds": 6.8967778160003945,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 4.155832129771969,
+     "pass": false,
+     "seconds": 1.2555346790031763,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 4.220130326834886,
+     "pass": false,
+     "seconds": 20.007430345998728,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 4.220130326834886,
+     "pass": false,
+     "seconds": 1.5746252250028192,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.7850789290023386,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w1 chain",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 5.78459324099822,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 1.4083576122308967e-11,
+     "pass": true,
+     "seconds": 17.512088437993953,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0015154010498057426,
+     "pass": true,
+     "seconds": 2.9650456020026468,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 63.064411371734145,
+     "pass": false,
+     "seconds": 21.17754319300002,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 62.87899153069571,
+     "pass": false,
+     "seconds": 7.079660914998385,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 32.69171310822643,
+     "pass": false,
+     "seconds": 54.142153480999696,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 32.69171310822643,
+     "pass": false,
+     "seconds": 7.6875630150025245,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w2 xnfpelsyn",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.6059973880037433,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.539734985002724,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.5459652439967613,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 42.44625028256042,
+     "pass": false,
+     "seconds": 2.017004444001941,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 42.44628212911324,
+     "pass": false,
+     "seconds": 3.39132793200406,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 5.95075652904103,
+     "pass": false,
+     "seconds": 3.0516932160026045,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 5.95075652904103,
+     "pass": false,
+     "seconds": 2.551682632001757,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.11851266099984059,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w2 synthe",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.4025229079998098,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.8198610040053609,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.00018171714680046907,
+     "pass": true,
+     "seconds": 0.19957109299866715,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 0.8191549698153378,
+     "pass": true,
+     "seconds": 2.307935300996178,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 0.8191549698153378,
+     "pass": true,
+     "seconds": 0.39896918600425124,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 0.8191549698153378,
+     "pass": true,
+     "seconds": 2.573768801004917,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 0.8191549698153378,
+     "pass": true,
+     "seconds": 0.31808772300428245,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 10.30732876699767,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w2 spectrv",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.14896558500186075,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.880283676997351,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.16419016299914801,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 43.9006582284125,
+     "pass": false,
+     "seconds": 1.999776157004817,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 43.76843671254431,
+     "pass": false,
+     "seconds": 0.4361338250018889,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 43.9006582284125,
+     "pass": false,
+     "seconds": 4.113071747000504,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 43.9006582284125,
+     "pass": false,
+     "seconds": 0.41083355699811364,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.1996072109977831,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w2 chain",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 2.1682735859940294,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 3.094630044994119,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.00018171714680046907,
+     "pass": true,
+     "seconds": 0.9207451480033342,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 85.67981819670578,
+     "pass": false,
+     "seconds": 5.635559077003563,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 85.74591997770759,
+     "pass": false,
+     "seconds": 3.4021838219923666,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 48.991143486114474,
+     "pass": false,
+     "seconds": 10.15404302499519,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 48.991143486114474,
+     "pass": false,
+     "seconds": 3.6525384099950315,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w3 xnfpelsyn",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.6112399990015547,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.48421939299441874,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.5482312300009653,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 549.8976695845778,
+     "pass": false,
+     "seconds": 2.1533851089989184,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 549.9599910787716,
+     "pass": false,
+     "seconds": 1.8011924079983146,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 6.381987511834167,
+     "pass": false,
+     "seconds": 7.125445330995717,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 6.381987511834167,
+     "pass": false,
+     "seconds": 2.6584989849943668,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.11824048699781997,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w3 synthe",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 2.581721988004574,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 2.58055600499938,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.06761192560651696,
+     "pass": true,
+     "seconds": 3.5439204909998807,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 8.336140239724338,
+     "pass": false,
+     "seconds": 18.663902467997104,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 8.336140239724338,
+     "pass": false,
+     "seconds": 6.512524685000244,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 8.336140239724338,
+     "pass": false,
+     "seconds": 30.378164295005263,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 8.336140239724338,
+     "pass": false,
+     "seconds": 8.301451990002533,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 17.89018690100056,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w3 spectrv",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.303250755998306,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 1.6663528219942236,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 0.297495651000645,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 1.5061710209834438,
+     "pass": false,
+     "seconds": 4.427560497999366,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 1.6379581493662978,
+     "pass": false,
+     "seconds": 0.48270863599464064,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 1.5061710209834438,
+     "pass": false,
+     "seconds": 10.277758295997046,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 1.5061710209834438,
+     "pass": false,
+     "seconds": 0.9571305260033114,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 0.40547819799394347,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "SYNTHE w3 chain",
+   "family": "synthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 3.5053482729999814,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 4.77362734900089,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.06761192560651696,
+     "pass": true,
+     "seconds": 4.554666524003551,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": 549.9518741272617,
+     "pass": false,
+     "seconds": 46.73246448299324,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": 550.0142551829854,
+     "pass": false,
+     "seconds": 8.564062390003528,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": 12.53800690510358,
+     "pass": false,
+     "seconds": 41.15637741499813,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 12.47023534182514,
+     "pass": false,
+     "seconds": 22.717648302997986,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "KAPPA9 solar",
+   "family": "kappa9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 5.056313130997296,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 13.639881032999256,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 9.93852569199953,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": null,
+     "status": "fail_overflow"
+    },
+    "gpu32": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": null,
+     "status": "fail_overflow"
+    },
+    "cpu32p": {
+     "ratio": 1.000000000000334,
+     "pass": false,
+     "seconds": 48.21360871900106,
+     "status": "ok"
+    },
+    "gpu32p": {
+     "ratio": 1.000000000000334,
+     "pass": false,
+     "seconds": 66.40558869499364,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 2.0635478149997653,
+     "status": null
+    }
+   }
+  },
+  {
+   "label": "KAPPA9 alpha",
+   "family": "kappa9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 22.63312675400084,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 19.374028000995168,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 10.216010174000985,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 7.31321806699998,
+     "status": null
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 sun",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 9.570580118997896,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": 9.178299595005228,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": 31.83092889299587,
+     "status": "ok"
+    },
+    "cpu32": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": 89.24842569300381,
+     "status": "ok"
+    },
+    "gpu32": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": 218.64825851799833,
+     "status": "ok"
+    },
+    "cpu32p": {
+     "ratio": Infinity,
+     "pass": false,
+     "seconds": 145.35965732500335,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 5.552350938000018,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 t4500g25",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 29.623756428001798,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.3333333333333333,
+     "pass": true,
+     "seconds": 20.36747616699722,
+     "status": "ok"
+    },
+    "gpu64": {
+     "ratio": 0.17830460845985135,
+     "pass": true,
+     "seconds": 140.95137717499892,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 6.716349769005319,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 t6500g40m10",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 29.68032097499963,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.016666666666666666,
+     "pass": true,
+     "seconds": 42.08112338199862,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 6.8522110499980045,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 t9000g40",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 92.03415976499673,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.3333333333333333,
+     "pass": true,
+     "seconds": 63.85163310899952,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 18.00376344400138,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 t5000g45m20",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 29.476794718000747,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.003333333333333339,
+     "pass": true,
+     "seconds": 28.561987850996957,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 4.22436662200198,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "ATLAS9 t5500g40alpha",
+   "family": "atlas9",
+   "cells": {
+    "exact": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 38.08195418499963,
+     "status": "ok"
+    },
+    "native": {
+     "ratio": 0.7785191009615187,
+     "pass": true,
+     "seconds": 35.752096381998854,
+     "status": "ok"
+    },
+    "fortran": {
+     "ratio": 0.0,
+     "pass": true,
+     "seconds": 3.842991539997456,
+     "status": "ok"
+    }
+   }
+  },
+  {
+   "label": "DFSYNTHE 5012 K",
+   "family": "dfsynthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.0028735632183908046,
+     "pass": true,
+     "seconds": 13.095421138001257,
+     "status": "ok",
+     "max_steps": 1
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 41.57284145500307,
+     "status": "ok",
+     "max_steps": 0
+    },
+    "gpu_lines": {
+     "ratio": 0.0028735632183908046,
+     "pass": true,
+     "seconds": 27.891298110000207,
+     "status": "ok",
+     "max_steps": 1
+    },
+    "exact_noftz": {
+     "ratio": 0.043256997455470736,
+     "pass": true,
+     "seconds": 32.24005772500095,
+     "status": "ok",
+     "max_steps": 18
+    }
+   }
+  },
+  {
+   "label": "DFSYNTHE 12589 K",
+   "family": "dfsynthe",
+   "cells": {
+    "exact": {
+     "ratio": 0.06335180814482838,
+     "pass": true,
+     "seconds": 14.134373280998261,
+     "status": "ok",
+     "max_steps": 15
+    },
+    "native": {
+     "ratio": 0.06335180814482838,
+     "pass": true,
+     "seconds": 143.31850191400008,
+     "status": "ok",
+     "max_steps": 15
+    },
+    "gpu64": {
+     "ratio": 0.0028735632183908046,
+     "pass": true,
+     "seconds": 341.231113337999,
+     "status": "ok",
+     "max_steps": 1
+    },
+    "cpu32": {
+     "ratio": 110.90229885057471,
+     "pass": false,
+     "seconds": 99.71068145699974,
+     "status": "ok",
+     "max_steps": 40527
+    },
+    "gpu32": {
+     "ratio": null,
+     "pass": null,
+     "seconds": null,
+     "status": "crash",
+     "max_steps": 0
+    },
+    "fortran": {
+     "ratio": null,
+     "pass": null,
+     "seconds": 26.752772607003863,
+     "status": "ok",
+     "max_steps": 0
+    },
+    "gpu_lines": {
+     "ratio": 0.06335180814482838,
+     "pass": true,
+     "seconds": 19.97478262599907,
+     "status": "ok",
+     "max_steps": 15
+    },
+    "exact_noftz": {
+     "ratio": 0.0028735632183908046,
+     "pass": true,
+     "seconds": 26.97761337400152,
+     "status": "ok",
+     "max_steps": 1
+    }
+   }
+  }
+ ]
+}
