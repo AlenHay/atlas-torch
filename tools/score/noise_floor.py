@@ -79,6 +79,21 @@ def main():
             t[k] = {"tol": max(3.0 * spread, quantum(k)), "spread": spread, "quantum": quantum(k),
                     "worst_variant": max(ok, key=lambda v: ok[v][k]), "n_variants": len(ok)}
         tols[stage] = t
+    # M6 example products (setups outside the reference set) get derived tolerances: elementwise max over the
+    # measured stages of the same kind (an extrapolation of the measured noise floor; see RESULTS.md).
+    def kmax(prefix):
+        out = {}
+        for st, t in tols.items():
+            if st.startswith(prefix):
+                for k, v in t.items():
+                    if k not in out or v["tol"] > out[k]["tol"]:
+                        out[k] = dict(v, derived_from=st)
+        return out
+    derived = {"structure": kmax("atlas/"), "spectrum": kmax("synthe/"), "odf": kmax("odf/"), "kappa9": kmax("kappa9/")}
+    for ex in ref["examples"]:
+        tols[f"api/{ex}/structure"] = derived["structure"]
+        tols[f"api/{ex}/spectrum"] = derived["spectrum"]
+    tols["api/custom_abun/odf"] = derived["odf"]
     (REPO / "results").mkdir(exist_ok=True)
     (REPO / "results/noise_floor.json").write_text(json.dumps(floor, indent=1))
     print("stages without noise data:", missing)

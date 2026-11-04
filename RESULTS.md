@@ -64,10 +64,10 @@ Everything outside the markers is the hand-written record of decisions, gate not
 
 ### Findings so far
 
-* Correction (line readers, commit 44c6701): the claim "byte-identical except TABLOG fields" was wrong. The
-  molecular records written by the `rmolecasc` port differ from stock by up to 79 ulp (<= 5e-6 relative) in
-  REAL*4 fields across ~600k records; the stage test hid this behind a 5e-4 helper tolerance. Being fixed (stock
-  -O3 uses glibc libmvec vector math); the bound will be tightened to exact.
+* Correction (line readers, commit 44c6701): the claim "byte-identical except TABLOG fields" was wrong — the
+  rmolecasc/rgfalllines ports did REAL*4 arithmetic in float64 (up to 79 ulp in ~600k records; the stage test hid
+  it behind a 5e-4 helper tolerance). Fixed: all line programs now byte-identical to stock on the four reference
+  windows (incl. TABLOG via libmvec powf, which only rh2ofast uses), and the test requires exact equality.
 * Host vs container: the host glibc 2.43 `log10f` differs from the container's 2.39; all references and scores
   are produced inside the container.
 
@@ -77,6 +77,20 @@ Everything outside the markers is the hand-written record of decisions, gate not
 * Our solar ODF vs the one shipped in BasicATLAS `data/solar_ODF`: 0.6 % of ODF steps differ (up to 3.6 dex in
   rare bins), `kappa.ros` within 0.001 dex — the shipped tables come from other line-list versions;
   information only, the gate is our pinned build.
+
+## Frozen tolerances (M0 complete)
+
+`results/tolerances.json` frozen at 2026-11-04 ~01:30 (sha256 field `f2ef47d2...`), before any end-to-end torch
+result was scored (individual program ports had reported agreement with the Fortran during development). 21
+stages: 4 SYNTHE windows, 2 ODF mixes, 2 KAPPA9-alone mixes, 6 ATLAS9 models, and 7 derived M6 example stages.
+Typical gates: ATLAS9 T/P/XNE 1e-5..6e-5 relative (printed precision), FLXERR 0..7e-4; SYNTHE flux 1.7e-6 (500-510,
+1500-1600 nm) to 3.5e-4 / 1.1e-3 (380-420 nm, H-alpha window: ifx variants); KAPPA9 1 step / 0.001 dex; ODF
+max-abs ~10 dex (non-gating, see above), share>1 step <= 0.9-1.1 %, p99.9 <= 72 steps, warm max 357/1070 steps,
+kappa.ros 0.015/0.003 dex.
+**Derived example stages** (`api/<example>/{structure,spectrum,odf}`): the examples run setups outside the
+reference set (Arcturus mix, 100-3000 nm), so their gates are the elementwise maximum of the measured gates of the
+same kind (structures: all ATLAS9 models; spectra: all SYNTHE windows; ODF: both mixes). This is an extrapolation of
+the measured noise floor, decided before any example ran with the torch backend. This session created these rules.
 
 ## GPU (M0 machine check)
 
