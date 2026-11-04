@@ -1,0 +1,763 @@
+{
+ "applies_to": "v2 (physics-first reimplementation) vs the stock Fortran (ATLAS9/DFSYNTHE/KAPPA9/SYNTHE), with the same input physics and data; stage-isolated (each stage gets the stock upstream products).",
+ "created": "2026-11-04",
+ "evidence_kinds": {
+  "cross-code upper bound": "Differences between different codes; quoted only as an upper bound.",
+  "derived": "Propagated from a supported tolerance by stated physics, or bounded between a self-consistency level and a cross-code level.",
+  "reimplementation": "Published same-physics reimplementations of the Kurucz codes validated against the Fortran (pyKurucz, Payne Zero). The closest analogue to v2.",
+  "self-consistency": "Numerical precision or convergence level of a single code (convergence criteria, frequency-sampling tests, same-code scheme changes). Preferred.",
+  "unsupported": "No literature support found; value proposed and marked."
+ },
+ "frozen": "2026-11-04, before any v2 output existed; never edit to make a score pass",
+ "metric_conventions": "Keys follow src/atlas_torch/scoring.py: rel = max |a-b|/max(|a|,|b|); abs in the quantity's own units; rms_* = rms of the same pointwise error. ODF/kapk tolerances are given in dex; the scorer works in 0.001-dex steps (multiply by 1000). 'v*' = every vturb (0,1,2,4,8). tol=null means not gated. Keys marked proposed_new_metric are not yet in scoring.py.",
+ "not_found": [
+  "No refereed number for absolute (non-normalised) synthetic flux agreement between same-physics implementations; cont/flux tolerances are derived.",
+  "No published per-step ODF tolerance; ODF per-entry gates are unsupported proposals.",
+  "Kurucz 2005, MSAIS 8, 73 ('Physical, numerical, and computational limits for Kurucz codes') could not be retrieved (host unreachable) and is not cited.",
+  "No published HEIGHT or radiative/convective-split tolerance."
+ ],
+ "sha256": "af97795be900549064c6ad173f17d31d440b5a665640c72e424d28d68b57a7dd",
+ "stages": {
+  "abundances_crosscheck": {
+   "derived_labels_vs_fortran": {
+    "also": "Teff <= 10 K, log g <= 0.02 dex",
+    "basis": "Optional end-to-end check: fit v2 spectra with Fortran-generated spectra, or the reverse. Payne Zero's reimplementation induces a bias of at most 4.6 K in Teff, 0.013 dex in log g and 0.011 dex in [M/H] when fitting the original Kurucz spectra. Proposed: [X/H] <= 0.02 dex, Teff <= 10 K, log g <= 0.02 dex. Different radiative-transfer codes with the same inputs differ by up to 0.05-0.12 dex (Jofre et al.); that is an upper bound only.",
+    "evidence": "reimplementation (cross-check, not a stage gate)",
+    "gate": false,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Across the hot dwarf, the Sun, the red giant, and the K dwarf the induced bias reaches 4.6 K in effective temperature, 0.013 dex in surface gravity, and 0.011 dex in metallicity.",
+      "where": "Sect. 5"
+     },
+     {
+      "cite": "Jofre et al. 2017, A&A 601, A38, arXiv:1612.05013",
+      "quote": "When the same EWs are used, differences of up to 0.05 dex can be obtained when different radiative transfer codes are used.",
+      "where": "Sect. 4.8 (conclusion for radiative transfer codes)"
+     },
+     {
+      "cite": "Jofre et al. 2017, A&A 601, A38, arXiv:1612.05013",
+      "quote": "We found maximal differences of 0.06 dex for weak lines in the first case, maximal differences of 0.12 dex for cool stars in the second case.",
+      "where": "Sect. 5, item 8"
+     }
+    ],
+    "tol": 0.02
+   }
+  },
+  "atlas": {
+   "ABROSS:rel": {
+    "basis": "Photospheric kappa_Ross is dominated by H-, which is proportional to Ne, so it shares XNE's 0.01 dex. This is tighter than the 0.05 dex cross-code / frequency-grid level for kappa tables because v2 uses the same ODFs and the same opacity sources.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "maximum errors in the interpolated quantities should remain below 0.25% for T and a few % for Pg and Pe, whereas \u03baRoss and the column density (rhox) are more difficult to interpolate.",
+      "where": "Sect. 8"
+     }
+    ],
+    "tol": 0.023
+   },
+   "FLXCNV_over_total:abs": {
+    "basis": "Convective flux as a fraction of the total. With the same MLT parameters, its uncertainty is bounded by the 1% flux-conservation criterion that both models satisfy. No paper gives a number for the radiative/convective split itself.",
+    "evidence": "derived (unsupported)",
+    "gate": true,
+    "kind": "abs",
+    "sources": [
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "These parameters were set to 1% for the flux or 10% for the flux derivative errors after 30 iterations in each run, as recommended in the ATLAS cookbook. A model is considered converged if the convergence parameters satisfy these criteria in all depths.",
+      "where": "Sect. 2.2"
+     }
+    ],
+    "tol": 0.01
+   },
+   "FLXDRV:abs": {
+    "also_require": "v2 max|FLXDRV| < 10 over log tau_Ross in [-4,1]",
+    "basis": "Units: percent. ATLAS9 cookbook / Meszaros et al.: flux-derivative error < 10%; BasicATLAS GOLD max|de| < 10. The primary gate is that v2's own max|FLXDRV| < 10; the difference vs the Fortran must be <= 10 percentage points.",
+    "evidence": "convergence criterion (self-consistency)",
+    "gate": true,
+    "kind": "abs",
+    "sources": [
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "These parameters were set to 1% for the flux or 10% for the flux derivative errors after 30 iterations in each run, as recommended in the ATLAS cookbook. A model is considered converged if the convergence parameters satisfy these criteria in all depths.",
+      "where": "Sect. 2.2"
+     },
+     {
+      "cite": "BasicATLAS atlas.py (code, not literature), commit f07c0a3c4d3100793a4e66e129509b0495000ab2, line 177",
+      "quote": "gold = (max_err < 1.0) & (max_de < 10.0)",
+      "where": "best-iteration selection"
+     }
+    ],
+    "tol": 10.0
+   },
+   "FLXERR:abs": {
+    "also_require": "v2 max|FLXERR| < 1 over log tau_Ross in [-4,1]",
+    "basis": "Units: percent, as printed by ATLAS9. A model counts as converged in the ATLAS9 literature when |flux error| < 1% at all depths (log tau_Ross -4..1); BasicATLAS GOLD uses the same rule. Two models that both meet the criterion are equivalent at this level, so the primary gate is that v2's own best iteration satisfies max|FLXERR| < 1. Separately, |dFLXERR| vs the Fortran must be <= 1 percentage point. The MARCS same-code sampling error in flux integrals (<1.5%) supports the same order.",
+    "evidence": "convergence criterion (self-consistency)",
+    "gate": true,
+    "kind": "abs",
+    "sources": [
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "These parameters were set to 1% for the flux or 10% for the flux derivative errors after 30 iterations in each run, as recommended in the ATLAS cookbook. A model is considered converged if the convergence parameters satisfy these criteria in all depths.",
+      "where": "Sect. 2.2"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "We used only log \u03c4Ross >= \u22124 to log \u03c4Ross = 1 to check the convergence, because most of the lines in the optical and H band form in this region.",
+      "where": "Sect. 2.2"
+     },
+     {
+      "cite": "BasicATLAS atlas.py (code, not literature), commit f07c0a3c4d3100793a4e66e129509b0495000ab2, line 177",
+      "quote": "gold = (max_err < 1.0) & (max_de < 10.0)",
+      "where": "best-iteration selection"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "We then find the temperature errors for \u03c4Ross \u2265 10\u22124 to be less than 0.003\u00d7Teff K with the maximum errors in the upper layers of the model (above \u03c4Ross = 0.01). The corresponding errors in the flux integrals and flux derivative integrals [...] by the sampling procedure are less than 1.5%. For the grid models, with 108,000 wavelength points, [...] They then lead to temperature errors of about 0.002\u00d7Teff K or less.",
+      "where": "Sect. 5.2"
+     }
+    ],
+    "tol": 1.0
+   },
+   "HEIGHT:abs": {
+    "basis": "No literature number. Proposed: |dh| <= 0.01 x (max HEIGHT - min HEIGHT) of the reference model, scale-free across dwarfs and giants (needs a scorer change). It follows from the about 1% density tolerance integrated over the atmosphere.",
+    "evidence": "unsupported",
+    "gate": false,
+    "kind": "abs",
+    "proposed": "0.01 of the reference height range",
+    "sources": [],
+    "tol": null
+   },
+   "P:rel": {
+    "basis": "MARCS converges log P corrections to <0.01 dex (2.3%), which caps the numerical noise of a converged model. P(tau) = integral of g/kappa dtau, so it inherits an averaged kappa error (well below the local 2%). The cross-code MARCS-ATLAS9 difference of 2-3% must sit above a same-physics tolerance, hence 1%.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived; bounded by self-consistency and cross-code",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "maximum errors in the interpolated quantities should remain below 0.25% for T and a few % for Pg and Pe, whereas \u03baRoss and the column density (rhox) are more difficult to interpolate.",
+      "where": "Sect. 8"
+     }
+    ],
+    "tol": 0.01
+   },
+   "RHO:rel": {
+    "basis": "rho = P mu / (k T): drho/rho is about dP/P + dT/T = 1e-2 + 2e-3, plus mu changes from molecule/ionisation shifts.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     }
+    ],
+    "tol": 0.015
+   },
+   "RHOX:rel": {
+    "basis": "Column mass is about P/g in hydrostatic equilibrium, so it shares P's tolerance. Gustafsson et al. note that rhox and kappa_Ross are harder to interpolate than T, P.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "maximum errors in the interpolated quantities should remain below 0.25% for T and a few % for Pg and Pe, whereas \u03baRoss and the column density (rhox) are more difficult to interpolate.",
+      "where": "Sect. 8"
+     }
+    ],
+    "tol": 0.01
+   },
+   "T:rel": {
+    "basis": "Score log tau_Ross in [-4, 1] (the layers Meszaros et al. used for ATLAS9 convergence); outside that range, report only. Same-code numerical levels: MARCS sampling errors are about 0.002 Teff for grid models; Payne Zero's change of the Kurucz line-selection fraction moves T by up to 5.9 K (about 0.1%); its stopping test is 5e-4 in the deep layers. Upper bounds: MARCS vs ATLAS9 cross-code is <1% (10-80 K at the surface of giants); interpolated vs direct models differ by 2-3%. Compiler-level reruns of ATLAS9 give 0.1-0.2 K, which is bit-level noise, not the v2 target. 2e-3 is about 11 K at T = 5777 K, about 9 K at the solar surface and about 20 K at T = 10000 K.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "self-consistency (numerical precision)",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "We then find the temperature errors for \u03c4Ross \u2265 10\u22124 to be less than 0.003\u00d7Teff K with the maximum errors in the upper layers of the model (above \u03c4Ross = 0.01). The corresponding errors in the flux integrals and flux derivative integrals [...] by the sampling procedure are less than 1.5%. For the grid models, with 108,000 wavelength points, [...] They then lead to temperature errors of about 0.002\u00d7Teff K or less.",
+      "where": "Sect. 5.2"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Lowering \u03b7sel by three orders of magnitude moves the temperature over the 80 depth points by at most 5.9 K for the Sun and 1.8 K for a red giant, with the change essentially complete by 10\u22124.",
+      "where": "Sect. 3.2"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "We adapt the deep-layer successive-structure norm used by the external checker in the retained Kurucz workflow into a per-pass production stopping test, [eps_T = max over deep layers j of |T_j(n+1) - T_j(n)| / T_j(n+1)] < 5 \u00d7 10\u22124.",
+      "where": "Sect. 3.1, Eq. (16)"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "We used only log \u03c4Ross >= \u22124 to log \u03c4Ross = 1 to check the convergence, because most of the lines in the optical and H band form in this region.",
+      "where": "Sect. 2.2"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "It is seen that the agreement in the temperature structures is almost perfect for the models of solar-type dwarf stars of different metallicities. [...] For the models of giants and supergiants, the agreement is again good, although the MARCS models tend to be some 10-80 K cooler in the surface layers from \u03c4Ross \u2264 10\u22122.",
+      "where": "Sect. 7"
+     },
+     {
+      "cite": "Meszaros & Allende Prieto 2013, MNRAS 430, 3285, arXiv:1301.4843",
+      "quote": "the temperature differences were between 2 \u2212 3%, the pressure and electron density differences were between 1 \u2212 2%. This translates to 10\u221230 K average differences in temperature",
+      "where": "Sect. 4 (model atmosphere interpolation vs direct calculation)"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "This test also concluded with near perfect agreement with only 0.1\u22120.2 K maximum differences coming from the different version of compilers used.",
+      "where": "Sect. 2.2"
+     }
+    ],
+    "tol": 0.002
+   },
+   "TAUROS:rel": {
+    "basis": "ATLAS9 output layers sit on its fixed log tau_Ross grid, so this checks that v2 uses the same grid, not physics. Proposed: print precision plus margin.",
+    "evidence": "unsupported",
+    "gate": true,
+    "kind": "rel",
+    "sources": [],
+    "tol": 0.001
+   },
+   "XNE:rel": {
+    "basis": "Saha sensitivity: d ln Ne / d ln T is about chi/(2kT), roughly 9 for metal donors at the solar photosphere, so the 2e-3 T tolerance maps to about 2%. This matches MARCS's 0.01 dex (2.3%) pressure-convergence level. The cross-code MARCS-ATLAS9 difference of 2-3% is the upper bound.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "self-consistency (convergence) + derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     },
+     {
+      "cite": "Meszaros & Allende Prieto 2013, MNRAS 430, 3285, arXiv:1301.4843",
+      "quote": "the temperature differences were between 2 \u2212 3%, the pressure and electron density differences were between 1 \u2212 2%. This translates to 10\u221230 K average differences in temperature",
+      "where": "Sect. 4 (model atmosphere interpolation vs direct calculation)"
+     }
+    ],
+    "tol": 0.023
+   },
+   "_upper_bounds": {
+    "note": "Cross-code differences (MARCS vs ATLAS9 <1% in T, 2-3% in P and Ne for tau > 0.01) and model-interpolation errors (2-3% T, 1-2% P/Ne) are what the literature treats as acceptable between different codes or for interpolated models. v2 tolerances are set tighter than these on purpose.",
+    "sources": [
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     },
+     {
+      "cite": "Meszaros & Allende Prieto 2013, MNRAS 430, 3285, arXiv:1301.4843",
+      "quote": "the temperature differences were between 2 \u2212 3%, the pressure and electron density differences were between 1 \u2212 2%. This translates to 10\u221230 K average differences in temperature",
+      "where": "Sect. 4 (model atmosphere interpolation vs direct calculation)"
+     },
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "It is seen that the agreement in the temperature structures is almost perfect for the models of solar-type dwarf stars of different metallicities. [...] For the models of giants and supergiants, the agreement is again good, although the MARCS models tend to be some 10-80 K cooler in the surface layers from \u03c4Ross \u2264 10\u22122.",
+      "where": "Sect. 7"
+     }
+    ]
+   },
+   "deck_ABROSS:rel": {
+    "basis": "Same as ABROSS:rel.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     }
+    ],
+    "tol": 0.023
+   },
+   "deck_P:rel": {
+    "basis": "Same as P:rel.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     }
+    ],
+    "tol": 0.01
+   },
+   "deck_T:rel": {
+    "basis": "Same quantity as T:rel, taken from the punched deck that SYNTHE reads.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "self-consistency",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "We then find the temperature errors for \u03c4Ross \u2265 10\u22124 to be less than 0.003\u00d7Teff K with the maximum errors in the upper layers of the model (above \u03c4Ross = 0.01). The corresponding errors in the flux integrals and flux derivative integrals [...] by the sampling procedure are less than 1.5%. For the grid models, with 108,000 wavelength points, [...] They then lead to temperature errors of about 0.002\u00d7Teff K or less.",
+      "where": "Sect. 5.2"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Lowering \u03b7sel by three orders of magnitude moves the temperature over the 80 depth points by at most 5.9 K for the Sun and 1.8 K for a red giant, with the change essentially complete by 10\u22124.",
+      "where": "Sect. 3.2"
+     }
+    ],
+    "tol": 0.002
+   },
+   "deck_XNE:rel": {
+    "basis": "Same as XNE:rel.",
+    "domain": "log10(TAUROS) in [-4, 1]",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Gustafsson et al. 2008, A&A 486, 951 (MARCS grid), arXiv:0805.0554",
+      "quote": "Usually, convergence to temperature corrections althrough the models of less than a few K, and logarithmic pressure corrections smaller than 0.01 dex, is obtained after 4 to 10 iterations.",
+      "where": "Sect. 5.4"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "The new MARCS and ATLAS9 models show good agreement, the differences are modest, less than 1 percent, for the thermal structure, and less than 2\u22123 percent for the gas pressure and the electron density in the layers where weak spectral lines and continuum form (\u03c4 > 0.01).",
+      "where": "Sect. 4.1"
+     }
+    ],
+    "tol": 0.023
+   }
+  },
+  "kappa_ros": {
+   "kapk_v*:abs": {
+    "basis": "kapk tables are 1000*log10 kappa_R, so this is 50 integer steps: the same quantity as logkappa_ros on KAPPA9's own grid.",
+    "evidence": "self-consistency (frequency-sampling precision)",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     },
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "our opacity values agree with the reference data mostly within \u00b10.05 dex, with the largest differences reaching up to \u2248 \u00b10.10\u22120.20 only in narrow regions.",
+      "where": "Sect. 4.1.1, Fig. 7"
+     }
+    ],
+    "tol": 0.05,
+    "units_note": "scorer works in steps: tol = 50 steps"
+   },
+   "logkappa_ros:abs": {
+    "basis": "Rosseland-mean tables: halving or thinning the frequency grid in one code changes log kappa_R by about \u00b10.05 dex over most of (T, R) (AESOPUS App. B), and independent opacity codes agree mostly within \u00b10.05 dex. Rerunning Castelli's DFSYNTHE/KAPPA9 scripts gives perfect agreement within numerical precision, but that is a same-binary check, not the v2 target. Note: this project's own compiler variants of stock DFSYNTHE already differ by up to 0.015 dex, so a tolerance below about 0.02 dex would be unattainable even for Fortran.",
+    "evidence": "self-consistency (frequency-sampling precision) = cross-code level",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     },
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "our opacity values agree with the reference data mostly within \u00b10.05 dex, with the largest differences reaching up to \u2248 \u00b10.10\u22120.20 only in narrow regions.",
+      "where": "Sect. 4.1.1, Fig. 7"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "For this we used Castelli's scripts without any modification to calculate the ODF, and Rosseland opacities for the Grevesse & Sauval (1998) abundances. These calculations concluded in perfect agreement within numerical precision.",
+      "where": "Sect. 2.2"
+     }
+    ],
+    "tol": 0.05
+   },
+   "logkappa_ros:rms_abs": {
+    "basis": "Rms over the (T, P) table. No paper gives an rms; 0.01 dex matches the per-layer ABROSS tolerance in the atlas stage.",
+    "evidence": "derived (unsupported)",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     }
+    ],
+    "tol": 0.01
+   }
+  },
+  "odf": {
+   "_functional_gate": {
+    "note": "The defensible ODF acceptance test is functional: (1) logkappa_ros within 0.05 dex, and (2) an ATLAS9 model converged with v2 ODFs vs the same model with Fortran ODFs passes every atlas tolerance above. This is the use the ODF is designed for ('accurate enough for solving integrals over frequency in model atmosphere computations').",
+    "sources": [
+     {
+      "cite": "Castelli 2005, Mem. S.A.It. Suppl. 8, 34 ('DFSYNTHE: how to use it')",
+      "quote": "This new function of \u03bd is the opacity distribution function, which is accurate enough for solving integrals over frequency in model atmosphere computations.",
+      "where": "Sect. 2"
+     },
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     }
+    ]
+   },
+   "logkappa_ros:abs": {
+    "basis": "Rosseland-mean tables: halving or thinning the frequency grid in one code changes log kappa_R by about \u00b10.05 dex over most of (T, R) (AESOPUS App. B), and independent opacity codes agree mostly within \u00b10.05 dex. Rerunning Castelli's DFSYNTHE/KAPPA9 scripts gives perfect agreement within numerical precision, but that is a same-binary check, not the v2 target. Note: this project's own compiler variants of stock DFSYNTHE already differ by up to 0.015 dex, so a tolerance below about 0.02 dex would be unattainable even for Fortran.",
+    "evidence": "self-consistency (frequency-sampling precision) = cross-code level",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     },
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "our opacity values agree with the reference data mostly within \u00b10.05 dex, with the largest differences reaching up to \u2248 \u00b10.10\u22120.20 only in narrow regions.",
+      "where": "Sect. 4.1.1, Fig. 7"
+     },
+     {
+      "cite": "Meszaros et al. 2012, AJ 144, 120, arXiv:1208.1916",
+      "quote": "For this we used Castelli's scripts without any modification to calculate the ODF, and Rosseland opacities for the Grevesse & Sauval (1998) abundances. These calculations concluded in perfect agreement within numerical precision.",
+      "where": "Sect. 2.2"
+     }
+    ],
+    "tol": 0.05
+   },
+   "logkappa_ros:rms_abs": {
+    "basis": "Rms over the (T, P) table. No paper gives an rms; 0.01 dex matches the per-layer ABROSS tolerance in the atlas stage.",
+    "evidence": "derived (unsupported)",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Marigo & Aringer 2009, A&A 508, 1539 (AESOPUS), arXiv:0907.3248",
+      "quote": "We see that in most cases the differences remain small, within \u2243 \u00b10.05 dex, over most of the log(T) \u2212 log(R) space",
+      "where": "Appendix B, Fig. B.2"
+     }
+    ],
+    "tol": 0.01
+   },
+   "odf_v*:abs": {
+    "basis": "Not gated: per-step maxima are threshold-dominated (see p999).",
+    "evidence": "unsupported",
+    "gate": false,
+    "kind": "dex",
+    "sources": [],
+    "tol": null
+   },
+   "odf_v*:p999": {
+    "basis": "Proposed 100 steps at the 99.9th percentile. Single steps can jump when a line crosses DFSYNTHE's 0.001*kappa_c inclusion threshold; per-entry maxima are not physically meaningful (this project's stock-vs-ifx-precise noise floor reaches 3.6 dex in 0.35% of entries).",
+    "evidence": "unsupported",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Castelli 2005, Mem. S.A.It. Suppl. 8, 34 ('DFSYNTHE: how to use it')",
+      "quote": "This new function of \u03bd is the opacity distribution function, which is accurate enough for solving integrals over frequency in model atmosphere computations.",
+      "where": "Sect. 2"
+     }
+    ],
+    "tol": 0.1,
+    "units_note": "scorer works in steps: tol = 100 steps"
+   },
+   "odf_v*:rms_abs": {
+    "basis": "One ODF step = 0.001 dex (Kurucz packs log opacity in 2-byte integers). No paper gives a per-step ODF tolerance; Castelli only says the 12-step ODF is 'accurate enough' for frequency integrals. Proposed 10 steps rms, from Kurucz's 0.1-1% precision target for line data (0.0004-0.004 dex) with margin.",
+    "evidence": "unsupported",
+    "gate": true,
+    "kind": "dex",
+    "sources": [
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Do not compute to higher precision than the physics warrants. Wavelengths are the only physically accurate numbers in the whole problem. For everything else, 0.1 % (1/2^10) is more than adequate.",
+      "where": "p. 76"
+     },
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Write out the log of the spectrum packed as two byte integers.",
+      "where": "p. 76"
+     },
+     {
+      "cite": "Castelli 2005, Mem. S.A.It. Suppl. 8, 34 ('DFSYNTHE: how to use it')",
+      "quote": "This new function of \u03bd is the opacity distribution function, which is accurate enough for solving integrals over frequency in model atmosphere computations.",
+      "where": "Sect. 2"
+     }
+    ],
+    "tol": 0.01,
+    "units_note": "scorer works in steps: tol = 10 steps"
+   },
+   "odf_v*:share_gt1": {
+    "basis": "Fraction of entries (dimensionless). Not gated: a 1-step (0.001 dex) threshold is the print quantum, not physics.",
+    "evidence": "unsupported",
+    "gate": false,
+    "kind": "abs",
+    "sources": [],
+    "tol": null
+   },
+   "odf_v*_hot:abs": {
+    "basis": "Not gated, same reason.",
+    "evidence": "unsupported",
+    "gate": false,
+    "kind": "dex",
+    "sources": [],
+    "tol": null
+   }
+  },
+  "synthe": {
+   "_resolution": {
+    "basis": "The same-physics validations of Kurucz reimplementations compare on the native synthesis grid (R = 300000 in both papers). Degradation appears only in the 2004 Linux-vs-VMS port check, which was a figure, not a metric. Degrading would hide line-core and wing-walk differences that v2 must reproduce. If wanted, report a Gaussian-degraded R = 50000 comparison as informational only.",
+    "decision": "native R = 600000, no degradation",
+    "sources": [
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "We test the final spectrum over 300\u20131000 nm on a logarithmic grid with Rgrid = 300,000.",
+      "where": "Sect. 2.3"
+     },
+     {
+      "cite": "Kim & Ting 2026, 'pyKurucz: a pure Python reimplementation of Kurucz ATLAS12 and SYNTHE', arXiv:2603.11693v2",
+      "quote": "the Python pipeline reproduces Fortran ATLAS12 + SYNTHE to sub-0.005% median deviation in normalized flux over 300\u20131800 nm at resolving power R = 300,000.",
+      "where": "Summary"
+     },
+     {
+      "cite": "Sbordone, Bonifacio, Castelli & Kurucz 2004, Mem. S.A.It. Suppl. 5, 93, arXiv:astro-ph/0406268",
+      "quote": "The resolution of the calculation is 600000, then a gaussian broadening (7 km/s FWHM) has been added to simulate the output of a spectrometer with resolution of about 43000. [...] The results obtained with the ported version of the codes are, as can be seen in fig. 1 through 3, indistinguishable from the ones produced by the VMS version.",
+      "where": "Fig. 2 caption and Sect. 4"
+     }
+    ]
+   },
+   "cont:rel": {
+    "basis": "Neither reimplementation reports the absolute continuum. The bound comes from (a) Kurucz's own precision target of 0.1% for the opacity inputs, and (b) Korg's two radiative-transfer schemes (same code, same opacities) differing in flux at the sub-percent level. Proposed: halfway between 1e-3 and 1e-2. The cross-code level (~10%) is an upper bound only.",
+    "evidence": "derived (partly supported)",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Do not compute to higher precision than the physics warrants. Wavelengths are the only physically accurate numbers in the whole problem. For everything else, 0.1 % (1/2^10) is more than adequate.",
+      "where": "p. 76"
+     },
+     {
+      "cite": "Wheeler et al. 2023, AJ 165, 68 (Korg), arXiv:2211.00029",
+      "quote": "The difference in synthesized spectra is at the sub-percent level, significantly smaller than the level of disagreement between codes.",
+      "where": "Appendix A.2"
+     },
+     {
+      "cite": "Wheeler et al. 2023, AJ 165, 68 (Korg), arXiv:2211.00029",
+      "quote": "Disagreement between the codes is substantial, with fluxes disagreeing at the ten percent level in many cases, as established by Blanco-Cuaresma (2019).",
+      "where": "Sect. 3"
+     }
+    ],
+    "tol": 0.005
+   },
+   "cont:rms_rel": {
+    "basis": "Rms counterpart of cont:rel. There is no direct literature number; set at 0.4 x the max tolerance, matching the max/rms ratio seen for normflux.",
+    "evidence": "derived (unsupported)",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Do not compute to higher precision than the physics warrants. Wavelengths are the only physically accurate numbers in the whole problem. For everything else, 0.1 % (1/2^10) is more than adequate.",
+      "where": "p. 76"
+     },
+     {
+      "cite": "Wheeler et al. 2023, AJ 165, 68 (Korg), arXiv:2211.00029",
+      "quote": "The difference in synthesized spectra is at the sub-percent level, significantly smaller than the level of disagreement between codes.",
+      "where": "Appendix A.2"
+     }
+    ],
+    "tol": 0.002
+   },
+   "flux:rel": {
+    "basis": "Not gated. The scorer divides by max(|Fa|,|Fb|), which is ill-conditioned in saturated cores: the stock 380-420 nm window has normalised flux down to 0.0 (p0.1 = 0.015), so a 1e-2 normflux difference there becomes a relative difference of order 1. No paper bounds relative absolute flux in line cores. Gate absolute flux with flux_over_cont:abs instead.",
+    "evidence": "unsupported",
+    "gate": false,
+    "kind": "rel",
+    "sources": [],
+    "tol": null
+   },
+   "flux:rms_rel": {
+    "basis": "Rms is dominated by continuum-level pixels, so it is bounded by cont:rms_rel + normflux:rms_abs, about 3e-3. Proposed 2e-3 because the two errors are correlated through the shared continuum.",
+    "evidence": "derived (unsupported)",
+    "gate": true,
+    "kind": "rel",
+    "sources": [
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Across the four stellar types, the pooled rms normalized-flux residual is 9.1 \u00d7 10\u22124 for synthesis alone and 8.6 \u00d7 10\u22124 for the complete calculation. For the hot dwarf, Sun, red giant, and K dwarf, respectively, the 99th-percentile absolute residuals are (2.0, 2.8, 5.8, 3.0) \u00d7 10\u22123 for synthesis alone and (0.7, 2.2, 5.8, 2.9) \u00d7 10\u22123 for the complete calculation. These residuals reflect small numerical differences between two implementations of the same physical calculation.",
+      "where": "Sect. 2.3 (Accuracy and performance), Fig. 1"
+     },
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Do not compute to higher precision than the physics warrants. Wavelengths are the only physically accurate numbers in the whole problem. For everything else, 0.1 % (1/2^10) is more than adequate.",
+      "where": "p. 76"
+     }
+    ],
+    "tol": 0.002
+   },
+   "flux_over_cont:abs": {
+    "basis": "Proposed new metric max |Fa - Fb| / Ca (Ca = reference continuum). It is bounded by normflux:abs + cont:rel = 1e-2 + 5e-3 and stays well-conditioned in saturated cores.",
+    "evidence": "derived",
+    "gate": true,
+    "kind": "abs",
+    "proposed_new_metric": true,
+    "sources": [
+     {
+      "cite": "Kim & Ting 2026, 'pyKurucz: a pure Python reimplementation of Kurucz ATLAS12 and SYNTHE', arXiv:2603.11693v2",
+      "quote": "Across all five, the median normalized-flux deviation stays below 0.005%, with 99th-percentile deviations below 0.3% and sub-1% maxima \u2014 essentially the same level as the synthe-only validation against Fortran SYNTHE on a fixed atmosphere",
+      "where": "Research impact statement, Figs. 1-5"
+     },
+     {
+      "cite": "Kurucz 2005, Mem. S.A.It. Suppl. 8, 76 ('Rapid computation of line opacity in SYNTHE and DFSYNTHE')",
+      "quote": "Do not compute to higher precision than the physics warrants. Wavelengths are the only physically accurate numbers in the whole problem. For everything else, 0.1 % (1/2^10) is more than adequate.",
+      "where": "p. 76"
+     },
+     {
+      "cite": "Wheeler et al. 2023, AJ 165, 68 (Korg), arXiv:2211.00029",
+      "quote": "The difference in synthesized spectra is at the sub-percent level, significantly smaller than the level of disagreement between codes.",
+      "where": "Appendix A.2"
+     }
+    ],
+    "tol": 0.015
+   },
+   "normflux:abs": {
+    "basis": "Max |Fa/Ca - Fb/Cb|. Closest analogues are two independent reimplementations of Kurucz SYNTHE (same physics, same line data) validated against the Fortran: pyKurucz has sub-1% maxima, and Payne Zero's worst 99th percentile is 5.8e-3, so its maxima are of order 1e-2. Payne Zero shows that SYNTHE's own 1e-3 line-selection cutoff already moves the spectrum by about 3e-3 rms. Both papers compare at native sampling (R = 300000), not after degradation, so we score at the native R = 600000 grid. Extra risk at R = 600000 and in 380-420 nm (Payne Zero's residuals grow towards the blue) is covered by taking the maxima bound and not the p99.",
+    "evidence": "reimplementation",
+    "gate": true,
+    "kind": "abs",
+    "sources": [
+     {
+      "cite": "Kim & Ting 2026, 'pyKurucz: a pure Python reimplementation of Kurucz ATLAS12 and SYNTHE', arXiv:2603.11693v2",
+      "quote": "Across all five, the median normalized-flux deviation stays below 0.005%, with 99th-percentile deviations below 0.3% and sub-1% maxima \u2014 essentially the same level as the synthe-only validation against Fortran SYNTHE on a fixed atmosphere",
+      "where": "Research impact statement, Figs. 1-5"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Across the four stellar types, the pooled rms normalized-flux residual is 9.1 \u00d7 10\u22124 for synthesis alone and 8.6 \u00d7 10\u22124 for the complete calculation. For the hot dwarf, Sun, red giant, and K dwarf, respectively, the 99th-percentile absolute residuals are (2.0, 2.8, 5.8, 3.0) \u00d7 10\u22123 for synthesis alone and (0.7, 2.2, 5.8, 2.9) \u00d7 10\u22123 for the complete calculation. These residuals reflect small numerical differences between two implementations of the same physical calculation.",
+      "where": "Sect. 2.3 (Accuracy and performance), Fig. 1"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Taking it from 10\u22123 to 10\u22126 for the Sun and a red giant changes the normalized flux by 2.5 and 3.0 \u00d7 10\u22123 rms. [...] it is about three times the residual against the original Kurucz calculation reported in Section 2.",
+      "where": "Sect. 2.2"
+     },
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "We test the final spectrum over 300\u20131000 nm on a logarithmic grid with Rgrid = 300,000.",
+      "where": "Sect. 2.3"
+     }
+    ],
+    "tol": 0.01
+   },
+   "normflux:p99": {
+    "basis": "Proposed new metric (99th percentile of |dnormflux|; not yet in scoring.py). Payne Zero's per-star synthesis-only p99 is 2.0-5.8e-3 and pyKurucz's is below 3e-3. This is the statistic both papers actually gate on.",
+    "evidence": "reimplementation",
+    "gate": true,
+    "kind": "abs",
+    "proposed_new_metric": true,
+    "sources": [
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Across the four stellar types, the pooled rms normalized-flux residual is 9.1 \u00d7 10\u22124 for synthesis alone and 8.6 \u00d7 10\u22124 for the complete calculation. For the hot dwarf, Sun, red giant, and K dwarf, respectively, the 99th-percentile absolute residuals are (2.0, 2.8, 5.8, 3.0) \u00d7 10\u22123 for synthesis alone and (0.7, 2.2, 5.8, 2.9) \u00d7 10\u22123 for the complete calculation. These residuals reflect small numerical differences between two implementations of the same physical calculation.",
+      "where": "Sect. 2.3 (Accuracy and performance), Fig. 1"
+     },
+     {
+      "cite": "Kim & Ting 2026, 'pyKurucz: a pure Python reimplementation of Kurucz ATLAS12 and SYNTHE', arXiv:2603.11693v2",
+      "quote": "Across all five, the median normalized-flux deviation stays below 0.005%, with 99th-percentile deviations below 0.3% and sub-1% maxima \u2014 essentially the same level as the synthe-only validation against Fortran SYNTHE on a fixed atmosphere",
+      "where": "Research impact statement, Figs. 1-5"
+     }
+    ],
+    "tol": 0.006
+   },
+   "normflux:rms_abs": {
+    "basis": "Payne Zero pooled rms residual vs the Fortran is 9.1e-4 (synthesis alone, fixed atmosphere); pyKurucz median is below 5e-5. 1e-3 is the published rms of a same-physics reimplementation.",
+    "evidence": "reimplementation",
+    "gate": true,
+    "kind": "abs",
+    "sources": [
+     {
+      "cite": "Ting & Kim 2026, 'The Payne Zero Project I', arXiv:2607.24141v2 (accepted, Open Journal of Astrophysics)",
+      "quote": "Across the four stellar types, the pooled rms normalized-flux residual is 9.1 \u00d7 10\u22124 for synthesis alone and 8.6 \u00d7 10\u22124 for the complete calculation. For the hot dwarf, Sun, red giant, and K dwarf, respectively, the 99th-percentile absolute residuals are (2.0, 2.8, 5.8, 3.0) \u00d7 10\u22123 for synthesis alone and (0.7, 2.2, 5.8, 2.9) \u00d7 10\u22123 for the complete calculation. These residuals reflect small numerical differences between two implementations of the same physical calculation.",
+      "where": "Sect. 2.3 (Accuracy and performance), Fig. 1"
+     },
+     {
+      "cite": "Kim & Ting 2026, 'pyKurucz: a pure Python reimplementation of Kurucz ATLAS12 and SYNTHE', arXiv:2603.11693v2",
+      "quote": "Across all five, the median normalized-flux deviation stays below 0.005%, with 99th-percentile deviations below 0.3% and sub-1% maxima \u2014 essentially the same level as the synthe-only validation against Fortran SYNTHE on a fixed atmosphere",
+      "where": "Research impact statement, Figs. 1-5"
+     }
+    ],
+    "tol": 0.001
+   }
+  }
+ },
+ "title": "v2 vs Fortran acceptance tolerances (literature-level)"
+}

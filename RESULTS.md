@@ -562,3 +562,14 @@ set by the Doppler width, fixed: 5% apparent disagreement), hence the smooth pro
   linear response serves every downstream quantity, e.g. the spectrum, without re-running SYNTHE per model).
 * Reverse mode (gradients of a scalar loss in one pass) is not supported through KAPP (NaN from masked
   branches); use forward mode (few parameters) or structure_jacobian.
+
+## v2 (physics-first reimplementation): acceptance gates
+
+`results/v2/tolerances.json` was frozen on 2026-11-04 before any v2 output existed (this session set the gate and will
+build the code it judges). Values come from published evidence, quoted per metric in the file: primarily the two
+validated reimplementations of the Kurucz codes, Payne Zero (Ting & Kim 2026, arXiv:2607.24141, Sect. 2.3:
+rms normalised-flux residual 9.1e-4) and pyKurucz (Kim & Ting 2026, arXiv:2603.11693: median < 5e-5,
+99th percentile < 3e-3, max < 1e-2), plus single-code convergence/precision levels (Gustafsson et al. 2008;
+Marigo & Aringer 2009; Meszaros et al. 2012). Key gates: normalised flux max 1e-2 / rms 1e-3 / p99 6e-3 at native
+R=600000; T(tau_Ross) 0.2 % over log tau_Ross -4..+1; n_e and kappa_Ross 0.01 dex; log kappa_Ross tables 0.05 dex.
+Values without literature support are marked "unsupported" in the file; the per-step ODF maxima are non-gating.
