@@ -18,7 +18,7 @@ def wave_grid(fl: Flavor) -> np.ndarray:
     return _WAVE_CACHE[fl.name]
 
 
-def edge_coefficients(wledge: np.ndarray, ablog: torch.Tensor):
+def edge_coefficients(wledge: np.ndarray, ablog: torch.Tensor, fastmath: bool = False):
     """AEDGE/BEDGE/CEDGE [NL, NEDGE-1] (REAL*8) from ABLOG [NL, 377, 3] (REAL*4)."""
     w = torch.as_tensor(np.abs(wledge), dtype=F64, device=ablog.device)
     nedge = w.numel()
@@ -28,9 +28,18 @@ def edge_coefficients(wledge: np.ndarray, ablog: torch.Tensor):
     a8 = ablog[:, : nedge - 1, :].to(F64)
     a1, a2, a3 = a8[..., 0], a8[..., 1], a8[..., 2]
     w0, w1 = w[:-1], w[1:]
-    A = ((a1 - 2.0 * a2) + a3) / dele
-    B = ((-((half + w1) * a1) + ((w0 + w1) * 2.0) * a2) - (w0 + half) * a3) / dele
-    C = (((half * w1) * a1 - ((w0 * w1) * 2.0) * a2) + (w0 * half) * a3) / dele
+    if fastmath:
+        # stock (MAIN loop 2002): one reciprocal R=1./DELEDGE and the regrouped sums
+        #   A=((a1-2a2)+a3)*R, B=((w0+w1)*(2a2)-((h+w1)*a1+(h+w0)*a3))*R, C=((w1*a1+w0*a3)*h-(w1*w0)*(2a2))*R
+        r = torch.div(torch.ones_like(dele), dele)
+        a22 = a2 + a2
+        A = ((a1 - a22) + a3) * r
+        B = ((w0 + w1) * a22 - ((half + w1) * a1 + (half + w0) * a3)) * r
+        C = ((w1 * a1 + w0 * a3) * half - (w1 * w0) * a22) * r
+    else:
+        A = ((a1 - 2.0 * a2) + a3) / dele
+        B = ((-((half + w1) * a1) + ((w0 + w1) * 2.0) * a2) - (w0 + half) * a3) / dele
+        C = (((half * w1) * a1 - ((w0 * w1) * 2.0) * a2) + (w0 * half) * a3) / dele
     ok = (dele != 0)[None, :]
     z = torch.zeros_like(A)
     return torch.where(ok, A, z), torch.where(ok, B, z), torch.where(ok, C, z)
@@ -46,7 +55,7 @@ def continuum(wledge: np.ndarray, ablog: torch.Tensor, fl: Flavor, chunk: int = 
     iedge = np.maximum.accumulate(np.searchsorted(w[1:], wave, side="right"))   # 0-based IEDGE
     if iedge.max() >= len(w) - 1:
         raise ValueError("wavelength beyond last edge")
-    A, B, C = edge_coefficients(wledge, ablog)
+    A, B, C = edge_coefficients(wledge, ablog, getattr(fl, "fastmath", False))
     nl = ablog.shape[0]
     out = torch.empty((nl, LENGTH), dtype=F32, device=dev)
     cut = float(CUTOFF)

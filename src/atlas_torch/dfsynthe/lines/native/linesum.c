@@ -235,7 +235,8 @@ int linesum(int nl, int n, const int32_t *nbuff, const float *congf, const int32
    VOIGT profile, WAVE chains (REAL*8 WAVE=WAVE*RATIO / WAVE/RATIO), merged-continuum tails (WCON, WTAIL),
    first-crossing termination after the add, red then blue wing, layer J outer, lines in order.  Transcribes
    xlinop.py (XLinop.normal_lines/_walk/voigt), which is validated against the Fortran oracle. */
-static inline float voigt_f(float v, float a, const float *h0, const float *h1, const float *h2, const float *atab) {
+static inline float voigt_f(float v, float a, const float *h0, const float *h1, const float *h2, const float *atab,
+                            int fast) {
     if (a < 0.2f) {
         if (v > 10.0f) return (0.5642f * a) / (v * v);
         int iv = (int)(v * 200.0f + 1.5f);
@@ -248,6 +249,13 @@ static inline float voigt_f(float v, float a, const float *h0, const float *h1, 
         float u = (aa + vv) * 1.4142f;
         float r0 = (a * 0.79788f) / u;
         if (a > 100.0f) return r0;
+        if (fast) {            /* stock voigt_ (ifx -fp-model fast), see xlinop.py voigt */
+            const float ru = 1.0f / u;
+            const float aau = aa * ru, vvu = vv * ru;
+            float t = (aau - 10.0f * vvu) * aau + 5.0f * (vvu * vvu);
+            t = t * ru + (vvu + aau * (-(1.0f / 3.0f)));
+            return r0 * ((t * 3.0f) * ru + 1.0f);
+        }
         float aau = aa / u, vvu = vv / u;
         float t = (aau - 10.0f * vvu) * aau + (5.0f * vvu) * vvu;
         t = t / u + vvu;
@@ -268,8 +276,12 @@ int xlinop_normal(int nl, int n, const double *wl, const float *gf, const int32_
                   const float *xnfdop, const float *dopple, const float *xne, const float *txnxn,
                   const double *emerge, const double *contx, const float *cont, float *buf,
                   const float *h0, const float *h1, const float *h2, const float *atab,
-                  double ratio, double wlbeg, double wlend, long long *stats)
+                  double ratio, double wlbeg, double wlend, long long *stats, int fast)
 {
+    /* fast: the stock dfsynthe.exe forms (ifx -fp-model fast): WTAIL=1.E7/((-500.-EMERGE)+CONTX),
+       VVOIGT=ABS(WAVE-WL)*(1./DOPWL), KAPPA=((WAVE-WCON)*KAPPA)*(1./(WTAIL-WCON)), blue WAVE=WAVE*(1./RATIO),
+       voigt_ asymptotic branch with R=1./U (xlinop.py) */
+    const double rratio = 1.0 / ratio;
     long long items = 0, contribs = 0;
     for (int j = 0; j < nl; j++) {
         const float *cj = cont + (size_t)j * LENGTH;
@@ -290,11 +302,12 @@ int xlinop_normal(int nl, int n, const double *wl, const float *gf, const int32_
                 if (nx > 17) nx = 17;
                 double cx = contx[(size_t)(nc - 1) * 17 + (nx - 1)];
                 wc = 1.0e7 / (cx - emerge[j]);
-                wt = 1.0e7 / ((cx - emerge[j]) - 500.0);
+                wt = fast ? 1.0e7 / ((-500.0 - emerge[j]) + cx) : 1.0e7 / ((cx - emerge[j]) - 500.0);
             }
             const float dop = dpj[nel - 1];
             const float a = ((gammar[i] + gammas[i] * xne[j]) + gammaw[i] * txnxn[j]) / dop;
             const float dopwl = (float)((double)dop * wl[i]);
+            const double rdopwl = 1.0 / (double)dopwl, rtw = 1.0 / (wt - wc);
             const double wli = wl[i];
             const int red_ok = !(wli > wlend);
             int minred = nb > 1 ? nb : 1;
@@ -303,9 +316,10 @@ int xlinop_normal(int nl, int n, const double *wl, const float *gf, const int32_
                 double wave = w0red[i];
                 for (int ib = minred; ib <= maxred; ib++) {
                     if (wave < wc) { wave = wave * ratio; continue; }
-                    float vv = (float)(fabs(wave - wli) / (double)dopwl);
-                    float kv = kappa0 * voigt_f(vv, a, h0, h1, h2, atab);
-                    if (wave < wt) kv = (float)(((double)kv * (wave - wc)) / (wt - wc));
+                    float vv = fast ? (float)(fabs(wave - wli) * rdopwl) : (float)(fabs(wave - wli) / (double)dopwl);
+                    float kv = kappa0 * voigt_f(vv, a, h0, h1, h2, atab, fast);
+                    if (wave < wt) kv = fast ? (float)(((wave - wc) * (double)kv) * rtw)
+                                             : (float)(((double)kv * (wave - wc)) / (wt - wc));
                     bj[ib - 1] += kv;
                     contribs++;
                     if (kv < cj[ib - 1]) break;
@@ -320,11 +334,12 @@ int xlinop_normal(int nl, int n, const double *wl, const float *gf, const int32_
                 double wave = w0blue[i];
                 for (int k = 1; k <= maxblue; k++) {
                     ib--;
-                    wave = wave / ratio;
+                    wave = fast ? wave * rratio : wave / ratio;
                     if (wave < wc) break;            /* WAVE decreases: every later bin is skipped too */
-                    float vv = (float)(fabs(wave - wli) / (double)dopwl);
-                    float kv = kappa0 * voigt_f(vv, a, h0, h1, h2, atab);
-                    if (wave < wt) kv = (float)(((double)kv * (wave - wc)) / (wt - wc));
+                    float vv = fast ? (float)(fabs(wave - wli) * rdopwl) : (float)(fabs(wave - wli) / (double)dopwl);
+                    float kv = kappa0 * voigt_f(vv, a, h0, h1, h2, atab, fast);
+                    if (wave < wt) kv = fast ? (float)(((wave - wc) * (double)kv) * rtw)
+                                             : (float)(((double)kv * (wave - wc)) / (wt - wc));
                     bj[ib - 1] += kv;
                     contribs++;
                     if (kv < cj[ib - 1]) break;

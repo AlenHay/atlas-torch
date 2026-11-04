@@ -29,7 +29,8 @@ def _src_sha() -> str:
 
 # further kernels (same flags, own library + sha256 stamp): name -> source file
 EXTRA = {"odfcalc": HERE / "odfcalc.c",      # DFCALC rank sums + turbulent broadening (dfsynthe.py)
-         "hline": HERE / "hline.c"}          # XLINOP hydrogen lines (lines/xlinop.py XLinop._h_native)
+         "hline": HERE / "hline.c",          # XLINOP hydrogen lines (lines/xlinop.py XLinop._h_native)
+         "imfmap": HERE / "imfmap.c"}        # libimf expf/exp over arrays (lines/imf.py, stock SELECTLINES)
 
 
 def _build_one(cc: str, src: Path, lib: Path, sha: Path) -> Path:

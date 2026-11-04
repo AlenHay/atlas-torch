@@ -28,6 +28,17 @@ def _f(fl: Flavor, fn: str, *a) -> np.ndarray:
     return getattr(fl, fn)(*t).numpy()
 
 
+def _libimf(fl: Flavor, fn: str, x: np.ndarray) -> np.ndarray:
+    """EXP of the scalar SELECTLINES statements: the stock executable calls libimf expf/exp there (imf.py);
+    otherwise (or without the Intel runtime) Flavor.expf/exp."""
+    if getattr(fl, "fastmath", False):
+        from . import imf
+        y = getattr(imf, fn)(x)
+        if y is not None:
+            return y
+    return _f(fl, fn, x)
+
+
 @dataclass
 class Tape12:
     nbuff: np.ndarray    # int32
@@ -55,11 +66,23 @@ class SelectConsts:
 
 def select_consts(teff: float, wledge: np.ndarray, fl: Flavor) -> SelectConsts:
     i = np.arange(1, 32769)
-    tablog = _f(fl, "powf", np.full(32768, f4(10.0), f4), ((i - 16384).astype(f4) * lit(".001")).astype(f4))
+    expo = ((i - 16384).astype(f4) * lit(".001")).astype(f4)
     t = f4(teff)
     hkt = f4(f4(lit("6.6256E-27") / lit("1.38054E-16")) / t)
     hckt = f4(hkt * lit("2.99792458E10"))
-    tabbolt = _f(fl, "expf", (-((i - 1).astype(f4) * hckt)).astype(f4))
+    xbolt = (-((i - 1).astype(f4) * hckt)).astype(f4)
+    tablog = tabbolt = None
+    if getattr(fl, "fastmath", False):
+        # stock: the TABLOG and TABBOLT loops are vectorised with __svml_powf4 / __svml_expf4 (not correctly
+        # rounded: 6853 / 6874 of the 32768 entries differ from the correctly rounded values; checked against
+        # the tables dumped from dfsynthe.exe).  Without the Intel runtime: the correctly rounded tables.
+        from . import svml
+        tablog = svml.powf_xy(f4(10.0), expo)
+        tabbolt = svml.expf(xbolt)
+    if tablog is None:
+        tablog = _f(fl, "powf", np.full(32768, f4(10.0), f4), expo)
+    if tabbolt is None:
+        tabbolt = _f(fl, "expf", xbolt)
     wavetab = np.abs(wledge)
     ixwl = np.trunc(_f(fl, "log", wavetab.astype(np.float64)) / RATIOLG).astype(np.int64) + 1
     iwltab = ixwl - IXWLBEG + 1
@@ -99,16 +122,23 @@ def iter_select_file(mm, count: int, c: SelectConsts, xnfdopmax: np.ndarray, fl:
             congf = (congf * c.tabbolt[a["ielo"][k].astype(np.int64)]).astype(f4)
         else:
             elo = c.tablog[a["ielo"][k].astype(np.int64) - 1]
-            congf = (congf * _f(fl, "expf", (-(elo * c.hckt)).astype(f4))).astype(f4)
+            congf = (congf * _libimf(fl, "expf", (-(elo * c.hckt)).astype(f4))).astype(f4)
         k3 = ~((congf * xm[k]).astype(f4) < f4(1))
         k, congf = k[k3], congf[k3]
         iw = iwl[k]
-        wlvac4 = (_f(fl, "expf", (iw.astype(f4) * c.ratiolg4).astype(f4)) * c.wlbeg04).astype(f4)
+        wlvac4 = (_libimf(fl, "expf", (iw.astype(f4) * c.ratiolg4).astype(f4)) * c.wlbeg04).astype(f4)
         freq4 = (C17 / wlvac4).astype(f4)
-        stim = (f4(1) - _f(fl, "expf", (-(freq4 * c.hkt)).astype(f4))).astype(f4)
-        t2 = ((congf / freq4).astype(f4) * stim).astype(f4)
+        stim = (f4(1) - _libimf(fl, "expf", (-(freq4 * c.hkt)).astype(f4))).astype(f4)
         frq4pi = (freq4 * FOURPI).astype(f4)
-        g = [(c.tablog[a[n][k].astype(np.int64) - 1] / frq4pi).astype(f4) for n in ("igr", "igs", "igw")]
+        if getattr(fl, "fastmath", False):
+            # stock (all five list loops): TAPE12(2)=((1.-EXP(..))*CONGF)/FREQ4 (subss, mulss, divss) and
+            # TABLOG(..)/FRQ4PI as TABLOG(..)*(1./FRQ4PI) (one divss, mulps/mulss)
+            t2 = ((stim * congf).astype(f4) / freq4).astype(f4)
+            rf = (f4(1) / frq4pi).astype(f4)
+            g = [(c.tablog[a[n][k].astype(np.int64) - 1] * rf).astype(f4) for n in ("igr", "igs", "igw")]
+        else:
+            t2 = ((congf / freq4).astype(f4) * stim).astype(f4)
+            g = [(c.tablog[a[n][k].astype(np.int64) - 1] / frq4pi).astype(f4) for n in ("igr", "igs", "igw")]
         yield Tape12(iw.astype(np.int32), t2, nel[k].astype(np.int32), *g)
 
 
@@ -133,8 +163,11 @@ def select_nlte(nlte: np.ndarray, c: SelectConsts, xnfdopmax: np.ndarray, fl: Fl
     xm = xnfdopmax[nu, nel - 1]
     k = np.nonzero(~(xm < f4(1)))[0]
     r = nlte[k]
-    e1 = _f(fl, "expf", (-(r["elo"] * c.hckt)).astype(f4)).astype(np.float64)
-    e2 = _f(fl, "exp", (-((1.0e7 / r["wl"]) * np.float64(c.hckt))))
+    e1 = _libimf(fl, "expf", (-(r["elo"] * c.hckt)).astype(f4)).astype(np.float64)
+    if getattr(fl, "fastmath", False):      # stock: EXP((HCKT*(-1.E7))/WL) (mulsd, divsd)
+        e2 = _libimf(fl, "exp", (np.float64(c.hckt) * -1.0e7) / r["wl"])
+    else:
+        e2 = _f(fl, "exp", (-((1.0e7 / r["wl"]) * np.float64(c.hckt))))
     boltstim = (e1 * (1.0 - e2)).astype(f4)
     k2 = ~((boltstim * xm[k]).astype(f4) < f4(1))
     r = r[k2].copy()

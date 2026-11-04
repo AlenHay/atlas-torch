@@ -23,17 +23,30 @@ ifx -fp-model fast generated for the stock dfsynthe.exe where it matters (read f
     with rcpps + Newton in the 4-wide vector loop (XLinop._merge_energies; one ulp of EMERGE decides whether the
     He II Lyman far wings start at WCON in the densest layer: 119 steps at 112202 K otherwise);
   * HPROF4 Doppler core: D=|FREQ-(FINEST+FREQ0)|*(1/DOP), 4-lane sums (Hydrogen._doppler_fast);
+  * HPROF4 everything else (Hydrogen._depth_fast, setup, prep, _finish_fast, sofbet(fast=True), vcse1f_fast,
+    _hfnm_fast): the per-temperature depth vectors with __svml_powf4, rcpps and rsqrtps (+ Newton) for the 4-wide
+    layers and __svml_powf1/divss/sqrtss for the rest; the per-line constants with ifx's folded constants and
+    reciprocals; the Lorentz, Stark, CUTOFF-interpolation, SOFBET and VCSE1F regroupings; libimf logf/expf/powf
+    for the scalar calls (lines/imf.py);
+  * XLINOP: hydrogen-wing interpolation (libimf logf, (NEW-OLD)*.05, __svml_expf4/__svml_expf1), normal lines
+    (WTAIL=1.E7/((-500.-EMERGE)+CONTX), VVOIGT=|WAVE-WL|*(1./DOPWL), taper ((WAVE-WCON)*KAPPA)*(1./(WTAIL-WCON)),
+    blue WAVE*(1./RATIO), voigt_ asymptotic branch with R=1./U), merged continua (FLOAT(..)*(1./DNBUFF)),
+    autoionizing lines (red FREQ*(1./RATIO), EPSIL=(FREQ-FRELIN)*(2/GAMMAR), ((A*E+B)*K0)/((E*E+1)*B));
+  * TABVOIGT/MAP1 (tables.map1_f32_fast, _atab_fast: rcpps divisions, regrouped Horner forms), EXTAB with
+    __svml_expf4/__svml_expf1, EXPI (E1TAB) with R=1./X and libimf, the continuum edge coefficients with one
+    reciprocal of DELEDGE (continuum.edge_coefficients);
+  * SELECTLINES: TAPE12(2)=((1.-EXP(..))*CONGF)/FREQ4, TABLOG(..)*(1./FRQ4PI), TABLOG/TABBOLT by
+    __svml_powf4/__svml_expf4, libimf expf per line, NLTE EXP((HCKT*(-1.E7))/WL) (lines/selectlines.py);
   * TABVOIGT: (I-1)*(1/VSTEPS) and SVML expf for H0TAB (lines/tables.py, lines/svml.py); VTTAB: I*((1/V)*C),
     VTPROF*(1/SUM);
   * MAIN: XNFPEL*(1/RHO), XNFDOP and the vectorised X/NSTEP**2 through rcpps + Newton step with the measured
-    rcpps table of the reference CPU (lines/rcpps.py); ADAMP>.2 centres and far wings with one reciprocal 1/U
-    (LineAccumulator._asym_fast), IV=NSTEP*(DVOIGT*200)+1.5.
-  Not emulated (rounding level): SVML/libimf transcendentals elsewhere, rcpps in HPROF4's depth vectors, the
-  reorganised ATAB loop of TABVOIGT, HPROF4 Lorentz/Stark reorderings, the CUTOFF interpolations of HPROF4
-  (FREQ*(1/SPACING) forms), XLINOP's WTAIL/VVOIGT/taper reassociations.  At 5012, 12589, 22387 and 112202 K the
-  port is within 1 step of stock everywhere, with 2-8e-5 of the ODF entries differing by 1 step (ifx -O3 vs stock:
-  0-2e-6).  Flavor('stock', fastmath=False) reproduces the ifx -fp-model precise build instead (within 1 step in
-  <1e-5).
+    rcpps table of the reference CPU (lines/rcpps.py; rsqrtps likewise); ADAMP>.2 centres and far wings with one
+    reciprocal 1/U (LineAccumulator._asym_fast), IV=NSTEP*(DVOIGT*200)+1.5.
+  With the Intel runtime (libimf/libsvml, loaded with ctypes) and the C helpers (`make native`), the stock flavour
+  reproduces the stock SELECTLINES output, tables, continuum and per-layer opacity buffers bit for bit, and the ODFs
+  at 5012, 12589 and 22387 K exactly (tests/stage/test_dfsynthe_stock_state.py, test_dfsynthe_prog.py).  Without
+  the Intel runtime the correctly rounded functions are used instead (rounding-level differences).
+  Flavor('stock', fastmath=False) reproduces the ifx -fp-model precise build instead (within 1 step in <1e-5).
 
 Memory/speed: TAPE12 is streamed from the line lists (twice: AA pre-pass, accumulation) and never stored.  The
 two loops that dominate (TAPE12 line profiles: up to 2.5e11 profile points at 1995 K; XLINOP normal lines) run in

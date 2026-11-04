@@ -39,8 +39,13 @@ def ehyd_tables():
     return e, alpha
 
 
-def voigt(v: torch.Tensor, a: torch.Tensor, tabs: dict) -> torch.Tensor:
-    """FUNCTION VOIGT(V,A) (REAL*4), elementwise."""
+NEG_THIRD = float(-(f4(1.0) / f4(3.0)))
+
+
+def voigt(v: torch.Tensor, a: torch.Tensor, tabs: dict, fast: bool = False) -> torch.Tensor:
+    """FUNCTION VOIGT(V,A) (REAL*4), elementwise.  fast: the stock binary's voigt_ (ifx -fp-model fast) in the
+    asymptotic branch: R=1./U, AAU=AA*R, VVU=VV*R,
+    VOIGT=VOIGT*(((((AAU-10*VVU)*AAU+5*(VVU*VVU))*R+(VVU+AAU*(-1/3.)))*3)*R+1)."""
     h0, h1, h2, atab = tabs["h0tab"], tabs["h1tab"], tabs["h2tab"], tabs["atab"]
     small = a < L(".2")
     iv = torch.trunc(v * 200.0 + 1.5).to(I64) - 1
@@ -51,19 +56,33 @@ def voigt(v: torch.Tensor, a: torch.Tensor, tabs: dict) -> torch.Tensor:
     vv = v * v
     u = (aa + vv) * L("1.4142")
     r0 = (a * L(".79788")) / u
-    aau = aa / u
-    vvu = vv / u
-    r1 = r0 * (((((aau - 10.0 * vvu) * aau + 5.0 * vvu * vvu) / u + vvu - aau / 3.0) * 3.0) / u + 1.0)
+    if fast:
+        ru = torch.div(torch.ones_like(u), u)
+        aau = aa * ru
+        vvu = vv * ru
+        r1 = r0 * (((((aau - 10.0 * vvu) * aau + 5.0 * (vvu * vvu)) * ru + (vvu + aau * NEG_THIRD)) * 3.0) * ru
+                   + 1.0)
+    else:
+        aau = aa / u
+        vvu = vv / u
+        r1 = r0 * (((((aau - 10.0 * vvu) * aau + 5.0 * vvu * vvu) / u + vvu - aau / 3.0) * 3.0) / u + 1.0)
     r_asym = torch.where(a > 100.0, r0, r1)
     ia = (torch.trunc(a * 200.0 + 1.5).to(I64) - 1).clamp(0, atab.shape[0] - 1)
     r_tab = atab[ia, iv.clamp(0, atab.shape[1] - 1)]
     return torch.where(small, r_small, torch.where(asym, r_asym, r_tab))
 
 
-def chain(w0: np.ndarray, n: int, up: bool) -> np.ndarray:
-    """[len(w0), n] = w0, w0*R, (w0*R)*R, ... (or /R), REAL*8 sequential (ufunc.accumulate is sequential)."""
+RATIO_INV = 1.0 / RATIO
+
+
+def chain(w0: np.ndarray, n: int, up: bool, fast: bool = False) -> np.ndarray:
+    """[len(w0), n] = w0, w0*R, (w0*R)*R, ... (or /R), REAL*8 sequential (ufunc.accumulate is sequential).
+    fast (stock blue wings): WAVE=WAVE*(1./RATIO) instead of WAVE/RATIO."""
     m = np.empty((len(w0), n))
     m[:, 0] = w0
+    if not up and fast:
+        m[:, 1:] = RATIO_INV
+        return np.multiply.accumulate(m, axis=1)
     m[:, 1:] = RATIO
     return (np.multiply if up else np.divide).accumulate(m, axis=1)
 
@@ -282,7 +301,7 @@ class XLinop:
                           P(buffer_flat.data_ptr()),
                           *(P(A[k].data_ptr()) for k in ("h0", "h1", "h2", "atab")),
                           ctypes.c_double(RATIO), ctypes.c_double(WLBEG), ctypes.c_double(WLEND),
-                          P(A["st"].data_ptr()))
+                          P(A["st"].data_ptr()), ctypes.c_int(1 if self.fl.fastmath else 0))
         self.stats["normal_items"] = int(A["st"][0])
         self.stats["contribs_native"] = int(A["st"][1])
 
@@ -362,7 +381,10 @@ class XLinop:
         has_con = torch.from_numpy(ncon > 0).to(dev)[None, :]
         zero = torch.zeros(1, dtype=F64, device=dev)
         wcon = torch.where(has_con, rdiv(E7, cx - self.emerge[:, None]), zero)
-        wtail = torch.where(has_con, rdiv(E7, (cx - self.emerge[:, None]) - 500.0), zero)
+        if self.fl.fastmath:      # stock: WTAIL=1.E7/((-500.-EMERGE(J))+CONTX)
+            wtail = torch.where(has_con, rdiv(E7, (-500.0 - self.emerge[:, None]) + cx), zero)
+        else:
+            wtail = torch.where(has_con, rdiv(E7, (cx - self.emerge[:, None]) - 500.0), zero)
         gr = torch.from_numpy(r["gammar"].copy()).to(dev)
         gs = torch.from_numpy(r["gammas"].copy()).to(dev)
         gw = torch.from_numpy(r["gammaw"].copy()).to(dev)
@@ -406,7 +428,7 @@ class XLinop:
             S = min(2 * S, self.block * 16)                 # adaptive block: 16, 32, ... samples
             offs = torch.arange(S, device=dev)
             lines = np.unique(ii_np[act.cpu().numpy()])
-            ch = chain(wcur[lines], S + 1, step > 0)
+            ch = chain(wcur[lines], S + 1, step > 0, self.fl.fastmath)
             wcur[lines] = ch[:, S]
             chv = ch[:, :S] if step > 0 else ch[:, 1:]
             lmap = np.full(len(w0_line), -1, np.int64)
@@ -423,10 +445,19 @@ class XLinop:
             if n_i.numel():
                 ai = act[n_i]
                 wv = wave[n_i, n_k]
-                vv = (torch.abs(wv - it["wl"][ai]) / it["dopwl"][ai].to(F64)).to(F32)
-                kv = it["k0"][ai] * voigt(vv, it["a"][ai], self.tabs)
                 wc, wt = it["wcon"][ai], it["wtail"][ai]
-                kv = torch.where(wv < wt, ((kv.to(F64) * (wv - wc)) / (wt - wc)).to(F32), kv)
+                if self.fl.fastmath:
+                    # stock: VVOIGT=ABS(WAVE-WL)*(1./DOPWL), KAPPA=((WAVE-WCON)*KAPPA)*(1./(WTAIL-WCON))
+                    dw = it["dopwl"][ai].to(F64)
+                    vv = (torch.abs(wv - it["wl"][ai]) * torch.div(torch.ones_like(dw), dw)).to(F32)
+                    kv = it["k0"][ai] * voigt(vv, it["a"][ai], self.tabs, True)
+                    dt = wt - wc
+                    kt = ((wv - wc) * kv.to(F64)) * torch.div(torch.ones_like(dt), dt)
+                else:
+                    vv = (torch.abs(wv - it["wl"][ai]) / it["dopwl"][ai].to(F64)).to(F32)
+                    kv = it["k0"][ai] * voigt(vv, it["a"][ai], self.tabs)
+                    kt = (kv.to(F64) * (wv - wc)) / (wt - wc)
+                kv = torch.where(wv < wt, kt.to(F32), kv)
                 kap[n_i, n_k] = kv
             cb = self.cont[jl[:, None], (bins - 1).clamp(0, LENGTH - 1)]
             term = need & (kap < cb)
@@ -488,7 +519,12 @@ class XLinop:
             j = torch.repeat_interleave(torch.arange(self.nl, device=dev), cnt)
             first = torch.cumsum(cnt, 0) - cnt
             ib = nb1c + torch.arange(tot, device=dev) - torch.repeat_interleave(first, cnt)
-            tail = torch.where(ib > nb2[j], (nb3[j] - ib).to(F32) / dn[j], torch.ones(1, dtype=F32, device=dev))
+            if fl.fastmath:      # stock: TAIL=FLOAT(NBUFF3-IBUFF)*(1./DNBUFF) (divss once, mulss)
+                rdn = torch.div(torch.ones_like(dn), dn)
+                tv = (nb3[j] - ib).to(F32) * rdn[j]
+            else:
+                tv = (nb3[j] - ib).to(F32) / dn[j]
+            tail = torch.where(ib > nb2[j], tv, torch.ones(1, dtype=F32, device=dev))
             out.append((torch.full((tot,), int(lidx), dtype=I64, device=dev), j * LENBUFF + (ib - 1), kap[j] * tail))
         return out
 
@@ -527,6 +563,10 @@ class XLinop:
         S = 4096
         act = torch.arange(layers.numel(), device=dev)
         fcur = np.float32(f0)
+        fast = self.fl.fastmath
+        # stock (ifx -fp-model fast): red FREQ=FREQ*(1./RATIO) (REAL*8 reciprocal), EPSIL=(FREQ-FRELIN)*G2 with
+        # G2=(1./GAMMAR)+(1./GAMMAR), KAPPA=((ASHORE*EPSIL+BSHORE)*KAPPA0)/((EPSIL*EPSIL+1.)*BSHORE)
+        g2 = float(f4(f4(1.0) / f4(gammar)) + f4(f4(1.0) / f4(gammar)))
         k = 0
         while act.numel() and k < count:
             n = min(S, count - k)
@@ -534,13 +574,18 @@ class XLinop:
             for q in range(n):                     # REAL*4 sequential chain FREQ=FREQ/RATIO (or *RATIO)
                 if step > 0:
                     fr[q] = fcur
-                    fcur = np.float32(float(fcur) / RATIO)
+                    fcur = np.float32(float(fcur) * RATIO_INV) if fast else np.float32(float(fcur) / RATIO)
                 else:
                     fcur = np.float32(float(fcur) * RATIO)
                     fr[q] = fcur
             frt = torch.from_numpy(fr).to(dev)[None, :]
-            eps = (2.0 * (frt - float(frelin))) / float(gammar)
-            kap = ((k0[act][:, None] * (float(ashore) * eps + float(bshore))) / (eps * eps + 1.0)) / float(bshore)
+            if fast:
+                eps = (frt - float(frelin)) * g2
+                kap = ((float(ashore) * eps + float(bshore)) * k0[act][:, None]) / ((eps * eps + 1.0) * float(bshore))
+            else:
+                eps = (2.0 * (frt - float(frelin))) / float(gammar)
+                kap = ((k0[act][:, None] * (float(ashore) * eps + float(bshore))) / (eps * eps + 1.0)) / \
+                    float(bshore)
             bins = start + step * (k + torch.arange(n, device=dev))
             jl = layers[act]
             cb = self.cont[jl[:, None], (bins - 1)[None, :]]
@@ -571,8 +616,8 @@ class XLinop:
         if layers.numel() == 0:
             return []
         dopph = self.dopple[layers, 0]
-        if typ == -2:
-            dopph = dopph / L("1.4142")
+        if typ == -2:       # deuterium; stock: DOPPLE(1)*(1./1.4142) folded (.rodata 0x489070 = 0x3F350565)
+            dopph = dopph * float(f4(f4(1.0) / lit("1.4142"))) if fl.fastmath else dopph / L("1.4142")
         path = "alpha" if (ncon == 0 or m == n + 1) else ("beta" if m == n + 2 else "general")
         E = self.ehyd
         g = dict(layers=layers, k0=kappa0, dopph=dopph, wl=wl, n=n, m=m, path=path, lidx=lidx)
@@ -843,7 +888,10 @@ class XLinop:
             # contributions: sample points + log interpolation of the 19 skipped bins (counter > 21)
             if emit:
                 # MAX(KAPPA,1.E-20) is `maxss` with the constant as source operand: a NaN KAPPA gives 1.E-20
-                newk = fl.logf(torch.where(kap > L("1.E-20"), kap, torch.full_like(kap, L("1.E-20"))))
+                im = self._h_interp_math()
+                kmax = torch.where(kap > L("1.E-20"), kap, torch.full_like(kap, L("1.E-20")))
+                newk = fl.logf(kmax) if im is None else \
+                    torch.from_numpy(im[0](kmax.cpu().numpy())).to(dev)
                 prevk = torch.cat([old[:, None], newk[:, :-1]], dim=1)
                 ai, ak = torch.nonzero(added, as_tuple=True)
                 if ai.numel():
@@ -852,9 +900,17 @@ class XLinop:
                     interp = cntr[ak] > 21
                     if bool(interp.any()):
                         bi, bk = ai[interp], ak[interp]
-                        dk = (newk[bi, bk] - prevk[bi, bk]) / 20.0
                         kk = torch.arange(1, 20, device=dev, dtype=F32)
-                        vals = fl.expf(newk[bi, bk][:, None] - kk[None, :] * dk[:, None])
+                        if im is None:
+                            dk = (newk[bi, bk] - prevk[bi, bk]) / 20.0
+                            vals = fl.expf(newk[bi, bk][:, None] - kk[None, :] * dk[:, None])
+                        else:   # stock: see _h_interp_math
+                            dk = (newk[bi, bk] - prevk[bi, bk]) * L(".05")
+                            arg = (newk[bi, bk][:, None] - kk[None, :] * dk[:, None]).cpu().numpy()
+                            ks = 0 if step > 0 else 18                  # the K done by __svml_expf1
+                            v = im[1](arg)
+                            v[:, ks] = im[2](arg[:, ks])
+                            vals = torch.from_numpy(v).to(dev)
                         tb = binidx[bi, bk][:, None] - step * torch.arange(1, 20, device=dev)[None, :]
                         out.append((torch.full((vals.numel(),), g["lidx"], dtype=I64, device=dev),
                                     (layers[bi][:, None] * LENBUFF + (tb - 1)).reshape(-1), vals.reshape(-1)))
@@ -864,6 +920,20 @@ class XLinop:
             alive = alive & (ends >= nsmp)
             sample += nsmp
         return out
+
+    def _h_interp_math(self):
+        """Stock flavour (dfsynthe.exe XLINOP labels 611-634): NEWKAPPA=LOG(MAX(KAPPA,1.E-20)) by libimf logf,
+        DKAPPA=(NEWKAPPA-OLDKAPPA)*.05 and the 19 interpolated values by __svml_expf4 lanes (argument
+        (DKAPPA*(-K))+NEWKAPPA, equal to NEWKAPPA-K*DKAPPA) except one by __svml_expf1 (red wing K=1, blue K=19).
+        -> (logf, expf4, expf1) on numpy arrays, or None (precise flavour, or no Intel runtime / C helper: the
+        correctly rounded functions and the source forms)."""
+        if not self.fl.fastmath:
+            return None
+        if not hasattr(self, "_him"):
+            from . import imf, svml
+            from .native.hline_ct import interp_math
+            self._him = (imf.logf, svml.expf4, svml.expf) if interp_math(self.fl) is not None else None
+        return self._him
 
     @staticmethod
     def _bin_of(start, step, boff):

@@ -35,7 +35,13 @@ class HDepth(ctypes.Structure):
                                      "xne", "xnfph1", "xnfph2")],
                 ("h0tab", c_p), ("nh0", c_l), ("extab", c_p), ("nextab", c_l), ("cutoffh2", c_p),
                 ("cutoffh2plus", c_p), ("propbm", c_p), ("sc", c_p), ("sd", c_p), ("spp", c_p), ("sbeta", c_p),
-                ("c52", c_f), ("fastmath", c_i)]
+                ("c52", c_f), ("fastmath", c_i), ("f_logf", c_p), ("f_expf4", c_p), ("f_expf1", c_p),
+                ("f_iexpf", c_p), ("f_powf", c_p), ("rcptab", c_p), ("kf", c_f * 16), ("kf2", c_f * 2)]
+
+# order of HDepth.kf (hline.c KF_*) and kf2, from Hydrogen._fast_consts
+KF = ("l", "res", "pi", "c2", "nf22", "nsp22", "r22", "c22", "a22", "b22", "f22", "nf15", "nsp15", "r15", "c15",
+      "a15")
+KF2 = ("b15", "f15")
 
 
 class HLine(ctypes.Structure):
@@ -47,6 +53,16 @@ class HLine(ctypes.Structure):
                 ("cont_stride", c_l), ("cont_cols", c_l), ("buf", c_p), ("buf_stride", c_l), ("emit", c_i),
                 *[(k, c_p) for k in ("sidx", "sp", "first", "change")],
                 ("stats", c_l * 3)]
+
+
+def interp_math(fl):
+    """Stock flavour: addresses of libimf logf, __svml_expf4 and __svml_expf1 (the functions dfsynthe.exe uses in
+    the hydrogen-wing log interpolation, see xlinop.py XLinop._h_interp); None otherwise or without them."""
+    if not getattr(fl, "fastmath", False):
+        return None
+    from .. import imf, svml
+    a = (imf.address("logf"), svml._vaddr("__svml_expf4"), svml._vaddr("__svml_expf1"))
+    return a if all(a) else None
 
 
 def depth_struct(hyd, tabs: dict, fl) -> HDepth:
@@ -73,5 +89,24 @@ def depth_struct(hyd, tabs: dict, fl) -> HDepth:
     o.nh0, o.nextab = keep["h0tab"].numel(), keep["extab"].numel()
     o.c52 = float(Hydrogen._c52())
     o.fastmath = int(bool(fl.fastmath))
+    m = interp_math(fl)
+    if m is not None:
+        o.f_logf, o.f_expf4, o.f_expf1 = m
+    if fl.fastmath:
+        from .. import imf
+        from ..hydrogen import Hydrogen
+        from ..rcpps import _table_np
+        K = Hydrogen._fast_consts()
+        for i, k in enumerate(KF):
+            o.kf[i] = float(K[k])
+        for i, k in enumerate(KF2):
+            o.kf2[i] = float(K[k])
+        keep["rcptab"] = torch.from_numpy(_table_np().astype(np.uint32).view(np.int32).copy())
+        o.rcptab = keep["rcptab"].data_ptr()
+        if fl.libm is None:
+            o.f_logf = imf.address("logf") or None
+            o.f_iexpf = imf.address("expf") or None
+            f = imf._fn("powf", False, 2)
+            o.f_powf = ctypes.cast(f, ctypes.c_void_p).value if f is not None else None
     o._keep = keep
     return o

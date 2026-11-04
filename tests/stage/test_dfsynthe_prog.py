@@ -1,14 +1,14 @@
 """Stage tests for the torch DFSYNTHE program (atlas_torch.dfsynthe.dfsynthe), one temperature (5012 K, ITEFF=21,
 solar xnfpdf.dat / xnfpdfmax.dat of the stock BasicATLAS run).
 
-1. stock flavour (FTZ environment + the ifx -fp-model fast Lyman-alpha term, see test_dfsynthe_lya_fastmath.py)
-   + default (correctly rounded) transcendentals vs the stock ODF (rows it=21 of p00big{v}/p00lit{v}, ifx -O2
-   fp-model fast): max |difference| in integer steps and the fraction of differing entries per velocity.
-   Measured: max 1 step, 5.4e-5 of entries (ifx-O3 vs stock: max 1, 2e-7).  Without the fast-math emulation the
-   port reproduces ifx -fp-model precise(-ftz) instead, which differs from stock by up to 18 steps here (the
+1. stock flavour (FTZ environment + the ifx -fp-model fast forms of dfsynthe.exe, see dfsynthe.py) vs the stock
+   ODF (rows it=21 of p00big{v}/p00lit{v}, ifx -O2 fp-model fast): with the Intel runtime (libimf/SVML through
+   ctypes) the ODF rows are identical (EXACT); without it max 1 step in a small fraction of the entries (the
+   correctly rounded transcendentals; ifx-O3 vs stock: max 1, 2e-7).  Without the fast-math emulation the port
+   reproduces ifx -fp-model precise(-ftz) instead, which differs from stock by up to 18 steps here (the
    Lyman-alpha NaN wing of the stock binary).
 1b. Flavor('stock', fastmath=False) vs the ifx-precise-ftz build: max 1 step (measured 1 step in 2e-6).
-1c. hot temperatures 12589 K (ITEFF=33) and 112202 K (52) vs stock: max 1 step, measured 2-8e-5 of entries differ.
+1c. hot temperatures 12589 K (ITEFF=33) and 112202 K (52) vs stock: identical with the Intel runtime (EXACT).
    Before the two hot-temperature stock forms were emulated (test_dfsynthe_hot_fastmath.py) the port gave 14-15
    steps at 12589 K (the H2+ cutoff flushed by FTZ: the ifx-precise-ftz result) and 119 at 112202 K (EMERGE
    rounding: He II Lyman far wings in layer 25), like the ifx -O0/precise builds.
@@ -36,8 +36,9 @@ pytestmark = [pytest.mark.stage,
 ITEFF = 21
 SPREAD_MAX = 30          # integer steps vs the -O0 debug run (Fortran builds differ by up to 18)
 SPREAD_FRAC = 3e-3       # fraction of entries (Fortran builds: up to 1.1e-3)
-STOCK_MAX = 2            # vs stock (measured 1 with the fast-math emulations)
-STOCK_FRAC = 2e-4        # (measured 5.4e-5)
+STOCK_MAX = 2            # vs stock without the Intel runtime (correctly rounded libm instead of libimf/SVML)
+STOCK_FRAC = 2e-4
+EXACT = S.ifx_libdir() is not None   # with libimf/SVML the stock flavour reproduces the stock ODF rows exactly
 PRECISE = S.EXT / "runs" / "ifx-precise-ftz" / "odf" / "solar"
 
 
@@ -67,7 +68,7 @@ def test_vs_stock_odf(stock_run):
     for v in odf_io.VTURBS:
         d = np.abs(_as_rows(stock_run[v][1]).astype(int) - _stock_rows(v).astype(int))
         print(f"vt={v}: max |diff| {d.max()} steps, fraction differing {(d > 0).mean():.2e}")
-        assert d.max() <= STOCK_MAX and (d > 0).mean() <= STOCK_FRAC, v
+        assert d.max() <= (0 if EXACT else STOCK_MAX) and (d > 0).mean() <= STOCK_FRAC, v
 
 
 @pytest.mark.parametrize("iteff", [33, 52])
@@ -80,7 +81,7 @@ def test_hot_vs_stock_odf(iteff):
         lit = read_bdf(S.STOCK / f"p00lit{v}.bdf")[:, iteff - 1]
         d = np.abs(_as_rows(res[v][1]).astype(int) - np.concatenate([big, lit]).astype(int))
         print(f"ITEFF={iteff} vt={v}: max |diff| {d.max()} steps, fraction differing {(d > 0).mean():.2e}")
-        assert d.max() <= 1 and (d > 0).mean() <= STOCK_FRAC, v
+        assert d.max() <= (0 if EXACT else 1) and (d > 0).mean() <= STOCK_FRAC, v
 
 
 @pytest.mark.skipif(not (PRECISE / "p00lit8.bdf").exists(), reason="ifx-precise-ftz solar run missing")

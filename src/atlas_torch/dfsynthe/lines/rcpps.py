@@ -64,3 +64,98 @@ def div_nr(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     r = rcpps(b)
     q0 = a * r
     return (a - q0 * b) * r + q0
+
+
+def rcpps_np(b: np.ndarray) -> np.ndarray:
+    """rcpps of normal float32 values, numpy (same table and rules as rcpps())."""
+    bits = np.ascontiguousarray(b, np.float32).view(np.int32).astype(np.int64)
+    m12 = (bits >> 11) & 0xFFF
+    e = (bits >> 23) & 0xFF
+    tb = _table_np()[m12]
+    te = ((tb >> 23) & 0xFF) - (e - 127)
+    sign = bits & 0x80000000
+    out = (tb & 0x007FFFFF) | (np.clip(te, 0, 255) << 23) | sign
+    out = np.where(te <= 0, sign, out)
+    out = np.where(te >= 255, sign | 0x7F800000, out)
+    out = np.where(e == 0, sign | 0x7F800000, out)
+    return out.astype(np.uint32).view(np.float32)
+
+
+def div_nr_np(a, b) -> np.ndarray:
+    """a/b as rcpps + one Newton step (numpy float32): q0=a*r; (a-q0*b)*r+q0."""
+    a, b = np.float32(a) if np.isscalar(a) else np.asarray(a, np.float32), np.asarray(b, np.float32)
+    r = rcpps_np(b)
+    q0 = (a * r).astype(np.float32)
+    return ((a - (q0 * b).astype(np.float32)).astype(np.float32) * r + q0).astype(np.float32)
+
+
+def recip_nr_np(b) -> np.ndarray:
+    """1/b as rcpps + one Newton step in the reciprocal form (1-b*r)*r+r (numpy float32)."""
+    b = np.asarray(b, np.float32)
+    r = rcpps_np(b)
+    return ((np.float32(1) - (b * r).astype(np.float32)).astype(np.float32) * r + r).astype(np.float32)
+
+
+# ---- rsqrtps (approximate 1/sqrt).  On the reference CPU the result for a normal input depends only on the
+#      exponent parity and the top 12 mantissa bits; x*4**k gives the same mantissa with the exponent shifted by -k
+#      (checked on 2e7 random floats): data/rsqrtps_amd_custom_apu_1772.npy holds [parity][4096] (inputs in [1, 2)
+#      and [2, 4)), made by data/rsqrtps_table.c (gcc -msse2).  $ATLAS_TORCH_RSQRTPS_TABLE overrides it.
+RSQRT_DEFAULT = Path(__file__).resolve().parent.parent / "data" / "rsqrtps_amd_custom_apu_1772.npy"
+
+
+@lru_cache(maxsize=None)
+def _rsq_table_np() -> np.ndarray:
+    t = np.load(Path(os.environ.get("ATLAS_TORCH_RSQRTPS_TABLE", RSQRT_DEFAULT)))
+    if t.shape != (2, 4096):
+        raise ValueError(f"unexpected rsqrtps table shape {t.shape}")
+    return t.astype(np.int64).reshape(-1)
+
+
+def _rsq_bits(bits, tab, where, clip):
+    m12 = (bits >> 11) & 0xFFF
+    e = (bits >> 23) & 0xFF
+    par = (e + 1) & 1                                   # parity of e-127
+    k = ((e - 127) - par) // 2
+    tb = tab[par * 4096 + m12]
+    te = ((tb >> 23) & 0xFF) - k
+    out = (tb & 0x007FFFFF) | (clip(te, 0, 255) << 23)
+    out = where(te <= 0, 0, out)
+    out = where(e == 0, 0x7F800000, out)                # 0 (or DAZ subnormal) -> +inf
+    out = where(e == 255, where((bits & 0x7FFFFF) == 0, 0, bits | 0x400000), out)   # +inf -> 0, NaN -> quiet NaN
+    out = where((bits & 0x80000000) != 0, where(e == 0, 0xFF800000, 0x7FC00000), out)   # -0 -> -inf, x<0 -> NaN
+    return out
+
+
+def rsqrtps(b: torch.Tensor) -> torch.Tensor:
+    """rsqrtps of float32 values (torch)."""
+    if b.device not in _DEV_RSQ:
+        _DEV_RSQ[b.device] = torch.from_numpy(_rsq_table_np()).to(b.device)
+    bits = b.contiguous().view(torch.int32).to(torch.int64) & 0xFFFFFFFF
+    out = _rsq_bits(bits, _DEV_RSQ[b.device], lambda c, x, y: torch.where(c, torch.as_tensor(x, device=b.device),
+                                                                            torch.as_tensor(y, device=b.device)),
+                    lambda x, lo, hi: x.clamp(lo, hi))
+    return _i64_to_f32(out)
+
+
+def _i64_to_f32(out: torch.Tensor) -> torch.Tensor:
+    out = out & 0xFFFFFFFF
+    out = torch.where(out >= (1 << 31), out - (1 << 32), out)
+    return out.to(torch.int32).view(torch.float32)
+
+
+_DEV_RSQ: dict = {}
+
+
+def rsqrtps_np(b: np.ndarray) -> np.ndarray:
+    """rsqrtps of float32 values (numpy)."""
+    bits = np.ascontiguousarray(b, np.float32).view(np.uint32).astype(np.int64)
+    out = _rsq_bits(bits, _rsq_table_np(), np.where, np.clip)
+    return out.astype(np.uint32).view(np.float32)
+
+
+def sqrt_rsqrt(x: torch.Tensor) -> torch.Tensor:
+    """SQRT(X) as ifx -fp-model fast vectorises it: y=rsqrtps(x); ((x*y)*y-3)*((x*y)*(-.5)), 0 where |x|<FLT_MIN."""
+    y = rsqrtps(x)
+    xy = x * y
+    s = ((xy * y) + (-3.0)) * (xy * (-0.5))
+    return torch.where(torch.abs(x) >= 1.1754943508222875e-38, s, torch.zeros_like(s))
