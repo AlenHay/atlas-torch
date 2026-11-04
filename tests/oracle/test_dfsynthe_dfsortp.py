@@ -63,6 +63,7 @@ def test_dfsortp_random(seed, lo, hi):
         _check_dfsortp(td / "in.bin", td)
 
 
+@pytest.mark.stage
 def test_separatedf_stock():
     if not (S.STOCK / "p00big0.bdf").exists():
         pytest.skip("stock ODFs missing")

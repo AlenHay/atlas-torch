@@ -145,34 +145,107 @@ class XLinop:
         return t_idx, t_p
 
     def _pass(self, buffer_flat, tape19, state, chunk_lines):
+        """All TAPE19 lines in file order.  Runs of weak normal lines (wings <= 1000 bins) are vectorised in
+        batches whose contributions are sorted by line and added with one sequential index_add_; every other
+        line (strong normal lines, merged continua, autoionizing and hydrogen lines, whose wings can span the
+        whole spectrum in all layers at cool temperatures) is processed alone and its contributions are added
+        as they are generated (one line never adds twice to a bin, so the order is the Fortran's either way)."""
         typ = tape19["type"]
         n = len(tape19)
-        for s in range(0, n, chunk_lines):
-            e = min(n, s + chunk_lines)
-            ids = np.arange(s, e)
-            t = typ[s:e]
-            parts = []
-            norm = (t == 0) | (t == 3) | (t < -2)
-            if norm.any():
-                parts += self.normal_lines(tape19, ids[norm])
-            if (t > 3).any():
-                parts += self.merged_lines(tape19, ids[t > 3])
-            if (t == 1).any():
-                parts += self.autoion_lines(tape19, ids[t == 1])
-            for k in ids[(t == -1) | (t == -2)]:
-                parts += self.h_line(tape19[k], int(k), state, emit=True)
-            if not parts:
+        small = self._small_lines(tape19)
+        norm = (typ == 0) | (typ == 3) | (typ < -2)
+        i = 0
+        while i < n:
+            if not norm[i]:
+                self._stream_line(buffer_flat, tape19, i, state)
+                i += 1
                 continue
-            li = torch.cat([p[0].to(torch.int32) for p in parts])
-            order = torch.sort(li, stable=True).indices
-            del li
-            fi = torch.cat([p[1] for p in parts])[order]
-            va = torch.cat([p[2] for p in parts])[order]
-            del parts, order
-            buffer_flat.index_add_(0, fi, va)
-            self.stats["contribs"] += int(va.numel())
-            del fi, va
+            j = i                            # window of consecutive normal lines (weak and strong)
+            while j < n and norm[j] and j - i < chunk_lines:
+                j += 1
+            if small[i:j].all():
+                self._batch(buffer_flat, tape19, np.arange(i, j))
+                i = j
+                continue
+            self._budget, self._used = self.strong_budget, 0
+            try:
+                self._batch(buffer_flat, tape19, np.arange(i, j))         # adds nothing before it completes
+                i = j
+                continue
+            except _Overflow:
+                self.stats["windows_split"] = self.stats.get("windows_split", 0) + 1
+            finally:
+                self._budget = None
+            k = i                            # huge wings: weak runs batched, strong lines streamed one by one
+            while k < j:
+                if small[k]:
+                    m = k
+                    while m < j and small[m]:
+                        m += 1
+                    self._batch(buffer_flat, tape19, np.arange(k, m))
+                    k = m
+                else:
+                    self._stream_line(buffer_flat, tape19, k, state)
+                    k += 1
+            i = j
         return self.stats
+
+    strong_budget = 40_000_000              # contributions per batch before falling back to streaming
+    _budget = None
+    _used = 0
+
+    def _stream_line(self, buffer_flat, tape19, i, state):
+        t = tape19["type"][i]
+        self._stream = buffer_flat
+        try:
+            ids = np.array([i])
+            if t == 0 or t == 3 or t < -2:
+                self.normal_lines(tape19, ids)
+            elif t > 3:
+                self.merged_lines(tape19, ids)
+            elif t == 1:
+                self.autoion_lines(tape19, ids)
+            elif t == -1 or t == -2:
+                self.h_line(tape19[i], i, state, emit=True)
+        finally:
+            self._stream = None
+
+    def _small_lines(self, tape19) -> np.ndarray:
+        """Normal lines that are weak (IFSTRONG=0) in every layer where they pass the KAPPA0 test."""
+        typ = tape19["type"]
+        norm = (typ == 0) | (typ == 3) | (typ < -2)
+        out = np.zeros(len(tape19), dtype=bool)
+        idx = np.nonzero(norm)[0]
+        if idx.size:
+            r = tape19[idx]
+            nb = torch.from_numpy(r["nbuff"].astype(np.int64)).to(self.dev)
+            nel = torch.from_numpy(r["nelion"].astype(np.int64)).to(self.dev)
+            gf = torch.from_numpy(r["gf"].copy()).to(self.dev)
+            kappa0 = gf[None, :] * self.xnfdop[:, nel - 1]
+            cnb = self.cont[:, nb - 1]
+            strong = (~(kappa0 < cnb)) & (kappa0 > 500.0 * cnb)
+            out[idx] = ~strong.any(dim=0).cpu().numpy()
+        return out
+
+    def _batch(self, buffer_flat, tape19, ids):
+        parts = self.normal_lines(tape19, ids)
+        if not parts:
+            return
+        li = torch.cat([p[0].to(torch.int32) for p in parts])
+        order = torch.sort(li, stable=True).indices
+        del li
+        fi = torch.cat([p[1] for p in parts])[order]
+        va = torch.cat([p[2] for p in parts])[order]
+        del parts, order
+        buffer_flat.index_add_(0, fi, va)
+        self.stats["contribs"] += int(va.numel())
+
+    _stream = None
+
+    def _new_out(self):
+        """Collector for (line id, flat bin, value) contributions: a list (batched) or, while a single line is
+        processed, a sink adding them to the buffer at once."""
+        return _Sink(self) if self._stream is not None else []
 
     # ================================================================== normal lines
     def normal_lines(self, tape19, ids):
@@ -208,7 +281,7 @@ class XLinop:
                   a=adamp[jj, ii], dopwl=dopwl[jj, ii], wl=wl[ii], nb=nb[ii])
         lid = torch.from_numpy(ids.astype(np.int64)).to(dev)
         nb_np = r["nbuff"].astype(np.int64)
-        out = []
+        out = self._new_out()
         red_ok = ~(it["wl"] > WLEND)
         minred = torch.clamp(it["nb"], min=1)
         maxred = torch.where(it["strong"], torch.full_like(minred, LENGTH), torch.clamp(it["nb"] + 1000, max=LENGTH))
@@ -226,7 +299,7 @@ class XLinop:
         """Voigt wings of normal-line items.  All items advance in lock-step (offset k); the WAVE chain of a
         line is shared by its items.  red: chain value at offset k is WAVE(start+k); blue: WAVE(IBUFF0)/R**(k+1)."""
         dev = self.dev
-        out = []
+        out = self._new_out()
         S = 8
         ii = it["i"]
         ii_np = ii.cpu().numpy()
@@ -266,6 +339,10 @@ class XLinop:
             use = need & (offs[None, :] <= tpos[:, None])
             e_i, e_k = torch.nonzero(use, as_tuple=True)
             if e_i.numel():
+                if self._budget is not None:
+                    self._used += int(e_i.numel())
+                    if self._used > self._budget:
+                        raise _Overflow
                 out.append((lid[ii[act][e_i]], jl[e_i] * LENBUFF + (bins[e_i, e_k] - 1), kap[e_i, e_k]))
             more = (~hit) & ((k + S) < count[act])
             if step < 0:                                    # WAVE decreasing: once below WCON, all skipped
@@ -277,7 +354,7 @@ class XLinop:
     # ================================================================== merged continua
     def merged_lines(self, tape19, ids):
         dev, fl = self.dev, self.fl
-        out = []
+        out = self._new_out()
         for lidx in ids:
             r = tape19[lidx]
             wl = float(r["wl"])
@@ -322,7 +399,7 @@ class XLinop:
     # ================================================================== autoionizing
     def autoion_lines(self, tape19, ids):
         dev = self.dev
-        out = []
+        out = self._new_out()
         for lidx in ids:
             r = tape19[lidx]
             nel, nb = int(r["nelion"]), int(r["nbuff"])
@@ -350,7 +427,7 @@ class XLinop:
 
     def _auto_walk(self, lidx, layers, k0, frelin, ashore, bshore, gammar, start, count, step, f0):
         dev = self.dev
-        out = []
+        out = self._new_out()
         S = 4096
         act = torch.arange(layers.numel(), device=dev)
         fcur = np.float32(f0)
@@ -424,7 +501,7 @@ class XLinop:
             g["wlplus2"] = 1.0e7 / (E[m + 1] - E[n - 1])
             g["k0blue"] = ((((kappa0 * float(hfnm(n, m + 2, fl))) / float(hfnm(n, m, fl))).to(F64)
                             / (E[m + 1] - E[n - 1])) * (E[m - 1] - E[n - 1])).to(F32)
-        out = []
+        out = self._new_out()
         do_red = not (wl > WLEND)
         if path == "general" and do_red and WLBEG > self.alphahyd[n - 1]:
             do_red = False                                      # GO TO 613 directly
@@ -449,7 +526,7 @@ class XLinop:
         path, n, m, wl = g["path"], g["n"], g["m"], g["wl"]
         general = path == "general"
         w0 = float(self.wave_start([start])[0])        # WAVE(MINRED) (red) / WAVE(IBUFF0) (blue)
-        out = []
+        out = self._new_out()
         Bblk = 8                                    # samples per block (doubled every block)
         alive = torch.ones(nlay, dtype=torch.bool, device=dev)
         old = torch.zeros(nlay, dtype=F32, device=dev)
@@ -598,7 +675,8 @@ class XLinop:
             self.stats["h_samples"] += int(called.sum())
             # contributions: sample points + log interpolation of the 19 skipped bins (counter > 21)
             if emit:
-                newk = fl.logf(torch.clamp(kap, min=L("1.E-20")))
+                # MAX(KAPPA,1.E-20) is `maxss` with the constant as source operand: a NaN KAPPA gives 1.E-20
+                newk = fl.logf(torch.where(kap > L("1.E-20"), kap, torch.full_like(kap, L("1.E-20"))))
                 prevk = torch.cat([old[:, None], newk[:, :-1]], dim=1)
                 ai, ak = torch.nonzero(added, as_tuple=True)
                 if ai.numel():
@@ -624,3 +702,30 @@ class XLinop:
     def _bin_of(start, step, boff):
         """red: bin = start + offset; blue: bin = start - 1 - offset (I = offset+1)."""
         return start + boff if step > 0 else start - 1 - boff
+
+
+class _Overflow(Exception):
+    """A tentative batch of strong lines would buffer too many contributions."""
+
+
+class _Sink:
+    """List-like collector that adds contributions of the single line being processed straight to the buffer."""
+
+    def __init__(self, xl):
+        self.xl = xl
+
+    def append(self, part):
+        _, fi, va = part
+        self.xl._stream.index_add_(0, fi, va)
+        self.xl.stats["contribs"] += int(va.numel())
+
+    def __iadd__(self, other):
+        for p in other:
+            self.append(p)
+        return self
+
+    def __iter__(self):
+        return iter(())
+
+    def __bool__(self):
+        return False

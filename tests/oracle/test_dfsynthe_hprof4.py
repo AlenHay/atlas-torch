@@ -26,7 +26,7 @@ def bits(x):
 @pytest.fixture(scope="module")
 def fl():
     # the oracle library inside this process binds expf/logf/... to glibc libm
-    return S.glibc_flavor()
+    return S.oracle_flavor()
 
 
 @pytest.fixture(scope="module")

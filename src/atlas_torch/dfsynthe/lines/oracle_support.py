@@ -2,6 +2,8 @@
 Intel libimf transcendentals (to reproduce the -O0 Fortran bit for bit)."""
 from __future__ import annotations
 
+from functools import lru_cache
+
 import ctypes
 import glob
 import os
@@ -59,9 +61,22 @@ def intel_flavor():
 
 
 def glibc_flavor():
-    """Flavor matching the oracle library inside a Python process (libm symbols bind to glibc)."""
+    """Flavor with glibc's libm (the oracle library's math calls when it is dlopen'ed without RTLD_DEEPBIND)."""
     from .f32 import Flavor, GlibcLibm
     return Flavor("O0", GlibcLibm())
+
+
+@lru_cache(maxsize=1)
+def _oracle_deepbind() -> bool:
+    o = oracle()
+    return bool(getattr(o, "deepbind", False))
+
+
+def oracle_flavor():
+    """Flavor matching the in-process oracle library: testing.fortran_oracle opens ifx-linked libraries with
+    RTLD_DEEPBIND (their expf/logf/... then bind to Intel libimf, as in the stock executables); older versions
+    used a plain dlopen (glibc libm)."""
+    return intel_flavor() if _oracle_deepbind() else glibc_flavor()
 
 
 def oracle_xlinop(a: dict):

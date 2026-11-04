@@ -11,7 +11,7 @@ import ctypes
 import numpy as np
 import pytest
 import torch
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import HealthCheck, example, given, settings, strategies as st
 
 from atlas_torch.dfsynthe.xnf import oracle_support as osup
 from atlas_torch.dfsynthe.xnf.fdata import pfground
@@ -69,6 +69,19 @@ def ora():
     return osup.new_oracle()
 
 
+@pytest.fixture(scope="module")
+def ora_imf():
+    """libxnfdf.so bound to libimf like the stock ifx program (Oracle deepbind=True; see fortran_oracle).
+
+    PFIRON computes LOG10(POTLOW) in REAL*4. The stock xnfdf.exe binds log10f to libimf (LD_DEBUG=bindings);
+    the plain oracle binds it to glibc 2.39, whose log10f is 1 ulp off in ~3% of arguments (e.g. 5766.0947),
+    and PFIRON then differs by 2 float ulps. The port (float32(log10 in double)) equals libimf's log10f.
+    """
+    from atlas_torch.testing.fortran_oracle import Oracle
+    osup.ensure_ifx_runtime()
+    return Oracle(osup.oracle_path(), deepbind=True)
+
+
 NJ = 6
 
 
@@ -113,13 +126,16 @@ def test_pfsaha_vs_fortran(ora, lay, iz, mode, nlteon, data):
 @given(nelem=st.integers(20, 28), ion=st.integers(1, 10),
        tl=st.lists(st.floats(3.2, 5.6), min_size=8, max_size=8),
        pl=st.lists(st.floats(1.5, 5.0), min_size=8, max_size=8))
-def test_pfiron_vs_fortran(ora, nelem, ion, tl, pl):
+# LOG10(POTLOW) in REAL*4: glibc 2.39 log10f(5766.0947) is 1 ulp off libimf's (the stock ifx program's);
+# failed against the glibc-bound oracle; see ora_imf
+@example(nelem=20, ion=1, tl=[4.0] * 8, pl=[2.0] * 7 + [3.760881766617063])
+def test_pfiron_vs_fortran(ora_imf, nelem, ion, tl, pl):
     tl = np.array(tl)
     pot = 10 ** np.array(pl)
     got = pfiron(nelem, ion, torch.from_numpy(tl), torch.from_numpy(pot)).numpy()
     ref = []
     for a, b in zip(tl, pot):
-        _, outs = ora.call("pfiron", nelem, ion, float(a), float(b), ctypes.c_double(0.))
+        _, outs = ora_imf.call("pfiron", nelem, ion, float(a), float(b), ctypes.c_double(0.))
         ref.append(outs[-1])
     assert np.array_equal(got, np.array(ref))
 

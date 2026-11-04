@@ -118,11 +118,15 @@ class Flavor:
     tests may install Intel libimf through ctypes (IntelLibm) to reproduce the Fortran bit-for-bit.
     """
 
-    def __init__(self, name: str = "stock", libm=None):
+    def __init__(self, name: str = "stock", libm=None, fastmath: bool | None = None):
         if name not in ("stock", "O0"):
             raise ValueError(name)
         self.name = name
         self.libm = libm
+        # ifx -fp-model fast code generation of the stock binary (HPROF4's Lyman-alpha NaN term, reciprocal
+        # rewrites, rcpps divisions, SVML table exps; list in dfsynthe.py).  Default: on for 'stock'.
+        # Flavor('stock', fastmath=False) reproduces the ifx -fp-model precise build.
+        self.fastmath = (name == "stock") if fastmath is None else bool(fastmath)
 
     # ---- integer powers
     def powi8_np(self, a: float, n: np.ndarray) -> np.ndarray:

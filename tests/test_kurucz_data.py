@@ -14,11 +14,12 @@ from atlas_torch.testing.fortran_oracle import read_layout
 
 ATLAS_EXT = Path(os.environ.get("ATLAS_EXT", Path.home() / "atlas-ext"))
 
+_SLOW = pytest.mark.stage   # 2-3 s each (largest DATA sets); the other libraries keep the parser in the fast tier
 LIBRARY_PAIRS = [
-    ("libatlas7v.so", ATLAS_EXT / "builds/src/atlas7v.for"),
+    pytest.param("libatlas7v.so", ATLAS_EXT / "builds/src/atlas7v.for", marks=_SLOW),
     ("libatlas9.so", ATLAS_EXT / "builds/src/atlas9mem.patched.for"),
-    ("libkappa9.so", ATLAS_EXT / "builds/src/kappa9.for"),
-    ("libxnfdf.so", ATLAS_EXT / "builds/src/xnfdf.for"),
+    pytest.param("libkappa9.so", ATLAS_EXT / "builds/src/kappa9.for", marks=_SLOW),
+    pytest.param("libxnfdf.so", ATLAS_EXT / "builds/src/xnfdf.for", marks=_SLOW),
     ("libsynthe.so", ATLAS_EXT / "builds/src/synthe.patched.for"),
     ("libdfsynthe.so", ATLAS_EXT / "builds/src/dfsynthe.for"),
 ]

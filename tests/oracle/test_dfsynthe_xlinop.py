@@ -30,7 +30,7 @@ SCR = "/tmp/claude-1000" if os.path.isdir("/tmp/claude-1000") else None
 
 @pytest.fixture(scope="module")
 def solar():
-    fl = S.glibc_flavor()
+    fl = S.oracle_flavor()
     xt = odf_io.read_xnfpdf(S.STOCK / "xnfpdf.dat", 21)
     mx = odf_io.read_xnfpdfmax(S.STOCK / "xnfpdfmax.dat", 21)
     _, t19, _ = selectlines(S.DATA, mx.teff, mx.wledge, mx.xnfdopmax, fl)
@@ -59,6 +59,7 @@ def _oracle_xlinop(xt, lay, cont, sub, fl):
                                 tape19=sub, scratch=SCR))
 
 
+@pytest.mark.stage   # module fixture runs SELECTLINES+CONTINUUM with the ctypes-libm flavor (~12 s); 2-4 s per case (oracle in a spawned process)
 @pytest.mark.parametrize("kind", ["normal", "merged_auto", "he_edge", "h_alpha_beta", "h_general"])
 def test_xlinop_vs_fortran(solar, kind):
     fl, xt, t19, lay, cont = solar
@@ -76,6 +77,7 @@ def test_xlinop_vs_fortran(solar, kind):
         assert np.array_equal(got[j].view(np.int32), ref[j].view(np.int32)), (kind, j + 1)
 
 
+@pytest.mark.stage
 def test_xlinop_golden(golden):
     fl = S.intel_flavor()
     xt = odf_io.read_xnfpdf(S.STOCK / "xnfpdf.dat", 21)
@@ -91,3 +93,25 @@ def test_xlinop_golden(golden):
         g = golden(STAGE, "xlinop", hit, "exit")
         j = int(g["arg:j"][0]) - 1
         assert np.array_equal(b[j].view(np.int32), g["buffer.buffer"].view(np.int32)), j + 1
+
+
+@pytest.mark.parametrize("kind", ["normal", "merged_auto"])
+def test_xlinop_batching_modes_identical(solar, kind):
+    """Weak-line batches, tentative strong-line batches (budget overflow -> per-line streaming) and one line per
+    batch give bit-identical buffers (per-bin REAL*4 order is the line order in every mode)."""
+    fl, xt, t19, lay, cont = solar
+    sub = t19[_subset(t19, kind)]
+    tabs = T.device_tables(torch.device("cpu"), fl)
+    L = {k: (v[:NL] if torch.is_tensor(v) else v) for k, v in lay.items()}
+    L["st"] = {k: v[:NL] for k, v in lay["st"].items()}
+    out = []
+    for budget, chunk in ((None, 200), (1, 200), (None, 1)):
+        xl = XLinop(tabs, L, cont, fl)
+        if budget is not None:
+            xl.strong_budget = budget
+        buf = torch.zeros(NL * T.LENBUFF, dtype=torch.float32)
+        xl.run(buf, sub, chunk_lines=chunk)
+        out.append(buf)
+    assert bool((out[0] != 0).any())
+    for b in out[1:]:
+        assert torch.equal(out[0].view(torch.int32), b.view(torch.int32))

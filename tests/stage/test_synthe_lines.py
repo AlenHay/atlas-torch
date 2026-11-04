@@ -33,6 +33,8 @@ from atlas_torch.synthe.lines import (
     parse_synbeg_card,
 )
 
+pytestmark = pytest.mark.stage   # whole-program / big-data tier (tests/stage/)
+
 EXT_DIR = Path("/home/deck/atlas-ext")
 SYNTHE_DATA = EXT_DIR / "BasicATLAS/data/synthe_files"
 DF_DATA = EXT_DIR / "BasicATLAS/data/dfsynthe_files"
@@ -51,62 +53,28 @@ MOL_NAMES = [
 MOL_LISTS = [SYNTHE_DATA / m for m in MOL_NAMES]
 
 
-def compare_fort12_records(actual_recs: list[bytes], ref_recs: list[bytes], rtol: float = 5e-4) -> None:
-    """Compare fort.12 records with exact match on integer/packed fields and rtol on floats."""
+def _first_diff(actual_recs: list[bytes], ref_recs: list[bytes], fmt: str) -> str:
+    for i, (act, ref) in enumerate(zip(actual_recs, ref_recs)):
+        if act != ref:
+            return f"record {i}: act={struct.unpack(fmt, act)} ref={struct.unpack(fmt, ref)}"
+    return ""
+
+
+def compare_fort12_records(actual_recs: list[bytes], ref_recs: list[bytes]) -> None:
+    """fort.12 records (NBUFF,CONGF,NELION,ELO,GAMRF,GAMSF,GAMWF,ALPHA) must be byte-identical to the stock
+    (gfortran -O3) programs: the port reproduces their REAL*4 arithmetic and libm calls (scalar powf/log10f/exp,
+    libmvec powf for rh2ofast's TABLOG)."""
     assert len(actual_recs) == len(ref_recs), f"Record count mismatch: {len(actual_recs)} vs {len(ref_recs)}"
-    
-    # '<ifif4f': (nbuff, congf, nelion, elo, gamrf, gamsf, gamwf, alpha)
-    fmt = "<ifif4f"
-    for i, (act, ref) in enumerate(zip(actual_recs, ref_recs)):
-        a = struct.unpack(fmt, act)
-        r = struct.unpack(fmt, ref)
-        # nbuff and nelion must be exact integers
-        assert a[0] == r[0], f"Record {i} nbuff mismatch: act={a[0]} ref={r[0]}"
-        assert a[2] == r[2], f"Record {i} nelion mismatch: act={a[2]} ref={r[2]}"
-        # alpha must be exact
-        assert a[7] == r[7], f"Record {i} alpha mismatch: act={a[7]} ref={r[7]}"
-        # elo must match closely or exact
-        assert np.isclose(a[3], r[3], rtol=1e-5, atol=1e-5), f"Record {i} elo mismatch: act={a[3]} ref={r[3]}"
-        # Float fields: congf, gamrf, gamsf, gamwf
-        for f_idx, name in ((1, "congf"), (4, "gamrf"), (5, "gamsf"), (6, "gamwf")):
-            diff = abs(a[f_idx] - r[f_idx])
-            denom = max(abs(a[f_idx]), abs(r[f_idx]), 1e-35)
-            rel = diff / denom
-            assert rel <= rtol or np.isclose(a[f_idx], r[f_idx], rtol=rtol, atol=1e-35), (
-                f"Record {i} field {name} rel diff {rel:.2e} > {rtol:.2e}: act={a[f_idx]} ref={r[f_idx]}"
-            )
+    nd = sum(a != r for a, r in zip(actual_recs, ref_recs))
+    assert nd == 0, f"{nd} fort.12 records differ; first {_first_diff(actual_recs, ref_recs, '<ifif4f')}"
 
 
-def compare_fort19_records(actual_recs: list[bytes], ref_recs: list[bytes], rtol: float = 5e-4) -> None:
-    """Compare fort.19 records with exact match on integer/double fields and rtol on floats."""
+def compare_fort19_records(actual_recs: list[bytes], ref_recs: list[bytes]) -> None:
+    """fort.19 records (WLVAC,ELO,GF,NBLO,NBUP,NELION,TYPE,NCON,NELIONX,GAMMAR,GAMMAS,GAMMAW,ALPHA,NBUFF,LIM) must
+    be byte-identical to the stock programs."""
     assert len(actual_recs) == len(ref_recs), f"fort.19 count mismatch: {len(actual_recs)} vs {len(ref_recs)}"
-    
-    # '<d2f6i4f2i': (wlvac, elo, cgf, nblo, nbup, nelion, type, ncon, nelionx, gammar, gammas, gammaw, alpha, nbuff, lim)
-    fmt = "<d2f6i4f2i"
-    for i, (act, ref) in enumerate(zip(actual_recs, ref_recs)):
-        a = struct.unpack(fmt, act)
-        r = struct.unpack(fmt, ref)
-        # wlvac (d) exact
-        assert a[0] == r[0], f"Record {i} wlvac mismatch: {a[0]} vs {r[0]}"
-        # elo (f) exact
-        assert a[1] == r[1], f"Record {i} elo mismatch: {a[1]} vs {r[1]}"
-        # cgf (f) float comparison
-        assert np.isclose(a[2], r[2], rtol=rtol, atol=1e-35), f"Record {i} cgf mismatch: {a[2]} vs {r[2]}"
-        # integers exact: nblo, nbup, nelion, type, ncon, nelionx
-        assert a[3:9] == r[3:9], f"Record {i} integer fields mismatch: {a[3:9]} vs {r[3:9]}"
-        # alpha exact
-        assert a[12] == r[12], f"Record {i} alpha mismatch: {a[12]} vs {r[12]}"
-        # nbuff, lim exact
-        assert a[13] == r[13], f"Record {i} nbuff mismatch: {a[13]} vs {r[13]}"
-        assert a[14] == r[14], f"Record {i} lim mismatch: {a[14]} vs {r[14]}"
-        # gammar, gammas, gammaw
-        for f_idx, name in ((9, "gammar"), (10, "gammas"), (11, "gammaw")):
-            diff = abs(a[f_idx] - r[f_idx])
-            denom = max(abs(a[f_idx]), abs(r[f_idx]), 1e-35)
-            rel = diff / denom
-            assert rel <= rtol or np.isclose(a[f_idx], r[f_idx], rtol=rtol, atol=1e-35), (
-                f"Record {i} field {name} rel diff {rel:.2e} > {rtol:.2e}: act={a[f_idx]} ref={r[f_idx]}"
-            )
+    nd = sum(a != r for a, r in zip(actual_recs, ref_recs))
+    assert nd == 0, f"{nd} fort.19 records differ; first {_first_diff(actual_recs, ref_recs, '<d2f6i4f2i')}"
 
 
 @pytest.mark.stage
@@ -135,25 +103,11 @@ def test_rh2ofast_standalone():
         res = run_rh2ofast(td, H2OFASTFIX_BIN)
         assert res["n_added"] == 224
         
-        # Last 224 lines of fort.12 in sun_500_510_stock are rh2ofast
+        # Last 224 lines of fort.12 in sun_500_510_stock are rh2ofast: byte-identical, including the
+        # TABLOG-derived REAL*4 fields (TABLOG built with libmvec _ZGVbN4vv_powf like the stock -O3 executable)
         ref_h2o = read_records(REF_500_510 / "pre_synthe/fort.12")[-224:]
         actual_h2o = read_records(Path(td) / "fort.12")
-        # Stock rh2ofast (gfortran -O3) builds TABLOG with glibc's vectorised libmvec powf; the port uses scalar
-        # powf (= the gfortran -O0 noise variant), which differs by 1 ulp in some entries. So: every field
-        # byte-identical except the three TABLOG-derived REAL*4 fields (congf, gamsf, gamwf), which may differ
-        # by at most 1 ulp in TABLOG, i.e. <= 2 ulp after congf = .01502*TABLOG/FREQ*XISO (three REAL*4 roundings).
-        # (With the -O3 TABLOG values these records were byte-identical: TABLOG is the only difference.)
-        import numpy as np
-        assert len(actual_h2o) == len(ref_h2o)
-        dt = np.dtype([("nbuff", "<i4"), ("congf", "<f4"), ("code", "<i4"), ("elo", "<f4"), ("gamrf", "<f4"),
-                       ("gamsf", "<f4"), ("gamwf", "<f4"), ("alpha", "<f4")])
-        a = np.frombuffer(b"".join(actual_h2o), dt)
-        r = np.frombuffer(b"".join(ref_h2o), dt)
-        for f in ("nbuff", "code", "elo", "gamrf", "alpha"):
-            assert (a[f] == r[f]).all(), f
-        for f in ("congf", "gamsf", "gamwf"):
-            ulp = np.abs(a[f].view(np.int32).astype(np.int64) - r[f].view(np.int32).astype(np.int64))
-            assert ulp.max() <= 2, (f, int(ulp.max()))
+        compare_fort12_records(actual_h2o, ref_h2o)
 
 
 @pytest.mark.stage

@@ -83,10 +83,11 @@ def test_bisort_vs_fortran(k, shift):
     assert np.array_equal(_bisort_ref(o, k), _bisort_port(k))
 
 
+@pytest.mark.stage
 @settings(max_examples=6, deadline=None)
 @given(seed=st.integers(0, 2**31 - 1), lo=st.floats(-12, 2), span=st.floats(0.5, 8))
 def test_dfcalc_vs_fortran(seed, lo, span):
-    fl = S.glibc_flavor()
+    fl = S.oracle_flavor()
     tnp = T.build_tables(fl)
     rng = np.random.default_rng(seed)
     x = (10.0 ** rng.uniform(lo, lo + span, T.LENGTH)).astype(np.float32)

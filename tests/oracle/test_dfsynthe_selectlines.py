@@ -25,7 +25,8 @@ def maxdat():
     return odf_io.read_xnfpdfmax(S.STOCK / "xnfpdfmax.dat", 21)
 
 
-@pytest.mark.parametrize("flavor", ["intel", "default"])
+# [intel] evaluates the libm calls through ctypes into libimf (~8 s): stage tier; [default] is the fast check
+@pytest.mark.parametrize("flavor", [pytest.param("intel", marks=pytest.mark.stage), "default"])
 def test_selectlines_golden(golden, maxdat, flavor):
     g = golden(STAGE, "selectlines", 0, "exit")
     fl = S.intel_flavor() if flavor == "intel" else Flavor("O0")

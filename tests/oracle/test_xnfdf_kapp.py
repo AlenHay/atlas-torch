@@ -18,7 +18,7 @@ from hypothesis import HealthCheck, given, settings, strategies as st
 
 from atlas_torch.dfsynthe.xnf import oracle_support as osup
 from atlas_torch.dfsynthe.xnf.kapp import Freq, coulff, kapp, seaton, xkarsas
-from atlas_torch.dfsynthe.xnf.readin import Readin, read_edges
+from atlas_torch.dfsynthe.xnf.readin import read_edges
 from atlas_torch.dfsynthe.xnfdf import group_state
 from atlas_torch.testing.compare import assert_close
 
@@ -33,10 +33,8 @@ SOURCES = {"bhyd": ("ahyd", "ah2p", "ahmin", "sigh", "sigh2"), "bhe": ("ahe1", "
 
 
 @pytest.fixture(scope="module")
-def grid():
-    r = Readin((RUN / "stdin.txt").read_text(), (RUN / "fort.2").read_text())
-    models = [r.read(1) for _ in range(57)]
-    ms = [models[i] for i in SEL]
+def grid(xnfdf_solar_models):
+    ms = [xnfdf_solar_models[i] for i in SEL]          # READIN of the stdin.txt/fort.2 deck in RUN
     g = group_state(ms)
     frq, wl, cm, fs = read_edges((RUN / "fort.17").read_text())
     return ms, g, fs

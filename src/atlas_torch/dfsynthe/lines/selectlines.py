@@ -77,9 +77,9 @@ def _nu_index(iwl: np.ndarray, iwltab: np.ndarray, carry: int) -> np.ndarray:
     return idx
 
 
-def select_file(mm, count: int, c: SelectConsts, xnfdopmax: np.ndarray, fl: Flavor, *,
-                skip_zero: bool = False, use_tabbolt: bool = False, chunk: int = 2_000_000) -> Tape12:
-    out = []
+def iter_select_file(mm, count: int, c: SelectConsts, xnfdopmax: np.ndarray, fl: Flavor, *,
+                     skip_zero: bool = False, use_tabbolt: bool = False, chunk: int = 2_000_000):
+    """Selected lines of one line list, chunk by chunk (file order): yields Tape12."""
     carry = 0
     for s in range(0, count, chunk):
         a = np.asarray(mm[s:min(count, s + chunk)])
@@ -109,12 +109,21 @@ def select_file(mm, count: int, c: SelectConsts, xnfdopmax: np.ndarray, fl: Flav
         t2 = ((congf / freq4).astype(f4) * stim).astype(f4)
         frq4pi = (freq4 * FOURPI).astype(f4)
         g = [(c.tablog[a[n][k].astype(np.int64) - 1] / frq4pi).astype(f4) for n in ("igr", "igs", "igw")]
-        out.append(Tape12(iw.astype(np.int32), t2, nel[k].astype(np.int32), *g))
-    if not out:
+        yield Tape12(iw.astype(np.int32), t2, nel[k].astype(np.int32), *g)
+
+
+def _concat(parts):
+    if not parts:
         z = np.zeros(0, np.int32); zf = np.zeros(0, f4)
         return Tape12(z, zf, z, zf, zf, zf)
-    return Tape12(*(np.concatenate([getattr(o, f) for o in out]) for f in
+    return Tape12(*(np.concatenate([getattr(o, f) for o in parts]) for f in
                     ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")))
+
+
+def select_file(mm, count: int, c: SelectConsts, xnfdopmax: np.ndarray, fl: Flavor, *,
+                skip_zero: bool = False, use_tabbolt: bool = False, chunk: int = 2_000_000) -> Tape12:
+    return _concat(list(iter_select_file(mm, count, c, xnfdopmax, fl, skip_zero=skip_zero,
+                                         use_tabbolt=use_tabbolt, chunk=chunk)))
 
 
 def select_nlte(nlte: np.ndarray, c: SelectConsts, xnfdopmax: np.ndarray, fl: Flavor) -> np.ndarray:
@@ -133,15 +142,19 @@ def select_nlte(nlte: np.ndarray, c: SelectConsts, xnfdopmax: np.ndarray, fl: Fl
     return r
 
 
-def selectlines(data_dir: str | Path, teff: float, wledge: np.ndarray, xnfdopmax: np.ndarray,
-                fl: Flavor | None = None, chunk: int = 2_000_000) -> tuple[Tape12, np.ndarray, dict]:
-    """-> (tape12, tape19 records, counts {'low','hi','diat','tio','h2o','nlte'})."""
+def _gates(c: SelectConsts) -> dict:
+    return {"low": True, "hi": not (c.t < f4(20000.0)), "diat": not (c.t >= f4(10000.0)),
+            "tio": not (c.t >= f4(5000.0)), "h2o": not (c.t >= f4(5000.0))}
+
+
+def iter_tape12(data_dir: str | Path, teff: float, wledge: np.ndarray, xnfdopmax: np.ndarray,
+                fl: Flavor | None = None, chunk: int = 2_000_000, counts: dict | None = None):
+    """TAPE12 content chunk by chunk in file order (low, [hi], [diatomic], [TiO], [H2O]) without storing it:
+    yields (file key, Tape12).  counts (optional dict) receives the number of selected lines per file."""
     fl = fl or Flavor()
     data_dir = Path(data_dir)
     c = select_consts(teff, wledge, fl)
-    parts, counts = [], {}
-    gates = {"low": True, "hi": not (c.t < f4(20000.0)), "diat": not (c.t >= f4(10000.0)),
-             "tio": not (c.t >= f4(5000.0)), "h2o": not (c.t >= f4(5000.0))}
+    gates = _gates(c)
     for key in ("low", "hi", "diat", "tio", "h2o"):
         if not gates[key]:
             continue
@@ -149,13 +162,31 @@ def selectlines(data_dir: str | Path, teff: float, wledge: np.ndarray, xnfdopmax
         p = data_dir / name
         if not p.exists():
             continue
-        t = select_file(open_linelist(p), count, c, xnfdopmax, fl, skip_zero=(key == "hi"),
-                        use_tabbolt=(key == "h2o"), chunk=chunk)
-        counts[key] = len(t)
-        parts.append(t)
-    tape12 = Tape12(*(np.concatenate([getattr(o, f) for o in parts]) for f in
-                      ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")))
-    p = data_dir / NLTE_FILE
-    tape19 = select_nlte(read_nlte(p), c, xnfdopmax, fl) if p.exists() else np.zeros(0, NLTE_DTYPE)
+        n = 0
+        for t in iter_select_file(open_linelist(p), count, c, xnfdopmax, fl, skip_zero=(key == "hi"),
+                                  use_tabbolt=(key == "h2o"), chunk=chunk):
+            n += len(t)
+            yield key, t
+        if counts is not None:
+            counts[key] = n
+
+
+def select_tape19(data_dir: str | Path, teff: float, wledge: np.ndarray, xnfdopmax: np.ndarray,
+                  fl: Flavor | None = None) -> np.ndarray:
+    fl = fl or Flavor()
+    c = select_consts(teff, wledge, fl)
+    p = Path(data_dir) / NLTE_FILE
+    return select_nlte(read_nlte(p), c, xnfdopmax, fl) if p.exists() else np.zeros(0, NLTE_DTYPE)
+
+
+def selectlines(data_dir: str | Path, teff: float, wledge: np.ndarray, xnfdopmax: np.ndarray,
+                fl: Flavor | None = None, chunk: int = 2_000_000) -> tuple[Tape12, np.ndarray, dict]:
+    """-> (tape12, tape19 records, counts {'low','hi','diat','tio','h2o','nlte'})."""
+    fl = fl or Flavor()
+    counts: dict = {}
+    parts = [t for _, t in iter_tape12(data_dir, teff, wledge, xnfdopmax, fl, chunk, counts)]
+    tape12 = _concat(parts)
+    del parts
+    tape19 = select_tape19(data_dir, teff, wledge, xnfdopmax, fl)
     counts["nlte"] = len(tape19)
     return tape12, tape19, counts

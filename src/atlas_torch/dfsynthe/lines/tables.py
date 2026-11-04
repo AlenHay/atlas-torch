@@ -146,11 +146,17 @@ def tabvoigt(vsteps=VSTEPS, n=2001, fl: Flavor | None = None):
     tabvi = table(SRC, "tabvoigt", "tabvi").astype(f4)
     tabh1 = table(SRC, "tabvoigt", "tabh1").astype(f4)
     i = np.arange(n, dtype=f4)
-    h0 = (i / f4(vsteps)).astype(f4)
-    h1, _ = map1_f32(tabvi, tabh1, h0)
-    vv = (i / f4(vsteps)).astype(f4)
-    vv = (vv * vv).astype(f4)
-    h0 = _np(fl, "expf", (-vv).astype(f4))
+    fast = getattr(fl, "fastmath", False)
+    # stock (ifx -fp-model fast): FLOAT(I-1)/VSTEPS as FLOAT(I-1)*(1./VSTEPS); EXP(-VV) through SVML (svml.py)
+    v = (i * f4(f4(1.0) / f4(vsteps))).astype(f4) if fast else (i / f4(vsteps)).astype(f4)
+    h1, _ = map1_f32(tabvi, tabh1, v)
+    vv = (v * v).astype(f4)
+    h0 = None
+    if fast:
+        from . import svml
+        h0 = svml.expf((-vv).astype(f4))
+    if h0 is None:
+        h0 = _np(fl, "expf", (-vv).astype(f4))
     h2 = (h0 - (vv + vv) * h0).astype(f4)
     atab = np.zeros((281, 1001), f4)
     ia = np.arange(41, 282)
@@ -178,17 +184,25 @@ def tabvoigt(vsteps=VSTEPS, n=2001, fl: Flavor | None = None):
 
 
 def vttab(fl: Flavor | None = None):
+    """VTTAB.  The source computes X=I/V*2.99792458E5/500000., VTPROF=VTPROF/SUM.  The stock (ifx -fp-model fast)
+    binary evaluates X=I*((1./V)*C) with C=2.99792458E5/500000. folded (.rodata 0x3F197E66) and normalises with
+    VTPROF*(1./SUM) (dfsynthe.exe vttab_: divss 1/V, mulss C, ...; divss 1/SUM, mulps): Flavor.fastmath."""
     fl = fl or Flavor()
+    fast = getattr(fl, "fastmath", False)
     vtprof = np.zeros((120, 20), f4)
     vtcenter = np.zeros(20, f4)
     nvt = np.zeros(20, np.int64)
     c = lit("2.99792458E5")
+    cfold = f4(c / f4(500000.0))
+    if fast:
+        assert cfold.view(np.uint32) == 0x3F197E66
     for iv in range(1, 21):
         v = f4(iv)
+        rv = f4(f4(f4(1.0) / v) * cfold)
         s = f4(1.0)
         last = 121
         for i in range(1, 121):
-            x = f4(f4(f4(f4(i) / v) * c) / f4(500000.0))
+            x = f4(f4(i) * rv) if fast else f4(f4(f4(f4(i) / v) * c) / f4(500000.0))
             p = f4(_np(fl, "expf", np.array([-f4(x * x)], f4))[0])
             vtprof[i - 1, iv - 1] = p
             s = f4(s + f4(p * f4(2.0)))
@@ -196,7 +210,10 @@ def vttab(fl: Flavor | None = None):
                 last = i
                 break
         nvt[iv - 1] = last
-        vtprof[:last, iv - 1] = (vtprof[:last, iv - 1] / s).astype(f4)
+        if fast:
+            vtprof[:last, iv - 1] = (vtprof[:last, iv - 1] * f4(f4(1.0) / s)).astype(f4)
+        else:
+            vtprof[:last, iv - 1] = (vtprof[:last, iv - 1] / s).astype(f4)
         vtcenter[iv - 1] = f4(f4(1.0) / s)
     return vtprof, vtcenter, nvt
 
@@ -232,7 +249,7 @@ _CACHE: dict = {}
 
 def build_tables(fl: Flavor | None = None) -> Tables:
     fl = fl or Flavor()
-    key = (fl.name, type(fl.libm).__name__)
+    key = (fl.name, type(fl.libm).__name__, getattr(fl, "fastmath", False))
     if key in _CACHE:
         return _CACHE[key]
     h0, h1, h2, atab = tabvoigt(fl=fl)

@@ -6,12 +6,15 @@ molecules.dat / continua.dat, and is compared with
   1. the ifx -O0 build of the same source (the oracle semantics): byte-identical files required
      (solar: the traced run traces/odf_solar/xw = ifx -g -O0; other mixes: builds/ifx-O0/bin/xnfdf.exe is
      run in a scratch dir when the Intel runtime is available);
+     with ftz=False (IEEE gradual underflow), and the ifx -O0 -ftz build (builds/ifx-O0-ftz) with ftz=True
+     (the default: stock's flush-to-zero/denormals-are-zero environment, dfsynthe/ftz.py);
   2. the stock build (ifx -O2, fp-model fast, flush-to-zero): max relative error per array is reported;
      the port must stay within the Fortran's own O0-vs-O2 spread: normal REAL*4 values within 2e-6
      relative (fast-math reassociation + NMOLEC convergence: measured 1.4e-6 for xnfpel4/xnfdopmax),
      log10 continua within 1e-6 dex (2.3e-6 relative in the opacity; measured 4.8e-7 = the populations'
      spread), and values that stock flushes to zero (single-precision
-     denormals, FTZ) are counted separately.
+     denormals, FTZ) are counted separately: none may remain with ftz=True (13586 xnfpel4 / 92651 xnfdopmax
+     values for solar with ftz=False).
 Run: pytest -m stage tests/stage/test_xnfdf_prog.py -s  (prints the error tables).
 """
 import os
@@ -27,6 +30,8 @@ import torch
 from atlas_torch.dfsynthe.xnf import oracle_support as osup
 from atlas_torch.dfsynthe.xnfdf import run
 from atlas_torch.dfsynthe.xnf.xnfio import read_xnfpdf, read_xnfpdfmax
+
+pytestmark = pytest.mark.stage   # whole-program / big-data tier (tests/stage/)
 
 EXT = osup.ext_dir()
 TINY = np.float32(1.1754944e-38)
@@ -95,17 +100,17 @@ def report(title, out):
     return "\n".join(lines)
 
 
-def _o0_reference(mix, d, stdin, cps, tmp):
-    """(fort.10, fort.11) written by the ifx -O0 build of xnfdf.for for this mix, or None."""
-    if mix == "solar":
+def _o0_reference(mix, d, stdin, cps, tmp, variant="ifx-O0"):
+    """(fort.10, fort.11) written by the ifx -O0 (or -O0 -ftz) build of xnfdf.for for this mix, or None."""
+    if mix == "solar" and variant == "ifx-O0":
         xw = EXT / "traces" / "odf_solar" / "xw"
         if (xw / "fort.10").exists() and (xw / "stdin.txt").read_text() == stdin:
             return xw / "fort.10", xw / "fort.11"
-    exe = EXT / "builds" / "ifx-O0" / "bin" / "xnfdf.exe"
+    exe = EXT / "builds" / variant / "bin" / "xnfdf.exe"
     lib = osup.ifx_lib_dir()
     if not exe.exists() or lib is None:
         return None
-    w = tmp / "ifx-O0"
+    w = tmp / variant
     w.mkdir()
     for dst, src in cps.items():
         shutil.copy(src, w / dst)
@@ -115,14 +120,27 @@ def _o0_reference(mix, d, stdin, cps, tmp):
     return w / "fort.10", w / "fort.11"
 
 
+@pytest.fixture
+def big_tmp():
+    """xnfpdf*.dat (66 MB) and the Fortran reference run dir go to $ATLAS_EXT/scratch, not the /tmp tmpfs."""
+    import tempfile
+    base = EXT / "scratch"
+    base.mkdir(parents=True, exist_ok=True)
+    d = Path(tempfile.mkdtemp(prefix="test_xnfdf_prog_", dir=base))
+    yield d
+    shutil.rmtree(d, ignore_errors=True)
+
+
 @pytest.mark.stage
+@pytest.mark.parametrize("ftz", [True, False], ids=["ftz", "ieee"])
 @pytest.mark.parametrize("mix", ["solar", "alpha"])
-def test_xnfdf_prog(mix, tmp_path):
+def test_xnfdf_prog(mix, ftz, big_tmp):
+    tmp_path = big_tmp
     torch.set_default_dtype(torch.float64)
     d, stdin, cps = _stock(mix)
     p10, p11 = tmp_path / "xnfpdf.dat", tmp_path / "xnfpdfmax.dat"
     run(stdin, continua_text=cps["fort.17"].read_text(), molecules_text=cps["fort.2"].read_text(),
-        out10=p10, out11=p11)
+        out10=p10, out11=p11, ftz=ftz)
     assert p10.stat().st_size == (d / "xnfpdf.dat").stat().st_size
     assert p11.stat().st_size == (d / "xnfpdfmax.dat").stat().st_size
 
@@ -133,12 +151,17 @@ def test_xnfdf_prog(mix, tmp_path):
             assert s["max_abs"] <= 1e-6, (k, s)       # log10(kappa): 1e-6 dex = 2.3e-6 relative opacity
         else:
             assert s["max_rel"] <= 2e-6, (k, s)
+        if ftz:
+            assert s["ftz"] == 0, (k, s)                 # nothing left that stock flushes and we do not
     assert st["dopple4"]["ndiff"] == 0
+    if not ftz:
+        assert st["xnfpel4"]["ftz"] > 0                  # the IEEE run keeps the subnormals stock flushes
 
-    ref = _o0_reference(mix, d, stdin, cps, tmp_path)
+    variant = "ifx-O0-ftz" if ftz else "ifx-O0"
+    ref = _o0_reference(mix, d, stdin, cps, tmp_path, variant)
     if ref is None:
-        pytest.skip("no ifx -O0 reference output for byte comparison")
+        pytest.skip(f"no {variant} reference output for byte comparison")
     st0 = compare(p10, p11, *ref)
-    print(report(f"== {mix}: port vs ifx -O0", st0))
+    print(report(f"== {mix}: port vs {variant}", st0))
     assert p10.read_bytes() == Path(ref[0]).read_bytes()
     assert p11.read_bytes() == Path(ref[1]).read_bytes()

@@ -233,10 +233,67 @@ class Hydrogen:
         call51 = (~ifcore) | (nwid == 3)
         lyman_a = (m <= 2)
         call4000 = call51 & lyman_a & (freq > f(f4(lit("82259.105") - f4(4000.0)) * lit("2.99792458E10")))
-        beta4000 = ((4000.0 * f(C10)) / fo) * f(s["dbeta"])
+        if fl.fastmath:      # stock code: BETA4000 = (4000*2.99792458E10 [folded] * DBETA) / FO
+            beta4000 = (f(f4(f4(4000.0) * f4(C10))) * f(s["dbeta"])) / fo
+        else:
+            beta4000 = ((4000.0 * f(C10)) / fo) * f(s["dbeta"])
         return dict(s=s, j=j, freq=freq, freq0=freq0, dl=dl, hwvdw=hwvdw, hwrad=hwrad, hwres=hwres,
                     hwlor=hwlor, nwid=nwid, ifcore=ifcore, dop=dop, c1=c1, c2=c2, beta=beta, call51=call51,
                     call4000=call4000, beta4000=beta4000, fo=fo)
+
+    # ------------------------------------------------------------------ ifx -fp-model fast: label 52
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def _c52() -> np.float32:
+        """Folded constant (10.**(-11.07-14.))/2.99792458E10*1.77245 of the stock binary (.rodata 0x04D60B42)."""
+        c = f4(f4(f4(10.0 ** np.float64(f4(lit("-11.07") - f4(14.0)))) / f4(C10)) * lit("1.77245"))
+        assert c.view(np.uint32) == 0x04D60B42
+        return c
+
+    def _lya_h2plus_fast(self, q, p4000, prqs, fo, dbeta, dop, j, idx):
+        """HPROF4 label 52 (Lyman alpha within 4000 cm-1 of the centre, outside the core) as the stock ifx
+        build computes it.  With -fp-model fast ifx inlines PRQSP4000 = SOFBET(BETA4000)*.5/FO*DBETA into
+        CUTOFF4000/PRQSP4000*PRQS/FO*DBETA*1.77245*DOP and evaluates ONE numerator/denominator pair
+        (SIMD lanes, dfsynthe.exe 0x40c8ab..0x40c900, same in HPROF4m/HPROF4p):
+            num = (FO*((C52*DOP)*DBETA)) * (XNFPH(J,2)*PRQS)      den = (FO*DBETA) * (SOFBET(BETA4000)*.5)
+        At low electron density (small FO, SOFBET(BETA4000) ~ BETA4000**-2.5) both products fall below
+        FLT_MIN and flush to zero (FTZ) -> 0/0 = NaN.  The precise/-O0 builds evaluate left to right and get 0
+        (CUTOFF4000 flushes) or a small positive number.  The NaN makes HPROF4 NaN for every such sample: the
+        wing never terminates (NaN .LT. x is false), MAX(KAPPA,1E-20) gives 1E-20 (maxss), and the final
+        MAX(BUFFER,CONTINUUM) (maxps) replaces every NaN bin by the continuum -> the stock ODFs lose all line
+        opacity in those bins (cool, low-pressure layers: 3.6-dex row shifts vs the precise builds)."""
+        f = lambda x: torch.tensor(float(x), dtype=F32, device=self.dev)  # noqa: E731
+        sb = sofbet(q["beta4000"], p4000, idx)
+        a = (f(self._c52()) * dop) * dbeta
+        num = (fo * a) * (self.xnfph[j, 1] * prqs)
+        den = (fo * dbeta) * (sb * 0.5)
+        return num / den
+
+    def _doppler_fast(self, s, freq, freq0, dop, zero):
+        """Doppler core with fine structure (labels 32-33) as the stock binary computes it (hprof4_ 0x40bac5..
+        0x40bf03, same in HPROF4m/p): D=|FREQ-(FINEST(I)+FREQ0)|*(1./DOP) (FINEST+FREQ0 is rounded at the
+        2e15 Hz scale, unlike the source's (FREQ-FREQ0)-FINEST); for IFINS >= 4 the first IFINS&~3 components
+        are summed in 4 SIMD lanes (lane l: I = l mod 4), reduced as (s1+s3)+(s0+s2), the rest added in order."""
+        dev = self.dev
+        f = lambda x: torch.tensor(float(x), dtype=F32, device=dev)  # noqa: E731
+        rdop = f(1.0) / dop
+        terms = []
+        for fe, fw in zip(s["finest"], s["finswt"]):
+            d = torch.abs(freq - (f(fe) + freq0)) * rdop
+            idx = torch.trunc(d * 200.0 + 1.5).to(I64).clamp(1, self.h0tab.numel()) - 1
+            terms.append((d <= 7.0, self.h0tab[idx] * f(fw)))
+        nv = len(terms) & ~3
+        if nv:
+            lanes = [zero.clone() for _ in range(4)]
+            for i in range(nv):
+                ok, t = terms[i]
+                lanes[i % 4] = torch.where(ok, lanes[i % 4] + t, lanes[i % 4])
+            hd = (lanes[1] + lanes[3]) + (lanes[0] + lanes[2])
+        else:
+            hd = zero.clone()
+        for ok, t in terms[nv:]:
+            hd = torch.where(ok, hd + t, hd)
+        return hd
 
     # ------------------------------------------------------------------ profile, stage 2
     def finish(self, q: dict, p51: torch.Tensor, p4000: torch.Tensor, variant: str = "4") -> torch.Tensor:
@@ -253,11 +310,14 @@ class Hydrogen:
         ifcore, nwid = q["ifcore"], q["nwid"]
         zero = torch.zeros_like(freq)
         # ---- Doppler core with fine structure
-        hd = zero.clone()
-        for fe, fw in zip(s["finest"], s["finswt"]):
-            d = torch.abs((freq - freq0) - f(fe)) / dop
-            idx = torch.trunc(200.0 * d + 1.5).to(I64).clamp(1, self.h0tab.numel()) - 1
-            hd = torch.where(d <= 7.0, hd + self.h0tab[idx] * f(fw), hd)
+        if fl.fastmath:
+            hd = self._doppler_fast(s, freq, freq0, dop, zero)
+        else:
+            hd = zero.clone()
+            for fe, fw in zip(s["finest"], s["finswt"]):
+                d = torch.abs((freq - freq0) - f(fe)) / dop
+                idx = torch.trunc(200.0 * d + 1.5).to(I64).clamp(1, self.h0tab.numel()) - 1
+                hd = torch.where(d <= 7.0, hd + self.h0tab[idx] * f(fw), hd)
         # ---- Lorentz
         if n == 1 and m == 2:
             hwres = q["hwres"] * 4.0
@@ -334,7 +394,10 @@ class Hydrogen:
             prqsp4000 = (((sofbet(q["beta4000"], p4000, idx) * 0.5) / fo) * dbeta)
             cut4000 = (fl.powf(torch.full_like(cut, 10.0), torch.full_like(cut, f4(lit("-11.07") - f4(14.0))))
                        / f(C10)) * self.xnfph[j, 1]
-            hi4000 = (((((cut4000 / prqsp4000) * prqs) / fo) * dbeta) * L("1.77245")) * dop
+            if fl.fastmath:
+                hi4000 = self._lya_h2plus_fast(q, p4000, prqs, fo, dbeta, dop, j, idx)
+            else:
+                hi4000 = (((((cut4000 / prqsp4000) * prqs) / fo) * dbeta) * L("1.77245")) * dop
             hs = torch.where(freq < f20, zero, torch.where(freq > f4000, hi4000, mid))
         F = torch.where(gam > 0, (gam / L("3.14159")) / (gam * gam + beta * beta), zero)
         p1 = (L(".9") * y1) * (L(".9") * y1)

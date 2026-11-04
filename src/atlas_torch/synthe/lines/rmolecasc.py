@@ -2,17 +2,19 @@
 
 Reads molecular line lists (.asc files), appends line records to fort.12,
 and rewinds/updates fort.93 (updating nlines).
+
+The list is streamed in blocks (`_fixed.iter_records`, ~32 MB at a time; tiototo.asc is 1.7 GB) and each
+block's records are appended to fort.12 before the next one is read.
 """
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import Any, BinaryIO
 
 import numpy as np
-import struct
 
-from atlas_torch.io.fortran import write_record
+from atlas_torch.synthe.lines._fixed import fcol, icol, iter_records
+from atlas_torch.synthe.lines._fnum import F4, dexp, ixwlbeg_of, nbuff_of, pack12, powf, r4, write_records12
 from atlas_torch.synthe.lines.synbeg import read_fort93, write_fort93_dict
 
 C_FACTOR = np.float64(0.026538 / 1.77245)
@@ -56,7 +58,8 @@ def dispatch_iso(
 ) -> tuple[int, float, float, float]:
     """Dispatch ISO number to (nelion, fudge, x1, x2).
 
-    Matches Fortran computed GO TO in rmolecasc.patched.for.
+    Matches Fortran computed GO TO in rmolecasc.patched.for. Returns the values as assigned (X1/X2 are then
+    stored as REAL*4 by the caller); nelion None = label 580, which does not set NELION.
     """
     nelion = 0
     fudge = 0.0
@@ -341,13 +344,17 @@ def dispatch_iso(
         fudge = 0.0
         x1 = -1.658
         x2 = 0.0
-    elif iso == 580:  # FeH
-        nelion = 444
+    elif iso == 580:  # FeH: "NEILON=444" (typo in rmolecasc.for): NELION keeps its previous value
+        nelion = None
         fudge = 0.0
         x1 = -2.553
         x2 = 0.0
+    elif 10 <= iso <= 600 and iso % 10 == 0:
+        # label 99 of the computed GO TO: PRINT 3 ... ; CALL EXIT (the program stops; fort.93 not rewritten)
+        raise ValueError(f"rmolecasc: ISO={iso // 10} goes to label 99 (the Fortran stops here)")
     else:
-        raise ValueError(f"Unrecognized ISO code {iso}")
+        # ISO outside 1..60: the computed GO TO falls through to the next statement, label 10 (H2)
+        nelion, fudge, x1, x2 = 240, 0.0, 0.0, -5.0
 
     return nelion, fudge, x1, x2
 
@@ -388,11 +395,20 @@ def run_rmolecasc(
     mol_path: str | Path,
     c12: float | None = None,
     c13: float | None = None,
+    chunk_bytes: int = 32 << 20,
 ) -> dict[str, Any]:
     """Execute RMOLECASC for a single molecular list file in `workdir`.
 
     Reads `workdir/fort.93`, parses `mol_path` (.asc file), appends line records
     to `fort.12`, and updates `fort.93`.
+
+    Arithmetic as compiled (IMPLICIT REAL*4 (A-H,O-Z); WL, E, EP, WLVAC REAL*8; stock gfortran -O3 calls the
+    scalar glibc exp/powf here, no vectorised loop):
+      GF=EXP((GFLOG+X1+X2+FUDGE)*2.30258509299405D0)    REAL*4 sum, REAL*8 exp, rounded to REAL*4
+      FREQ=2.99792458D17/WLVAC; CONGF=.026538D0/1.77245D0*GF/FREQ; FRQ4PI=FREQ*12.5664D0
+      GAMMAR=10.**(LOGGR*.01)                             REAL*4 product, powf
+      GAMRF=GAMMAR/FRQ4PI; GAMSF=GAMMAS/FRQ4PI; GAMWF=GAMMAW/FRQ4PI   REAL*4 (GAMMAS=3.D-5 etc. REAL*4)
+    LINOUT>=0 (fort.14 LINDAT records) is not ported.  The file is processed in blocks of ~`chunk_bytes`.
     """
     workdir = Path(workdir)
     mol_path = Path(mol_path)
@@ -405,104 +421,34 @@ def run_rmolecasc(
     ratiolg = p["ratiolg"]
     ifvac = p["ifvac"]
     ifpred = p["ifpred"]
+    if p["linout"] >= 0:
+        raise NotImplementedError("rmolecasc: LINOUT >= 0 (fort.14 LINDAT records) is not ported")
 
-    ixwlbeg = int(math.log(wlbeg) / ratiolg)
-    if math.exp(ixwlbeg * ratiolg) < wlbeg:
-        ixwlbeg += 1
+    ixwlbeg = ixwlbeg_of(wlbeg, ratiolg)
 
     start = wlbeg - 0.1
     stop = wlend + 1.0
     stop1 = stop + 1.0
 
     file_size = mol_path.stat().st_size
-    records = []
+    with open(mol_path, "rb") as fb:
+        start_offset = find_asc_start_offset(fb, start, file_size)
+
+    f12 = workdir / "fort.12"
+    open(f12, "ab").close()
     n_added = 0
-
-    with open(mol_path, "r", encoding="latin1") as f:
-        # Binary search for start offset
-        start_offset = find_asc_start_offset(f.buffer, start, file_size)
-        f.seek(start_offset)
-        if start_offset > 0:
-            f.readline()  # skip partial line
-
-        for line in f:
-            if len(line) < 70:
-                continue
-            try:
-                wl = float(line[:10])
-            except ValueError:
-                continue
-
-            abs_wl = abs(wl)
-            if abs_wl > stop1:
-                break
-
-            e = float(line[22:32])
-            ep = float(line[37:48])
-
-            if ifpred == 0 and (e < 0.0 or ep < 0.0):
-                continue
-
-            icode = int(line[48:52])
-            code = float(icode)
-
-            if ifvac == 1:
-                denom = abs(abs(ep) - abs(e))
-                if denom == 0.0:
-                    continue
-                wlvac = 1.0e7 / denom
-            else:
-                wlvac = abs_wl
-
-            if wlvac < start:
-                continue
-            if wlvac > stop:
-                break
-
-            gflog = float(line[10:17])
-            labelp = line[60:68]
-            iso = int(line[68:70])
-            loggr_str = line[70:74].strip()
-            loggr = int(loggr_str) if loggr_str else 0
-
-            # ISO dispatch table
-            # In rmolecasc.for: ISO ranges 1..60, scaled as 10*ISO in branches
-            iso_key = iso * 10
-            nelion, fudge, x1, x2 = dispatch_iso(iso_key, code, c12_val, c13_val)
-
-            # Fortran arithmetic
-            gf = np.float32(math.exp((np.float64(gflog) + np.float64(x1) + np.float64(x2) + np.float64(fudge)) * LN10))
-            elo = np.float32(min(abs(e), abs(ep)))
-            ixwl = int(math.log(wlvac) / ratiolg + 0.5)
-            nbuff = ixwl - ixwlbeg + 1
-            freq = np.float32(C_SPEED / wlvac)
-            congf = np.float32(C_FACTOR * np.float64(gf) / np.float64(freq))
-            frq4pi = np.float32(np.float64(freq) * C_125664)
-
-            # gammar = 10.**(loggr * .01)
-            gammar = np.float32(10.0 ** (loggr * 0.01))
-
-            if labelp.strip().startswith("X"):
-                gammas = np.float64(3.0e-8)
-                gammaw = np.float64(1.0e-8)
-            else:
-                gammas = np.float64(3.0e-5)
-                gammaw = np.float64(1.0e-7)
-
-            gamrf = np.float32(np.float64(gammar) / np.float64(frq4pi))
-            gamsf = np.float32(gammas / np.float64(frq4pi))
-            gamwf = np.float32(gammaw / np.float64(frq4pi))
-            alpha = np.float32(0.0)
-
-            records.append(
-                struct.pack("<ifif4f", nbuff, congf, nelion, elo, gamrf, gamsf, gamwf, alpha)
-            )
-            n_added += 1
-
-    # Append records to fort.12
-    with open(workdir / "fort.12", "ab") as f12:
-        for payload in records:
-            write_record(f12, payload)
+    state = {"nelion": 0}                        # /LINDAT/ NELION: 0 at program start
+    dispatch: dict = {}
+    # READ(11,1111) WL,GFLOG,XJ,E,XJP,EP,ICODE,LABEL,LABELP,ISO,LOGGR
+    # 1111 FORMAT(F10.4,F7.3,F5.1,F10.3,F5.1,F11.3,I4,A8,A8,I2,I4)   (short records padded with blanks)
+    for a in iter_records(mol_path, start_offset, 74, chunk_bytes, skip_partial=start_offset > 0):
+        recs, done = _block(a, ifvac, ifpred, start, stop, stop1, ratiolg, ixwlbeg, c12_val, c13_val, dispatch,
+                            state)
+        if recs is not None and len(recs):
+            write_records12(f12, recs)
+            n_added += len(recs)
+        if done:
+            break
 
     # Update fort.93
     p["nlines"] += n_added
@@ -512,3 +458,79 @@ def run_rmolecasc(
         "n_added": n_added,
         "nlines_total": p["nlines"],
     }
+
+
+def _block(a, ifvac, ifpred, start, stop, stop1, ratiolg, ixwlbeg, c12_val, c13_val, dispatch, state):
+    """fort.12 records of one block of records (record order) and whether the read loop ended in it.
+    Per record: end when |WL| > STOP1; skip predicted levels (IFPRED=0); WLVAC; skip WLVAC < START; end when
+    WLVAC > STOP."""
+    wl = fcol(a, 0, 10, 4)
+    n = len(wl)
+    abs_wl = np.abs(wl)
+    end1 = abs_wl > stop1
+    e = fcol(a, 22, 32, 3)
+    ep = fcol(a, 37, 48, 3)
+    skip = ((e < 0.0) | (ep < 0.0)) if ifpred == 0 else np.zeros(n, bool)
+    if ifvac == 1:
+        denom = np.abs(np.abs(ep) - np.abs(e))
+        with np.errstate(divide="ignore"):
+            wlvac = 1.0e7 / denom                      # denom = 0 -> +inf
+    else:
+        wlvac = abs_wl
+    lo = ~skip & (wlvac < start)
+    end2 = ~skip & ~lo & (wlvac > stop)
+    stops = np.flatnonzero(end1 | end2)
+    ilast = int(stops[0]) if stops.size else n
+    done = bool(stops.size)
+    keep = np.flatnonzero((np.arange(n) < ilast) & ~skip & ~lo)
+    if not keep.size:
+        return None, done
+    b = a[keep]
+    wlvac = wlvac[keep]
+    e, ep = e[keep], ep[keep]
+    icode = icol(b, 48, 52)
+    iso = icol(b, 68, 70)
+    loggr = icol(b, 70, 74)
+    xlab = b[:, 60] == ord("X")                         # IF(CLABELP(1:1).EQ.'X')
+    gfl = fcol(b, 10, 17, 3)
+    m = len(keep)
+    nel = np.empty(m, np.int64)
+    xa = np.empty(m, F4)
+    xb = np.empty(m, F4)
+    fud = np.empty(m, F4)
+    has = np.ones(m, bool)
+    key = iso * 100000 + icode
+    uk, inv = np.unique(key, return_inverse=True)
+    # ISO dispatch per distinct (ISO, ICODE); label 99 (stop) must happen at its first record, in order
+    first = np.full(len(uk), m, np.int64)
+    np.minimum.at(first, inv, np.arange(m))
+    for u in np.argsort(first, kind="stable"):
+        kk = (int(iso[first[u]]), int(icode[first[u]]))
+        d = dispatch.get(kk)
+        if d is None:
+            n_, fu, x1, x2 = dispatch_iso(kk[0] * 10, r4(float(kk[1])), c12_val, c13_val)
+            d = dispatch[kk] = (n_, r4(fu), r4(x1), r4(x2))
+        sel = inv == u
+        if d[0] is None:
+            has[sel] = False
+            nel[sel] = 0
+        else:
+            nel[sel] = d[0]
+        fud[sel], xa[sel], xb[sel] = d[1], d[2], d[3]
+    # ISO=58 (label 580) leaves NELION as the previous record set it (carried across blocks)
+    src = np.maximum.accumulate(np.where(has, np.arange(m), -1))
+    nel = np.where(src >= 0, nel[np.maximum(src, 0)], state["nelion"])
+    state["nelion"] = int(nel[-1])
+
+    s4 = ((gfl.astype(F4) + xa) + xb) + fud
+    gf = dexp(s4.astype(np.float64) * LN10).astype(F4)
+    freq = (C_SPEED / wlvac).astype(F4)
+    congf = (C_FACTOR * gf.astype(np.float64) / freq.astype(np.float64)).astype(F4)
+    frq4pi = (freq.astype(np.float64) * C_125664).astype(F4)
+    gammar = powf(F4(10.0), loggr.astype(F4) * F4(0.01))
+    gammas = np.where(xlab, F4(3.0e-8), F4(3.0e-5)).astype(F4)
+    gammaw = np.where(xlab, F4(1.0e-8), F4(1.0e-7)).astype(F4)
+    elo = np.minimum(np.abs(e), np.abs(ep)).astype(F4)
+    recs = pack12(nbuff_of(wlvac, ratiolg, ixwlbeg), congf, nel.astype(np.int32), elo,
+                  gammar / frq4pi, gammas / frq4pi, gammaw / frq4pi, np.zeros(m, F4))
+    return recs, done

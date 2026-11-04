@@ -65,8 +65,15 @@ def layer_setup(xt, fl: Flavor, dev) -> dict:
     xnfpel_raw = torch.from_numpy(xt.xnfpel).to(dev)
     dopple = torch.from_numpy(xt.dopple).to(dev)
     rho = st["rho"][:, None]
-    xnfpel = xnfpel_raw / rho
-    xnfdop = xnfpel / dopple
+    if getattr(fl, "fastmath", False):     # stock (label 205): XNFPEL*(1./RHO(J)) (divss, mulps)
+        xnfpel = xnfpel_raw * (torch.ones_like(rho) / rho)
+    else:
+        xnfpel = xnfpel_raw / rho
+    if getattr(fl, "fastmath", False):     # stock: vectorised XNFPEL/DOPPLE = rcpps + Newton step (rcpps.py)
+        from .rcpps import div_nr
+        xnfdop = div_nr(xnfpel, dopple)
+    else:
+        xnfdop = xnfpel / dopple
     t = st["t"]
     txnxn = ((st["xnfh"] + float(lit(".42")) * st["xnfhe"][:, 0]) + float(lit(".85")) * st["xnfh2"]) * \
         fl.powf(t / 10000.0, torch.tensor(float(lit(".3")), dtype=F32))

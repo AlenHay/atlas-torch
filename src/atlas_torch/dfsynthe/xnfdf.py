@@ -1,7 +1,8 @@
 """PROGRAM XNFDF (DFSYNTHE): populations, Doppler widths and continuum opacities on a (T, P) grid.
 
     from atlas_torch.dfsynthe.xnfdf import run
-    res = run(stdin_text, continua_text=..., molecules_text=..., out10="xnfpdf.dat", out11="xnfpdfmax.dat")
+    res = run(stdin_text, continua_text=..., molecules_text=..., out10="xnfpdf.dat", out11="xnfpdfmax.dat",
+              ftz=True)    # ftz: stock flush-to-zero environment (default); False = IEEE (ifx -O0 / oracle)
 
 Every READIN/BEGIN block of the input is one "model" (a column of NRHOX pressures at one temperature in
 the DFSYNTHE grid). All models (layers) are computed together: shape (B models, J layers) for all layer
@@ -110,7 +111,17 @@ def _cols(d: dict, n: int, like: torch.Tensor):
 
 
 def run(stdin: str, continua_text: str | None = None, molecules_text: str | None = None,
-        out10: str | Path | None = None, out11: str | Path | None = None, progress=None) -> dict:
+        out10: str | Path | None = None, out11: str | Path | None = None, progress=None,
+        ftz: bool = True) -> dict:
+    """PROGRAM XNFDF.  ftz=True (default): stock floating-point environment (flush-to-zero + denormals-are-zero,
+    see ftz.py; byte-identical to the ifx -O0 -ftz build); ftz=False: IEEE gradual underflow (byte-identical to
+    the ifx -O0 build / oracle)."""
+    from .ftz import scope
+    with scope(ftz):
+        return _run(stdin, continua_text, molecules_text, out10, out11, progress)
+
+
+def _run(stdin, continua_text, molecules_text, out10, out11, progress) -> dict:
     if continua_text is None or molecules_text is None:
         d = default_inputs()
         continua_text = continua_text or d["continua_text"]
@@ -241,7 +252,8 @@ def _run_group(ms, freqset, idmol, momass, progress):
     xmax[:, :nu3] = acc
     return dict(t=t, tkev=tkev, tk=tk, hkt=hkt, tlog=tlog, hckt=L.hckt, p=L.p, xne=L.xne, xnatom=xnatom, rho=rho,
                 rhox=_stack(ms, "rhox", nj), vturb=vt, xnfh=P["xnfh"][..., 0], xnfhe=P["xnfhe"], xnfh2=xnfh2,
-                xnfpel=xnfpel, dopple=dop, continall=contin, xnfdopmax=xmax)
+                xnfpel=xnfpel, dopple=dop, continall=contin, xnfdopmax=xmax,
+                **({k: r[k] for k in ("xnmol", "xnfpmol")} if "xnmol" in r else {}))   # NMOLEC printout
 
 
 def _title_bytes(title):

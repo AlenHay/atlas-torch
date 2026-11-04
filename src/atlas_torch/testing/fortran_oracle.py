@@ -3,8 +3,23 @@
 A physics library (e.g. atlas7v.for) is compiled to a shared object with -g -fPIC and the stock
 compiler/flags (tools/oracle/build_libs.sh). This module reads the exact memory layout of every COMMON
 block and every SAVEd/DATA local from the DWARF debug info, maps them as writable numpy views, and calls
-any routine with Fortran by-reference conventions. Each Oracle loads a private copy of the .so, so
-SAVEd state starts from the load-time image; `reset()` reloads.
+any routine with Fortran by-reference conventions. Each Oracle loads a private copy of the .so (dlopen of
+the same path would share one image), so SAVEd state starts from the load-time image; `reset()` loads a new
+copy, `restore()` (Oracle(..., snapshot=True)) rewinds the current copy's writable data (.data/.bss: COMMONs, SAVEd locals) to its
+load-time image without reloading.
+
+Private copies live under $ATLAS_EXT/scratch/oracle_tmp/oracle_<pid>_* (on disk, not the /tmp tmpfs); they
+are removed when the Oracle is collected or at interpreter exit (weakref.finalize), and directories left
+behind by processes that no longer exist are swept when the first Oracle of a process is created.
+
+Math-library binding (ifx builds: xnfdf, dfsynthe, kappa9). The stock ifx executables list libimf.so before
+libm.so.6, so their LOG10F/LOG10/LOG/EXP/POW bind to libimf (LD_DEBUG=bindings on builds/ifx-O0/bin/xnfdf.exe).
+A plain dlopen from Python binds the oracle's copies to glibc's libm instead (already in the global scope).
+Oracle(..., deepbind=True) opens the library with RTLD_DEEPBIND, so its own DT_NEEDED list (libimf first) wins,
+as in the stock program. The default stays False: most ifx-oracle tests were calibrated against the
+glibc-bound oracle (DEEPBIND also rebinds Intel-runtime internals, e.g. formatted-READ conversions), and
+switching them over is their owners' call. Example: glibc 2.39 log10f is not correctly rounded and differs
+from libimf's in ~3% of arguments, which moves PFIRON by 2 float ulps (tests/oracle/test_xnfdf_pfsaha.py).
 """
 from __future__ import annotations
 
@@ -12,6 +27,8 @@ import ctypes
 import os
 import shutil
 import tempfile
+import time
+import weakref
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -162,22 +179,96 @@ def read_layout(so_path: str):
     return commons, units, syms
 
 
+def oracle_tmp_root() -> Path:
+    """$ATLAS_EXT/scratch/oracle_tmp: where Oracle keeps its private .so copies."""
+    root = Path(os.environ.get("ATLAS_EXT", Path.home() / "atlas-ext")) / "scratch" / "oracle_tmp"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def sweep_stale(min_age_s: float = 60.0) -> int:
+    """Remove oracle_<pid>_* copies whose process no longer exists. Returns the number removed."""
+    n = 0
+    now = time.time()
+    for d in oracle_tmp_root().glob("oracle_*_*"):
+        try:
+            pid = int(d.name.split("_")[1])
+            if _pid_alive(pid) or now - d.stat().st_mtime < min_age_s:
+                continue
+        except (ValueError, OSError):
+            continue
+        shutil.rmtree(d, ignore_errors=True)
+        n += 1
+    return n
+
+
+_swept = False
+
+
+@lru_cache(maxsize=16)
+def _elf_info(so_path: str):
+    """(needed sonames, [(start, end)] writable non-RELRO link-time ranges) of a shared object."""
+    with open(so_path, "rb") as fh:
+        elf = ELFFile(fh)
+        needed = []
+        dyn = elf.get_section_by_name(".dynamic")
+        if dyn is not None:
+            needed = [t.needed for t in dyn.iter_tags() if t.entry.d_tag == "DT_NEEDED"]
+        relro = None
+        loads = []
+        for seg in elf.iter_segments():
+            if seg["p_type"] == "PT_GNU_RELRO":
+                relro = (seg["p_vaddr"], seg["p_vaddr"] + seg["p_memsz"])
+            elif seg["p_type"] == "PT_LOAD" and seg["p_flags"] & 2:
+                loads.append((seg["p_vaddr"], seg["p_vaddr"] + seg["p_memsz"]))
+    ranges = []
+    for a, b in loads:
+        if relro and relro[0] <= a < relro[1]:
+            a = min(b, relro[1])          # RELRO part is mprotect()ed read-only after relocation
+        if b > a:
+            ranges.append((a, b))
+    return tuple(needed), tuple(ranges)
+
+
 class Oracle:
     """Load a private copy of a Fortran shared library and expose COMMONs, SAVEd locals and routines."""
 
-    def __init__(self, so_path: str | Path):
+    def __init__(self, so_path: str | Path, deepbind: bool = False, snapshot: bool = False):
+        global _swept
         self.so_path = str(Path(so_path).resolve())
         self.commons_layout, self.units, self.syms = read_layout(self.so_path)
+        self.needed, self._rw = _elf_info(self.so_path)
+        self.deepbind = deepbind            # True: bind like the stock executable (see module docstring)
+        self.snapshot = snapshot            # keep the load-time image of .data/.bss for restore() (<= 31 MB)
         self._tmp = None
+        self._fin = None
+        if not _swept:
+            _swept = True
+            sweep_stale()
         self.reset()
 
     def reset(self):
-        if self._tmp:
-            shutil.rmtree(self._tmp, ignore_errors=True)
-        self._tmp = tempfile.mkdtemp(prefix="oracle_")
+        """Load a new private copy of the library (fresh load-time SAVE state, new addresses)."""
+        if self._fin is not None:
+            self._fin()                    # remove the previous copy (the old mapping stays valid)
+        self._tmp = tempfile.mkdtemp(prefix=f"oracle_{os.getpid()}_", dir=oracle_tmp_root())
+        # finalize binds shutil.rmtree now and runs at collection or via atexit (before module teardown),
+        # unlike the former __del__, which ran after shutil had been torn down at interpreter exit
+        self._fin = weakref.finalize(self, shutil.rmtree, self._tmp, True)
         p = os.path.join(self._tmp, os.path.basename(self.so_path))
         shutil.copy(self.so_path, p)
-        self.lib = ctypes.CDLL(p, mode=os.RTLD_LOCAL)
+        mode = os.RTLD_LOCAL | (os.RTLD_DEEPBIND if self.deepbind else 0)
+        self.lib = ctypes.CDLL(p, mode=mode)
         # load base = runtime address of an exported symbol - its link-time value
         for s in self.syms:
             if s.endswith("_") and not s.startswith("_"):
@@ -188,6 +279,17 @@ class Oracle:
                 self.base = rt - self.syms[s]
                 break
         self._views = {}
+        self._image = None
+        if self.snapshot:
+            self._image = [(a, (ctypes.c_char * (b - a)).from_address(self.base + a).raw) for a, b in self._rw]
+
+    def restore(self):
+        """Rewind all writable data of this copy (COMMONs, SAVEd/DATA locals) to the load-time image."""
+        if self._image is None:
+            raise RuntimeError("Oracle(..., snapshot=True) is required for restore()")
+        for a, img in self._image:
+            ctypes.memmove(self.base + a, img, len(img))
+        return self
 
     def _view(self, var: Var) -> np.ndarray:
         buf = (ctypes.c_char * var.nbytes).from_address(self.base + var.addr)
@@ -239,6 +341,7 @@ class Oracle:
         outs = [t.value if isinstance(t, ctypes._SimpleCData) else t for t in temps]
         return r, outs
 
-    def __del__(self):
-        if getattr(self, "_tmp", None):
-            shutil.rmtree(self._tmp, ignore_errors=True)
+    def close(self):
+        """Remove the private copy now (the library stays mapped until the process exits)."""
+        if self._fin is not None:
+            self._fin()

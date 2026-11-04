@@ -21,7 +21,6 @@ from hypothesis import HealthCheck, given, settings, strategies as st
 from atlas_torch.dfsynthe.xnf import oracle_support as osup
 from atlas_torch.dfsynthe.xnf.nmolec import Pops, nelect, nmolec, solvit
 from atlas_torch.dfsynthe.xnf.pfsaha import Layers, _tabs
-from atlas_torch.dfsynthe.xnf.readin import Readin
 from atlas_torch.dfsynthe.xnfdf import populations
 from atlas_torch.testing.compare import assert_close
 
@@ -32,9 +31,8 @@ NJ = 25
 
 
 @pytest.fixture(scope="module")
-def models():
-    r = Readin((RUN / "stdin.txt").read_text(), (RUN / "fort.2").read_text())
-    return [r.read(1) for _ in range(57)]
+def models(xnfdf_solar_models):
+    return xnfdf_solar_models                          # READIN of the stdin.txt/fort.2 deck in RUN
 
 
 def _batch(ms):
@@ -86,6 +84,7 @@ def _perturb(m, ft, lp):
     return m
 
 
+@pytest.mark.stage
 @settings(max_examples=6, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture])
 @given(idx=st.lists(st.integers(0, 56), min_size=2, max_size=4, unique=True), ft=st.floats(0.93, 1.07),
        lp=st.floats(-0.3, 0.3))
@@ -106,6 +105,7 @@ def test_nmolec_vs_fortran(models, idx, ft, lp):
             assert_close(r[k][b], ref[k], rtol=2e-6, name=f"{k} model {idx[b]}")
 
 
+@pytest.mark.stage   # ~10 s; fast tier: test_nmolec_golden (NMOLEC + POPS golden hits), test_solvit_vs_fortran
 def test_nmolec_exact_oracle_libm(models):
     """With the oracle's libm the batched port is bit-identical to the Fortran (incl. the ill-conditioned
     model 40, T=28184 K, whose Ti ions amplify exp ulps to 7e-11 otherwise)."""
@@ -151,6 +151,7 @@ def solved(models):
     return ms, L, pops, r, xab
 
 
+@pytest.mark.stage   # module fixture solves 6 models (~9 s); fast tier: POPS golden hits in test_nmolec_golden
 @settings(max_examples=40, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(code=st.sampled_from(CODES) | st.integers(1, 99).flatmap(
     lambda z: st.integers(0, min(5, nions_of(z) - 1)).map(lambda k: z + 0.01 * k)),
@@ -171,6 +172,7 @@ def test_pops_vs_fortran(solved, code, mode, b):
         assert_close(v[b], num[:NJ, ion - 1], rtol=1e-14, name=f"pops({code},{mode}) ion {ion}")
 
 
+@pytest.mark.stage
 @settings(max_examples=6, deadline=None, suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture])
 @given(idx=st.lists(st.integers(0, 56), min_size=1, max_size=3, unique=True), ft=st.floats(0.95, 1.05))
 def test_nelect_vs_fortran(models, idx, ft):

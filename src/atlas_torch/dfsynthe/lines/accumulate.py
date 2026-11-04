@@ -15,6 +15,7 @@ Fortran quirks reproduced:
 """
 from __future__ import annotations
 
+import numpy as np
 import torch
 
 from .f32 import F32, F64, I64, lit, rdiv, sqrtf
@@ -35,8 +36,10 @@ class LineAccumulator:
     """Holds the per-temperature layer quantities and accumulates line profiles into `buffer`."""
 
     def __init__(self, tabs: dict, xne, txnxn, dopple, xnfdop, cont, *, aa_init: float = 0.0,
-                 max_elements: int = 16_000_000):
+                 max_elements: int = 16_000_000, fastmath: bool = False):
         self.tabs = tabs
+        # fastmath: the stock binary's (ifx -fp-model fast) evaluation of the ADAMP>.2 branches, see _asym_fast
+        self.fastmath = fastmath
         self.dev = cont.device
         self.xne, self.txnxn, self.dopple, self.xnfdop, self.cont = xne, txnxn, dopple, xnfdop, cont
         self.nl = cont.shape[0]
@@ -45,6 +48,10 @@ class LineAccumulator:
         self.c = {k: _t(v, self.dev) for k, v in dict(c1128=_C1128, c79=_C79788, c14=_C14142, c75=_C75,
                                                         one=1.0, half=0.5, two=2.0, three=3.0, five=5.0,
                                                         ten=10.0, c200=200.0, c15=1.5, c1em4=_C1EM4).items()}
+        cb = np.float32(np.float32(_C79788) / np.float32(_C14142))        # .79788/1.4142 folded (0x3F106EDF)
+        assert cb.view(np.uint32) == 0x3F106EDF
+        self.c.update({k: _t(v, self.dev) for k, v in dict(cb=float(cb), m10=-10.0, m3rd=float(np.float32(-1.0 / 3.0)),
+                                                           mhalf=-0.5).items()})
 
     # ------------------------------------------------------------------ dense per-chunk quantities
     def _dense(self, nbuff, congf, nelion, gamr, gams, gamw):
@@ -56,16 +63,26 @@ class LineAccumulator:
             / self.dopple[:, nel0]
         return kappa0, contmin, passed, adamp
 
+    @staticmethod
+    def _slice(t12, sl):
+        """Chunk of the TAPE12 columns, integer columns widened to int64."""
+        return {k: (v[sl].to(I64) if v.dtype in (torch.int32, torch.int16) else v[sl]) for k, v in t12.items()}
+
+    def _chunks(self, t12, chunk: int):
+        """Chunks (int64-widened) of TAPE12: t12 is a dict of columns, or a callable returning an iterable of
+        such dicts (streamed selection, called once per pass)."""
+        parts = t12() if callable(t12) else (t12,)
+        for d in parts:
+            n = d["nbuff"].shape[0]
+            for s in range(0, n, chunk):
+                yield self._slice(d, slice(s, min(n, s + chunk)))
+
     def aa_prepass(self, t12, chunk: int = 200_000):
         """AA entering each layer = AA of the last ADAMP>1.4 line of the previous layers (Fortran order is
         layer-major, so the state crosses layers); self.aa_carry[0] is the AA left by earlier temperatures."""
         last = torch.full((self.nl,), float("nan"), dtype=F32, device=self.dev)
-        n = t12["nbuff"].shape[0]
-        ar = None
-        for s in range(0, n, chunk):
-            sl = slice(s, min(n, s + chunk))
-            _, _, passed, adamp = self._dense(t12["nbuff"][sl], t12["congf"][sl], t12["nelion"][sl],
-                                              t12["gamr"][sl], t12["gams"][sl], t12["gamw"][sl])
+        for c in self._chunks(t12, chunk):
+            _, _, passed, adamp = self._dense(c["nbuff"], c["congf"], c["nelion"], c["gamr"], c["gams"], c["gamw"])
             big = passed & (adamp > float(lit("1.4")))
             ar = torch.arange(big.shape[1], device=self.dev)
             idx = torch.where(big, ar[None, :], -1).amax(dim=1)
@@ -81,14 +98,24 @@ class LineAccumulator:
         return aa_in
 
     # ------------------------------------------------------------------ main entry
-    def accumulate(self, buffer_flat: torch.Tensor, t12: dict, chunk: int = 50_000):
-        """Add all TAPE12 lines.  buffer_flat: [NL*LENBUFF] float32 (index J*LENBUFF + NBUFF-1)."""
+    PAD = 16384                       # > max padded profile length (<= 11264): masked terms land here
+
+    def accumulate(self, buffer_flat: torch.Tensor, t12: dict, chunk: int = 50_000, padded: torch.Tensor = None):
+        """Add all TAPE12 lines.  buffer_flat: [NL*LENBUFF] float32 (index J*LENBUFF + NBUFF-1).  t12: dict of
+        TAPE12 columns or a callable returning an iterable of such dicts (streamed; called twice).
+        padded: optional [PAD + NL*LENBUFF + PAD] tensor of which buffer_flat is the middle view (avoids a
+        copy); otherwise a padded working copy is made."""
         self.aa_prepass(t12)
-        n = t12["nbuff"].shape[0]
         stats = {"items": 0, "elements": 0}
-        for s in range(0, n, chunk):
-            sl = slice(s, min(n, s + chunk))
-            self._chunk(buffer_flat, {k: v[sl] for k, v in t12.items()}, stats)
+        nf = buffer_flat.numel()
+        own = padded is None
+        if own:
+            padded = torch.zeros(nf + 2 * self.PAD, dtype=F32, device=self.dev)
+            padded[self.PAD:self.PAD + nf] = buffer_flat
+        for c in self._chunks(t12, chunk):
+            self._chunk(padded, c, stats)
+        if own:
+            buffer_flat.copy_(padded[self.PAD:self.PAD + nf])
         return stats
 
     def _chunk(self, buf, t, stats):
@@ -126,13 +153,18 @@ class LineAccumulator:
             tabstep = rdiv(float(VSTEPS), dA.to(F64) * RESOLU).to(F32)
             n10 = torch.trunc((c["ten"] * dA).to(F64) * RESOLU).to(I64)
             nmax = int(n10.max())
-            core = torch.zeros((iA.numel(), max(nmax, 1)), dtype=F32, device=dev)
-            tabi = torch.full_like(tabstep, 1.5)
             h0, h1 = self.tabs["h0tab"], self.tabs["h1tab"]
+            # TABI=TABI+TABSTEP (REAL*4, sequential) depends only on TABSTEP, i.e. on (layer, ion): one table
+            # of H0TAB/H1TAB indices per distinct TABSTEP, gathered for every item
+            ust, inv = torch.unique(tabstep, return_inverse=True)
+            itab = torch.zeros((ust.numel(), max(nmax, 1)), dtype=I64, device=dev)
+            tabi = torch.full_like(ust, 1.5)
             for k in range(nmax):
-                tabi = tabi + tabstep
-                it = torch.trunc(tabi).to(I64).clamp(1, h0.numel()) - 1
-                core[:, k] = kA * (h0[it] + aA * h1[it])
+                tabi = tabi + ust
+                itab[:, k] = torch.trunc(tabi).to(I64).clamp(1, h0.numel()) - 1
+            itk = itab[inv]
+            core = kA[:, None] * (h0[itk] + aA[:, None] * h1[itk])
+            del itk
             kk = torch.arange(1, core.shape[1] + 1, device=dev)[None, :]
             below = (core < cA[:, None]) & (kk <= n10[:, None])
             crossed = below.any(dim=1)
@@ -146,12 +178,18 @@ class LineAccumulator:
             mol = (nel[iA] % 6) == 0
             maxstep = torch.where(weak | mol, torch.minimum(maxstep, n10 * 10), maxstep)
             nstep[iA] = torch.where(crossed, kc, maxstep)
-            P["A"] = (iA, core, n10, X)
+            # stock: DO 322 NSTEP=N1,MAXSTEP is vectorised (rcpps + Newton step for X/NSTEP**2) over the first
+            # (MAXSTEP-N10DOP)&~3 steps, the remaining ones use an exact division
+            vend = n10 + ((maxstep - n10).clamp(min=0) & ~3) if self.fastmath else n10
+            P["A"] = (iA, core, n10, X, vend)
         # ---------------- branch B : ADAMP > 100
         iB = torch.nonzero(brB)[:, 0]
         if iB.numel():
             aB, kB = a[iB], k0[iB]
-            pc = ((kB / aB) * c["c79"]) / c["c14"]
+            if self.fastmath:          # stock: (KAPPA0*(.79788/1.4142))/ADAMP
+                pc = (kB * c["cb"]) / aB
+            else:
+                pc = ((kB / aB) * c["c79"]) / c["c14"]
             center[iB] = pc
             aaB = aB * aB
             pcaa = pc * aaB
@@ -164,10 +202,16 @@ class LineAccumulator:
         if iC.numel():
             aC, kC = a[iC], k0[iC]
             aaC = aC * aC
-            profc = (kC * aC) * c["c79"]
-            center[iC] = (((kC / aC) * c["c79"]) / c["c14"]) * (c["one"] + ((c["c75"] / aaC) - c["half"]) / aaC)
             dvC = dv[iC]
-            fC = lambda k, sel: self._asym(profc[sel], aaC[sel], k.to(F32) * dvC[sel])
+            if self.fastmath:          # stock: PROFILEC=(KAPPA0*.79788)*ADAMP; centre with R=1/AA (see _asym_fast)
+                profc = (kC * c["c79"]) * aC
+                r = c["one"] / aaC
+                center[iC] = ((((r * c["c75"]) + c["mhalf"]) * r + c["one"]) * (kC * c["cb"])) / aC
+                fC = lambda k, sel: self._asym_fast(profc[sel], aaC[sel], k.to(F32) * dvC[sel])
+            else:
+                profc = (kC * aC) * c["c79"]
+                center[iC] = (((kC / aC) * c["c79"]) / c["c14"]) * (c["one"] + ((c["c75"] / aaC) - c["half"]) / aaC)
+                fC = lambda k, sel: self._asym(profc[sel], aaC[sel], k.to(F32) * dvC[sel])
             nstep[iC] = self._first_cross(fC, cm[iC], 1)
             P["C"] = (iC, profc, aaC)
         # ---------------- branch D : .2 < ADAMP <= 1.4
@@ -180,14 +224,21 @@ class LineAccumulator:
             n5 = torch.trunc((c["five"] * dD).to(F64) * RESOLU).to(I64)
             nmax = int(n5.max())
             kk = torch.arange(1, nmax + 1, device=dev)
-            iv = torch.trunc((kk[None, :].to(F32) * dvD[:, None]) * c["c200"] + c["c15"]).to(I64) - 1
+            if self.fastmath:          # stock: IV = NSTEP*(DVOIGT*200.)+1.5
+                iv = torch.trunc(kk[None, :].to(F32) * (dvD * c["c200"])[:, None] + c["c15"]).to(I64) - 1
+            else:
+                iv = torch.trunc((kk[None, :].to(F32) * dvD[:, None]) * c["c200"] + c["c15"]).to(I64) - 1
             core = kD[:, None] * atab[ia[:, None], iv.clamp(0, atab.shape[1] - 1)]
             below = (core < cD[:, None]) & (kk[None, :] <= n5[:, None])
             crossed = below.any(dim=1)
             kc = below.to(torch.int8).argmax(dim=1) + 1
-            profc = (kD * aD) * c["c79"]
             aaD = aa_st[iD]
-            fD = lambda k, sel: self._asym(profc[sel], aaD[sel], k.to(F32) * dvD[sel])
+            if self.fastmath:
+                profc = (kD * c["c79"]) * aD
+                fD = lambda k, sel: self._asym_fast(profc[sel], aaD[sel], k.to(F32) * dvD[sel])
+            else:
+                profc = (kD * aD) * c["c79"]
+                fD = lambda k, sel: self._asym(profc[sel], aaD[sel], k.to(F32) * dvD[sel])
             far = self._first_cross(fD, cD, n5 + 1, active=~crossed)
             nstep[iD] = torch.where(crossed, kc, far)
             P["D"] = (iD, core, n5, profc, aaD)
@@ -195,17 +246,67 @@ class LineAccumulator:
 
     # ------------------------------------------------------------------ helpers
     def _asym(self, profc, aa, kdv):
+        """PROFILEC/U*((((AAU-10.*VVU)*AAU+5.*VVU*VVU)/U+VVU-AAU/3.)*3./U+1.), U=(AA+VV)*1.4142, VV=(K*DVOIGT)**2:
+        the same REAL*4 operations in the same order as the Fortran, evaluated in place (fewer temporaries;
+        additions/multiplications only swap their operands, which IEEE leaves unchanged)."""
         c = self.c
         vv = kdv * kdv
-        u = (aa + vv) * c["c14"]
+        u = vv + aa
+        u.mul_(c["c14"])
         aau = aa / u
-        vvu = vv / u
-        return (profc / u) * (((((aau - c["ten"] * vvu) * aau + c["five"] * vvu * vvu) / u + vvu - aau / c["three"])
-                               * c["three"]) / u + c["one"])
+        vvu = vv.div_(u)
+        t = vvu * c["ten"]
+        torch.sub(aau, t, out=t)
+        t.mul_(aau)
+        w = vvu * c["five"]
+        w.mul_(vvu)
+        t.add_(w)
+        del w
+        t.div_(u)
+        t.add_(vvu)
+        aau.div_(c["three"])
+        t.sub_(aau)
+        t.mul_(c["three"])
+        t.div_(u)
+        t.add_(c["one"])
+        return (profc / u).mul_(t)
+
+    def _prof(self, profc, aa, kdv):
+        return self._asym_fast(profc, aa, kdv) if self.fastmath else self._asym(profc, aa, kdv)
+
+    def _asym_fast(self, profc, aa, kdv):
+        """The far-wing profile as the stock binary evaluates it (dfsynthe.exe 0x407220..0x4072ad, label 1323, and
+        0x407490.., label 1325): one reciprocal R=1/U instead of the four divisions, AAU/3 as AAU*(-1/3) added
+        to VVU, 5.*VVU*VVU as (VVU*VVU)*5:
+            AAU=AA*R  VVU=VV*R  T=(AAU+VVU*(-10))*AAU+(VVU*VVU)*5  S=T*R+(VVU+AAU*(-1/3))
+            PROFILE=(R*PROFILEC)*((S*3)*R+1)"""
+        c = self.c
+        vv = kdv * kdv
+        u = vv + aa
+        u.mul_(c["c14"])
+        r = c["one"] / u
+        del u
+        aau = aa * r
+        vvu = vv.mul_(r)
+        t = vvu * c["m10"]
+        t.add_(aau)
+        t.mul_(aau)
+        w = vvu * vvu
+        w.mul_(c["five"])
+        t.add_(w)
+        t.mul_(r)
+        aau.mul_(c["m3rd"])
+        aau.add_(vvu)
+        t.add_(aau)
+        t.mul_(c["three"])
+        t.mul_(r)
+        t.add_(c["one"])
+        return (r * profc).mul_(t)
 
     def _first_cross(self, f, cmin, start, active=None):
-        """First k in [start, MAXPROF] with f(k) < cmin (else MAXPROF): exact scan of the first 64 steps,
-        then bisection (the profiles are strictly decreasing there)."""
+        """First k in [start, MAXPROF] with f(k) < cmin (else MAXPROF): exact scan of the first 64 steps (in
+        growing windows 4, 8, 16, 36: items that cross early are not evaluated further), then bisection (the
+        profiles are strictly decreasing there)."""
         n = cmin.numel()
         dev = cmin.device
         start = torch.as_tensor(start, device=dev).expand(n).to(I64)
@@ -213,15 +314,21 @@ class LineAccumulator:
         act = torch.ones(n, dtype=torch.bool, device=dev) if active is None else active.clone()
         act = act & (start <= MAXPROF)
         S0 = 64
-        sel = torch.nonzero(act)[:, 0]
-        if sel.numel():
-            ks = start[sel][:, None] + torch.arange(S0, device=dev)[None, :]
+        rest = torch.nonzero(act)[:, 0]
+        w0 = 0
+        for w1 in (4, 12, 28, S0):
+            if rest.numel() == 0:
+                break
+            ks = start[rest][:, None] + torch.arange(w0, w1, device=dev)[None, :]
             ok = ks <= MAXPROF
-            vals = f(ks, sel[:, None])
-            below = (vals < cmin[sel][:, None]) & ok
+            vals = f(ks, rest[:, None])
+            below = (vals < cmin[rest][:, None]) & ok
             hit = below.any(dim=1)
-            res[sel[hit]] = ks[hit].gather(1, below[hit].to(torch.int8).argmax(dim=1, keepdim=True))[:, 0]
-            rest = sel[~hit]
+            if bool(hit.any()):
+                res[rest[hit]] = ks[hit].gather(1, below[hit].to(torch.int8).argmax(dim=1, keepdim=True))[:, 0]
+            rest = rest[~hit]
+            w0 = w1
+        if rest.numel():
             lo = start[rest] + S0 - 1            # f(lo) >= cmin
             hi = torch.full_like(lo, MAXPROF + 1)
             todo = lo < MAXPROF
@@ -235,69 +342,126 @@ class LineAccumulator:
             res[rest] = hi.clamp(max=MAXPROF)
         return res
 
+    def _values(self, key, P, lj, kk, dv_i):
+        """Profile values PROFILE(k) of branch `key` for branch-local items lj [n] at steps kk [K] -> [n, K]."""
+        fk = kk.to(F32)[None, :]
+        if key == "A":
+            _, core, n10, X, vend = P["A"]
+            y = fk * fk
+            xl = X[lj][:, None]
+            far = xl / y
+            if self.fastmath:
+                vec = kk[None, :] <= vend[lj][:, None]
+                if bool(vec.any()):
+                    from .rcpps import rcpps
+                    r = rcpps(y)                         # depends on the step only: one row for all items
+                    q0 = xl * r                          # rcpps.div_nr, with the reciprocal shared
+                    nr = q0 * y
+                    torch.sub(xl, nr, out=nr)
+                    nr.mul_(r)
+                    nr.add_(q0)
+                    far = torch.where(vec, nr, far)
+            nc = core.shape[1]
+            if nc == 0 or int(kk[0]) > nc:
+                return far
+            cv = core[lj[:, None], (kk - 1).clamp(max=nc - 1)[None, :]]
+            return torch.where(kk[None, :] <= n10[lj][:, None], cv, far)
+        if key == "B":
+            _, pcaa, aaB = P["B"]
+            kd = fk * dv_i[:, None]
+            return pcaa[lj][:, None] / (aaB[lj][:, None] + kd * kd)
+        if key == "C":
+            _, profc, aaC = P["C"]
+            return self._prof(profc[lj][:, None], aaC[lj][:, None], fk * dv_i[:, None])
+        _, core, n5, profc, aaD = P["D"]
+        fv = self._prof(profc[lj][:, None], aaD[lj][:, None], fk * dv_i[:, None])
+        nc = core.shape[1]
+        if nc == 0 or int(kk[0]) > nc:
+            return fv
+        cv = core[lj[:, None], (kk - 1).clamp(max=nc - 1)[None, :]]
+        return torch.where(kk[None, :] <= n5[lj][:, None], cv, fv)
+
+    _KGRID: dict = {}
+
+    @classmethod
+    def _kgrid(cls, dev):
+        """Padded profile lengths: 0, 1..8, then 8 per octave (<= 12.5 % padding) up to >= MAXPROF."""
+        if dev not in cls._KGRID:
+            g = list(range(0, 9))
+            b = 8
+            while g[-1] < MAXPROF:
+                g += [b + b * i // 8 for i in range(1, 9)]
+                b *= 2
+            cls._KGRID[dev] = torch.tensor(sorted(set(g)), dtype=I64, device=dev)
+        return cls._KGRID[dev]
+
     def _emit(self, buf, jj, nb, center, nstep, dv, brA, brB, brC, brD, P, stats):
-        """Generate the contributions item by item (center, red k=1..r, blue k=1..b) and add them."""
+        """Add the contributions of the items (centre, red k=1..r, blue k=1..b) to the padded buffer.
+
+        Items are grouped by branch and padded length K >= max(r, b) (grid of 8 lengths per octave);
+        each item gets a fixed row [centre | red 1..K | blue 1..K] in a flat (target, value) list at an
+        item-major offset.  PROFILE(1..K) is computed once per item (dense blocks); entries beyond r (b) are
+        +0.0 (x + 0.0 == x for the non-negative buffer) and may point into the PAD margins or a neighbouring
+        layer.  One sequential index_add_ of the list then gives every bin its terms in (layer, line) order,
+        i.e. the Fortran's REAL*4 summation order (independent of the order of the lines in the chunk)."""
         dev = self.dev
-        r = torch.where(nb < LENGTH, torch.minimum(LENGTH - nb, nstep), torch.zeros_like(nstep))
-        b = torch.where(nb > 1, torch.minimum(nb - 1, nstep), torch.zeros_like(nstep))
-        r = r.clamp(min=0); b = b.clamp(min=0)
-        cnt = 1 + r + b
-        ni = cnt.numel()
+        PAD = self.PAD
+        r = torch.where(nb < LENGTH, torch.minimum(LENGTH - nb, nstep), torch.zeros_like(nstep)).clamp(min=0)
+        b = torch.where(nb > 1, torch.minimum(nb - 1, nstep), torch.zeros_like(nstep)).clamp(min=0)
+        ni = r.numel()
         stats["items"] += ni
-        stats["elements"] += int(cnt.sum())
-        # branch-local index of every item
+        stats["elements"] += int((1 + r + b).sum())
         loc = torch.full((ni,), -1, dtype=I64, device=dev)
         for key in P:
             idx = P[key][0]
             loc[idx] = torch.arange(idx.numel(), device=dev)
         br = torch.zeros(ni, dtype=torch.int8, device=dev)
         br[brB] = 1; br[brC] = 2; br[brD] = 3
+        base = jj * LENBUFF + (nb - 1) + PAD                                  # index in the padded buffer
+        m = torch.maximum(r, b)
+        grid = self._kgrid(dev)
+        gidx = torch.searchsorted(grid, m)                                  # padded length K = grid[gidx] >= m
+        Kp = grid[gidx]
+        cnt = 1 + 2 * Kp
         csum = torch.cumsum(cnt, 0)
+        budget = self.max_elements
+        zero = torch.zeros((), dtype=F32, device=dev)
         g0 = 0
         while g0 < ni:
-            base = int(csum[g0 - 1]) if g0 else 0
-            g1 = int(torch.searchsorted(csum, torch.tensor(base + self.max_elements, device=dev), right=True))
+            e0 = int(csum[g0 - 1]) if g0 else 0
+            g1 = int(torch.searchsorted(csum, torch.tensor(e0 + budget, device=dev), right=True))
             g1 = max(g1, g0 + 1)
-            sl = slice(g0, g1)
-            cn = cnt[sl]
-            tot = int(cn.sum())
-            item = torch.repeat_interleave(torch.arange(g0, g1, device=dev), cn)
-            first = torch.cumsum(cn, 0) - cn
-            p = torch.arange(tot, device=dev) - torch.repeat_interleave(first, cn)
-            ri = r[item]
-            is_red = (p >= 1) & (p <= ri)
-            k = torch.where(is_red, p, p - ri)
-            tgt = torch.where(p == 0, nb[item], torch.where(is_red, nb[item] + k, nb[item] - k))
+            tot = int(csum[g1 - 1]) - e0
+            o = csum[g0:g1] - cnt[g0:g1] - e0                                 # piece-local offset of each item
             val = torch.empty(tot, dtype=F32, device=dev)
-            m0 = p == 0
-            val[m0] = center[item[m0]]
-            w = ~m0
-            bi = br[item]
-            for code, key in ((0, "A"), (1, "B"), (2, "C"), (3, "D")):
-                m = w & (bi == code)
-                if not bool(m.any()) or key not in P:
+            tgt = torch.empty(tot, dtype=I64, device=dev)
+            val.scatter_(0, o, center[g0:g1])
+            tgt.scatter_(0, o, base[g0:g1])
+            bp, kp = br[g0:g1], gidx[g0:g1]
+            gkey = kp * 4 + bp.to(I64)
+            for gk in torch.unique(gkey).tolist():
+                gi_, code = gk // 4, gk % 4
+                key = "ABCD"[code]
+                K = int(grid[gi_])
+                if K == 0 or key not in P:
                     continue
-                e_item = item[m]; e_k = k[m]; lj = loc[e_item]
-                if key == "A":
-                    _, core, n10, X = P["A"]
-                    in_core = e_k <= n10[lj]
-                    fk = e_k.to(F32)
-                    v = X[lj] / (fk * fk)
-                    cv = core[lj, (e_k - 1).clamp(max=core.shape[1] - 1)]
-                    val[m] = torch.where(in_core, cv, v)
-                elif key == "B":
-                    _, pcaa, aaB = P["B"]
-                    kd = e_k.to(F32) * dv[e_item]
-                    val[m] = pcaa[lj] / (aaB[lj] + kd * kd)
-                elif key == "C":
-                    _, profc, aaC = P["C"]
-                    val[m] = self._asym(profc[lj], aaC[lj], e_k.to(F32) * dv[e_item])
-                else:
-                    _, core, n5, profc, aaD = P["D"]
-                    in_core = e_k <= n5[lj]
-                    cv = core[lj, (e_k - 1).clamp(max=core.shape[1] - 1)]
-                    fv = self._asym(profc[lj], aaD[lj], e_k.to(F32) * dv[e_item])
-                    val[m] = torch.where(in_core, cv, fv)
-            flat = jj[item] * LENBUFF + (tgt - 1)
-            buf.index_add_(0, flat, val)
+                kk = torch.arange(1, K + 1, device=dev)
+                k0 = kk - 1
+                rows = max(1, (1 << 22) // K)
+                sel = torch.nonzero(gkey == gk)[:, 0]
+                for s0 in range(0, sel.numel(), rows):
+                    it = sel[s0:s0 + rows]                                   # piece-local item indices
+                    gi = it + g0
+                    V = self._values(key, P, loc[gi], kk, dv[gi])
+                    ri, bi = r[gi], b[gi]
+                    vr = torch.where(kk <= ri[:, None], V, zero)
+                    vb = vr if bool((ri == bi).all()) else torch.where(kk <= bi[:, None], V, zero)
+                    pr = (o[it] + 1)[:, None] + k0
+                    ba = base[gi][:, None]
+                    val.scatter_(0, pr.view(-1), vr.view(-1))
+                    tgt.scatter_(0, pr.view(-1), (ba + kk).view(-1))
+                    pr += K
+                    val.scatter_(0, pr.view(-1), vb.view(-1))
+                    tgt.scatter_(0, pr.view(-1), (ba - kk).view(-1))
+            buf.index_add_(0, tgt, val)
             g0 = g1

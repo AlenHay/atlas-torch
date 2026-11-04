@@ -40,6 +40,7 @@ def _t12(t12, sl=slice(None)):
             for k in ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")}
 
 
+@pytest.mark.stage   # module fixture runs SELECTLINES with the Intel-libm flavor (~7 s) + ~4 s
 def test_layer1_golden(golden, setup):
     fl, xt, t12, lay = setup
     cont = continuum(xt.wledge, lay["ablog"][:1], fl)
@@ -140,6 +141,7 @@ def _asym(profc, aa, kd):
     return ((profc / u).astype(f4) * inner.astype(f4)).astype(f4)
 
 
+@pytest.mark.stage   # shares the ~7 s SELECTLINES fixture of test_layer1_golden
 @pytest.mark.parametrize("seed", [0, 1])
 def test_accumulate_vs_sequential_reference(setup, seed):
     fl, xt, t12, lay = setup
