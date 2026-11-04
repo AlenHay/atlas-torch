@@ -27,9 +27,13 @@ ifx -fp-model fast generated for the stock dfsynthe.exe where it matters (read f
   stock in 5e-5 of the ODF entries (ifx -O3 vs stock: 2e-7).  Flavor('stock', fastmath=False) reproduces the
   ifx -fp-model precise build instead (within 1 step in <1e-5).
 
-Memory/speed: TAPE12 is streamed from the line lists (twice: AA pre-pass, accumulation) and never stored; the
-line accumulator writes every profile once per item (exact per-bin REAL*4 order, see lines/accumulate.py).
-Exact per-bin float32 summation order is guaranteed on CPU (sequential 1-D index_add_).  Optional:
+Memory/speed: TAPE12 is streamed from the line lists (twice: AA pre-pass, accumulation) and never stored.  The
+two loops that dominate (TAPE12 line profiles: up to 2.5e11 profile points at 1995 K; XLINOP normal lines) run in
+a small C kernel (lines/native/linesum.c, built with gcc, loaded with ctypes) that transcribes the Fortran loop
+literally and is bit-identical to the vectorised torch path (tests/oracle/test_dfsynthe_lines.py,
+test_dfsynthe_xlinop.py); without the built library the torch path is used (exact, ~20x slower).  Measured on
+this machine, 4 temperatures in parallel: 1995 K 293 s, 5012 K ~2 min, full 57-temperature mix 34 min, peak
+RSS < 2 GB per worker.  Exact per-bin float32 summation order is guaranteed on CPU.  Optional:
 Config.lines_device=torch.device('cuda') runs only the TAPE12 accumulation on an accelerator (same float32
 values, atomic adds -> order non-deterministic at the rounding level); everything else stays on the CPU.
 """
@@ -60,7 +64,7 @@ class Config:
     flavor: Flavor = field(default_factory=Flavor)
     line_chunk: int = 50_000          # TAPE12 lines per chunk
     max_elements: int = 8_000_000     # profile points generated at once (~0.5 GB of temporaries)
-    select_chunk: int = 2_000_000     # line-list entries per memmap chunk
+    select_chunk: int = 1_000_000     # line-list entries per memmap chunk (memory)
     dfcalc_rows: int = 2              # spectra converted at once in DFCALC (memory)
     bin_chunk: int = 700_000          # bins per broadening chunk
     ftz: bool = True                  # stock flush-to-zero/denormals-are-zero environment (ftz.py); CPU: 1 thread

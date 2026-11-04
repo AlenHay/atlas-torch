@@ -14,3 +14,4 @@ __pycache__/
 results/fmap/
 results/.pytest.xml
 reference/*.for
+src/atlas_torch/dfsynthe/lines/native/*.sha256

@@ -81,7 +81,19 @@ class LineAccumulator:
         """AA entering each layer = AA of the last ADAMP>1.4 line of the previous layers (Fortran order is
         layer-major, so the state crosses layers); self.aa_carry[0] is the AA left by earlier temperatures."""
         last = torch.full((self.nl,), float("nan"), dtype=F32, device=self.dev)
-        for c in self._chunks(t12, chunk):
+        native = self._native() if self.use_native else None
+        if native is not None:
+            import ctypes
+            P = ctypes.c_void_p
+            c32 = lambda x: x.to(F32).contiguous()  # noqa: E731
+            arrs = [c32(self.xnfdop), c32(self.dopple), c32(self.xne), c32(self.txnxn), c32(self.cont)]
+            last = last.contiguous()
+            for c in self._chunks(t12, 1_000_000):
+                cols = [(c[k].to(torch.int32) if k in ("nbuff", "nelion") else c[k].to(F32)).contiguous()
+                        for k in ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")]
+                native.aa_scan(ctypes.c_int(self.nl), ctypes.c_int(cols[0].numel()), *(P(x.data_ptr()) for x in cols),
+                               *(P(x.data_ptr()) for x in arrs), P(last.data_ptr()))
+        for c in (self._chunks(t12, chunk) if native is None else ()):
             _, _, passed, adamp = self._dense(c["nbuff"], c["congf"], c["nelion"], c["gamr"], c["gams"], c["gamw"])
             big = passed & (adamp > float(lit("1.4")))
             ar = torch.arange(big.shape[1], device=self.dev)
@@ -112,11 +124,55 @@ class LineAccumulator:
         if own:
             padded = torch.zeros(nf + 2 * self.PAD, dtype=F32, device=self.dev)
             padded[self.PAD:self.PAD + nf] = buffer_flat
-        for c in self._chunks(t12, chunk):
-            self._chunk(padded, c, stats)
+        native = self._native() if self.use_native else None
+        if native is not None:
+            self._run_native(native, padded, t12, stats)
+        else:
+            for c in self._chunks(t12, chunk):
+                self._chunk(padded, c, stats)
         if own:
             buffer_flat.copy_(padded[self.PAD:self.PAD + nf])
         return stats
+
+    use_native = True
+
+    def _native(self):
+        if self.dev.type != "cpu":
+            return None
+        from .native import load
+        return load()
+
+    def _run_native(self, fn, padded, t12, stats, chunk: int = 500_000):
+        """The C transcription of the line loop (native/linesum.c), chunk by chunk, layer-major inside a chunk;
+        the AA state per layer is carried across chunks (self.aa_carry from aa_prepass)."""
+        import ctypes
+        from .rcpps import _table_np
+        P = ctypes.c_void_p
+        c32 = lambda x: x.to(F32).contiguous()  # noqa: E731
+        keep = dict(xnfdop=c32(self.xnfdop), dopple=c32(self.dopple), xne=c32(self.xne), txnxn=c32(self.txnxn),
+                    cont=c32(self.cont), h0=c32(self.tabs["h0tab"]), h1=c32(self.tabs["h1tab"]),
+                    atab=c32(self.tabs["atab"]), f1000=c32(self.tabs["freq1000"]),
+                    rcp=torch.from_numpy(_table_np().astype(np.uint32).view(np.int32).copy()),
+                    prof=torch.zeros(MAXPROF + 2, dtype=F32), st=torch.zeros(2, dtype=torch.int64),
+                    aa=self.aa_carry.to(F32).contiguous().clone())
+        assert keep["cont"].shape[1] == LENGTH and padded.is_contiguous()
+        bufp = padded.data_ptr() + 4 * self.PAD
+        for c in self._chunks(t12, chunk):
+            cols = {k: (c[k].to(torch.int32) if k in ("nbuff", "nelion") else c[k].to(F32)).contiguous()
+                    for k in ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")}
+            n = cols["nbuff"].numel()
+            if n == 0:
+                continue
+            fn.linesum(ctypes.c_int(self.nl), ctypes.c_int(n), *(P(cols[k].data_ptr()) for k in
+               ("nbuff", "congf", "nelion", "gamr", "gams", "gamw")),
+               P(keep["xnfdop"].data_ptr()), P(keep["dopple"].data_ptr()), P(keep["xne"].data_ptr()),
+               P(keep["txnxn"].data_ptr()), P(keep["cont"].data_ptr()), P(bufp), P(keep["aa"].data_ptr()),
+               P(keep["h0"].data_ptr()), P(keep["h1"].data_ptr()), P(keep["atab"].data_ptr()),
+               P(keep["f1000"].data_ptr()), P(keep["rcp"].data_ptr()), ctypes.c_int(1 if self.fastmath else 0),
+               P(keep["prof"].data_ptr()), P(keep["st"].data_ptr()))
+        stats["items"] += int(keep["st"][0])
+        stats["elements"] += int(keep["st"][1])
+        self.aa_carry = keep["aa"]
 
     def _chunk(self, buf, t, stats):
         dev, c = self.dev, self.c

@@ -152,8 +152,9 @@ class XLinop:
         as they are generated (one line never adds twice to a bin, so the order is the Fortran's either way)."""
         typ = tape19["type"]
         n = len(tape19)
-        small = self._small_lines(tape19)
         norm = (typ == 0) | (typ == 3) | (typ < -2)
+        native = self._native()
+        small = self._small_lines(tape19) if native is None else norm
         i = 0
         while i < n:
             if not norm[i]:
@@ -163,6 +164,10 @@ class XLinop:
             j = i                            # window of consecutive normal lines (weak and strong)
             while j < n and norm[j] and j - i < chunk_lines:
                 j += 1
+            if native is not None:
+                self._normal_native(native, buffer_flat, tape19, np.arange(i, j))
+                i = j
+                continue
             if small[i:j].all():
                 self._batch(buffer_flat, tape19, np.arange(i, j))
                 i = j
@@ -189,6 +194,56 @@ class XLinop:
                     k += 1
             i = j
         return self.stats
+
+    use_native = True
+
+    def _native(self):
+        if not self.use_native or self.dev.type != "cpu":
+            return None
+        from .native import load
+        return load()
+
+    def _normal_native(self, lib, buffer_flat, tape19, ids):
+        """Normal lines `ids` (consecutive in TAPE19) with the C transcription (native/linesum.c xlinop_normal)."""
+        import ctypes
+        P = ctypes.c_void_p
+        if getattr(self, "_nat_t19", None) is not tape19:      # per-line columns, once per TAPE19
+            r = tape19
+            nb = r["nbuff"].astype(np.int64)
+            self._nat_cols = dict(
+                wl=np.ascontiguousarray(r["wl"], np.float64), gf=np.ascontiguousarray(r["gf"], np.float32),
+                nb=nb.astype(np.int32), nel=np.ascontiguousarray(r["nelion"], np.int32),
+                ncon=np.ascontiguousarray(r["ncon"], np.int32), nelx=np.ascontiguousarray(r["nelionx"], np.int32),
+                gr=np.ascontiguousarray(r["gammar"], np.float32), gs=np.ascontiguousarray(r["gammas"], np.float32),
+                gw=np.ascontiguousarray(r["gammaw"], np.float32),
+                w0r=np.ascontiguousarray(self.wave_start(np.maximum(nb, 1)), np.float64),
+                w0b=np.ascontiguousarray(self.wave_start(np.minimum(nb, LENGTH + 1)), np.float64))
+            self._nat_t19 = tape19
+        cols = self._nat_cols
+        i0 = int(ids[0])
+        assert int(ids[-1]) - i0 + 1 == len(ids)                # consecutive lines
+        if not hasattr(self, "_nat_arrays"):
+            c32 = lambda x: x.to(F32).contiguous()  # noqa: E731
+            self._nat_arrays = dict(xnfdop=c32(self.xnfdop), dopple=c32(self.dopple), xne=c32(self.xne),
+                                    txnxn=c32(self.txnxn), emerge=self.emerge.to(F64).contiguous(),
+                                    contx=torch.from_numpy(np.ascontiguousarray(self.contx, np.float64)),
+                                    cont=c32(self.cont), h0=c32(self.tabs["h0tab"]), h1=c32(self.tabs["h1tab"]),
+                                    h2=c32(self.tabs["h2tab"]), atab=c32(self.tabs["atab"]),
+                                    st=torch.zeros(2, dtype=torch.int64))
+        A = self._nat_arrays
+        assert buffer_flat.is_contiguous() and A["cont"].shape[1] == LENGTH
+        np_ptr = lambda a: P(a.ctypes.data + i0 * a.itemsize)  # noqa: E731
+        lib.xlinop_normal(ctypes.c_int(self.nl), ctypes.c_int(len(ids)),
+                          *(np_ptr(cols[k]) for k in ("wl", "gf", "nb", "nel", "ncon", "nelx", "gr", "gs", "gw",
+                                                       "w0r", "w0b")),
+                          *(P(A[k].data_ptr()) for k in ("xnfdop", "dopple", "xne", "txnxn", "emerge", "contx",
+                                                          "cont")),
+                          P(buffer_flat.data_ptr()),
+                          *(P(A[k].data_ptr()) for k in ("h0", "h1", "h2", "atab")),
+                          ctypes.c_double(RATIO), ctypes.c_double(WLBEG), ctypes.c_double(WLEND),
+                          P(A["st"].data_ptr()))
+        self.stats["normal_items"] = int(A["st"][0])
+        self.stats["contribs_native"] = int(A["st"][1])
 
     strong_budget = 40_000_000              # contributions per batch before falling back to streaming
     _budget = None

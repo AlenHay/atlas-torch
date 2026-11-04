@@ -2,7 +2,7 @@ PY := .venv/bin/python
 # inside the atlas-dev container run directly; on the host go through the container
 DX := $(if $(CONTAINER_ID),bash -c,scripts/dx)
 
-.PHONY: fast stage full score noise reference oracles
+.PHONY: fast stage full score noise reference oracles native
 
 fast:            ## fast tier (< ~2 min): unit + oracle tests
 	$(DX) '$(PY) -m pytest -q -m "not stage and not full" -x --timeout=300 tests'
@@ -13,7 +13,10 @@ stage:           ## stage tier: per-milestone end-to-end checks
 full:            ## full tier: everything
 	$(DX) '$(PY) -m pytest -q tests'
 
-score:           ## scoreboard vs frozen tolerances -> results/scoreboard.jsonl, RESULTS.md
+native:          ## build the DFSYNTHE line-accumulation C kernel (bit-identical to the torch fallback)
+	$(DX) '$(PY) -m atlas_torch.dfsynthe.lines.native'
+
+score: native    ## scoreboard vs frozen tolerances -> results/scoreboard.jsonl, RESULTS.md
 	$(DX) '$(PY) tools/score/score.py $(ARGS)'
 
 noise:           ## (M0) measure Fortran noise floor; `make noise ARGS=--write` freezes results/tolerances.json once

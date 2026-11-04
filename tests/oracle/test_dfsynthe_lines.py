@@ -161,3 +161,28 @@ def test_accumulate_vs_sequential_reference(setup, seed):
     tt = {k: torch.from_numpy(v.astype(np.int64) if v.dtype.kind == "i" else v) for k, v in t.items()}
     acc.accumulate(buf, tt, chunk=37)
     assert np.array_equal(buf.view(3, -1).numpy().view(np.int32), ref.view(np.int32))
+
+
+@pytest.mark.parametrize("fast", [False, True])
+def test_native_equals_torch(setup, fast):
+    """The C transcription of the line loop (lines/native/linesum.c) == the vectorised torch accumulator, bit for
+    bit, for both flavours (stock fast-math forms incl. the rcpps divisions, and the source/O0 forms)."""
+    from atlas_torch.dfsynthe.lines.native import load
+    if load() is None:
+        pytest.skip("native kernel not built")
+    fl, xt, t12, lay = setup
+    fl2 = Flavor("stock", fastmath=fast)
+    tabs = T.device_tables(torch.device("cpu"), fl2)
+    cont = continuum(xt.wledge, lay["ablog"][:4], fl2)
+    L = layer_setup(xt, fl2, torch.device("cpu"))
+    sub = _t12(t12, slice(0, 60000))
+    out = []
+    for nat in (True, False):
+        acc = LineAccumulator(tabs, L["xne"][:4], L["txnxn"][:4], L["dopple"][:4], L["xnfdop"][:4], cont,
+                              fastmath=fast)
+        acc.use_native = nat
+        b = torch.zeros(4 * T.LENBUFF, dtype=torch.float32)
+        st = acc.accumulate(b, sub)
+        out.append((b, st))
+    assert out[0][1] == out[1][1]
+    assert torch.equal(out[0][0].view(torch.int32), out[1][0].view(torch.int32))

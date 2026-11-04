@@ -121,12 +121,11 @@ def run_rgfalllines(
     dellim = np.array([r4(v) for v in DELLIM], F4)        # DATA DELLIM (REAL*4)
     delfactor = r4(wlbeg / 500.0) if wlbeg > 500.0 else 1.0
     stop0 = wlend + float(dellim[0])                     # IF(WLVAC.GT.WLEND+DELLIM(1))GO TO 145
-    start_target = wlbeg - DELLIM[0] * delfactor - 5.0
     codex = np.array([r4(c) for c in CODEX], F4)
 
-    file_size = linelist_path.stat().st_size
-    with open(linelist_path, "rb") as fb:
-        low_offset = find_linelist_start_offset(fb, start_target, file_size)
+    # Read from the first record as the Fortran does: with IFVAC=1 the window tests use WLVAC from the energy
+    # levels, not the listed WL, so a search on the listed WL (find_linelist_start_offset) is not exact.
+    low_offset = 0
 
     f12, f19 = workdir / "fort.12", workdir / "fort.19"
     open(f12, "ab").close()

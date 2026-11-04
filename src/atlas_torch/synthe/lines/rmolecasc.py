@@ -430,9 +430,10 @@ def run_rmolecasc(
     stop = wlend + 1.0
     stop1 = stop + 1.0
 
-    file_size = mol_path.stat().st_size
-    with open(mol_path, "rb") as fb:
-        start_offset = find_asc_start_offset(fb, start, file_size)
+    # The Fortran reads the list from its first record: the window test uses WLVAC from the energy levels,
+    # which can be far from the listed WL (c2ax.asc: WL 2589.8 nm -> WLVAC 2866 nm), and any earlier record
+    # with WLVAC > STOP ends the loop.  A search on the listed WL (find_asc_start_offset) is not exact.
+    start_offset = 0
 
     f12 = workdir / "fort.12"
     open(f12, "ab").close()

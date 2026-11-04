@@ -248,7 +248,9 @@ def run_odf(output_dir, xnfdf_stdin: str | None = None, *, xnfdf_com=None, conti
     workers = default_workers(len(todo)) if workers is None else max(1, int(workers))
     cfgd = dict(flavor="stock", fastmath=fastmath, ftz=ftz, device=device, lines_device=lines_device, **cfg_overrides)
     t0 = time.time()
-    log(f"DFSYNTHE: {len(todo)} temperature(s) to run with {workers} worker(s)")
+    from .lines.native import load as _native_load
+    log(f"DFSYNTHE: {len(todo)} temperature(s) to run with {workers} worker(s); native C line kernels: "
+        f"{'yes' if _native_load() is not None else 'NO (torch path, much slower: build atlas_torch.dfsynthe.lines.native)'}")
     walls = run_temperatures(x10, x11, data_dir, parts, temps, cfgd, workers, log)
     timing["dfsynthe"] = time.time() - t0
     if len(temps) == NTEMP:

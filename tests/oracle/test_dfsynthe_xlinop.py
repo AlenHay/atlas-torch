@@ -97,16 +97,19 @@ def test_xlinop_golden(golden):
 
 @pytest.mark.parametrize("kind", ["normal", "merged_auto"])
 def test_xlinop_batching_modes_identical(solar, kind):
-    """Weak-line batches, tentative strong-line batches (budget overflow -> per-line streaming) and one line per
-    batch give bit-identical buffers (per-bin REAL*4 order is the line order in every mode)."""
+    """Weak-line batches, tentative strong-line batches (budget overflow -> per-line streaming), one line per
+    batch and the native C transcription (lines/native) give bit-identical buffers."""
     fl, xt, t19, lay, cont = solar
     sub = t19[_subset(t19, kind)]
     tabs = T.device_tables(torch.device("cpu"), fl)
     L = {k: (v[:NL] if torch.is_tensor(v) else v) for k, v in lay.items()}
     L["st"] = {k: v[:NL] for k, v in lay["st"].items()}
     out = []
-    for budget, chunk in ((None, 200), (1, 200), (None, 1)):
+    for budget, chunk, nat in ((None, 200, False), (1, 200, False), (None, 1, False), (None, 200, True)):
         xl = XLinop(tabs, L, cont, fl)
+        xl.use_native = nat
+        if nat and xl._native() is None:
+            continue
         if budget is not None:
             xl.strong_budget = budget
         buf = torch.zeros(NL * T.LENBUFF, dtype=torch.float32)
