@@ -1,0 +1,177 @@
+{
+ "bench": "synthe_chain",
+ "window": "380_420",
+ "time": "2026-11-04T20:10:27",
+ "loadavg": [
+  1.203125,
+  2.38037109375,
+  3.3134765625
+ ],
+ "core": 3,
+ "threads": 1,
+ "host": "steamdeck",
+ "commit": "795bd5e",
+ "dirty": false,
+ "torch": {
+  "xnfpelsyn": {
+   "seconds": 1.113396657994599,
+   "peak_rss_mb": 289.18359375
+  },
+  "synbeg": {
+   "seconds": 0.0002399099903414026,
+   "peak_rss_mb": 283.05078125
+  },
+  "rgfalllinesnew": {
+   "seconds": 1.19055474299239,
+   "peak_rss_mb": 599.58203125
+  },
+  "rmolecasc": {
+   "seconds": 1.3695262449618895,
+   "peak_rss_mb": 448.3046875,
+   "per_list": {
+    "chmasseron_corrected.asc": {
+     "seconds": 0.015444636999745853,
+     "peak_rss_mb": 312.33984375
+    },
+    "mgh_exomol.asc": {
+     "seconds": 0.026851481990888715,
+     "peak_rss_mb": 320.51953125
+    },
+    "nh.asc": {
+     "seconds": 0.005739293992519379,
+     "peak_rss_mb": 306.51953125
+    },
+    "ohupdate.asc": {
+     "seconds": 0.01021991900051944,
+     "peak_rss_mb": 310.51953125
+    },
+    "sihax.asc": {
+     "seconds": 0.011936047012568451,
+     "peak_rss_mb": 310.51953125
+    },
+    "h2.asc": {
+     "seconds": 0.0036411490000318736,
+     "peak_rss_mb": 306.51953125
+    },
+    "h2xx.asc": {
+     "seconds": 0.0025346339971292764,
+     "peak_rss_mb": 304.14453125
+    },
+    "hdxx.asc": {
+     "seconds": 0.002384762992733158,
+     "peak_rss_mb": 306.51953125
+    },
+    "c2ax.asc": {
+     "seconds": 0.04886616099975072,
+     "peak_rss_mb": 361.859375
+    },
+    "c2ba.asc": {
+     "seconds": 0.05126840699813329,
+     "peak_rss_mb": 375.6875
+    },
+    "c2dabrookek.asc": {
+     "seconds": 0.18169509099971037,
+     "peak_rss_mb": 428.7890625
+    },
+    "c2ea.asc": {
+     "seconds": 0.13343040698964614,
+     "peak_rss_mb": 410.578125
+    },
+    "cnaxbrookek.asc": {
+     "seconds": 0.18742630000633653,
+     "peak_rss_mb": 429.52734375
+    },
+    "cnbxbrookek.asc": {
+     "seconds": 0.15645203599706292,
+     "peak_rss_mb": 415.3359375
+    },
+    "cnxx12brooke.asc": {
+     "seconds": 0.003924720993381925,
+     "peak_rss_mb": 337.28125
+    },
+    "coax.asc": {
+     "seconds": 0.04151400300906971,
+     "peak_rss_mb": 340.25390625
+    },
+    "coxx.asc": {
+     "seconds": 0.016884197990293615,
+     "peak_rss_mb": 340.25390625
+    },
+    "sioax.asc": {
+     "seconds": 0.09593814799154643,
+     "peak_rss_mb": 391.30078125
+    },
+    "sioex.asc": {
+     "seconds": 0.12531415499688592,
+     "peak_rss_mb": 414.93359375
+    },
+    "sioxx.asc": {
+     "seconds": 0.014121425003395416,
+     "peak_rss_mb": 291.90234375
+    },
+    "tiototo.asc": {
+     "seconds": 0.23393926800054032,
+     "peak_rss_mb": 448.3046875
+    }
+   }
+  },
+  "rh2ofast": {
+   "seconds": 0.033039597008610144,
+   "peak_rss_mb": 379.1875
+  },
+  "synthe": {
+   "seconds": 5.8710385900049005,
+   "peak_rss_mb": 804.8046875
+  },
+  "spectrv": {
+   "seconds": 0.7679252600064501,
+   "peak_rss_mb": 531.4453125
+  },
+  "total": {
+   "seconds": 10.34572100295918,
+   "peak_rss_mb": 804.8046875
+  }
+ },
+ "native_disabled": false,
+ "identical_to_stock": true,
+ "fortran": {
+  "xnfpelsyn": {
+   "seconds": 0.15,
+   "peak_rss_mb": 7.56640625
+  },
+  "synbeg": {
+   "seconds": 0.0,
+   "peak_rss_mb": 2.83984375
+  },
+  "rgfalllinesnew": {
+   "seconds": 4.17,
+   "peak_rss_mb": 3.0234375
+  },
+  "rmolecasc": {
+   "seconds": 5.6000000000000005,
+   "peak_rss_mb": 3.51171875
+  },
+  "rh2ofast": {
+   "seconds": 0.0,
+   "peak_rss_mb": 3.86328125
+  },
+  "synthe": {
+   "seconds": 13.46,
+   "peak_rss_mb": 12.06640625
+  },
+  "spectrv": {
+   "seconds": 1.07,
+   "peak_rss_mb": 6.29296875
+  },
+  "total": {
+   "seconds": 24.450000000000003,
+   "peak_rss_mb": 12.06640625
+  }
+ },
+ "speed_ratio_torch_over_fortran": 0.4231378733316638,
+ "loadavg_end": [
+  1.11181640625,
+  2.22607421875,
+  3.22607421875
+ ]
+}

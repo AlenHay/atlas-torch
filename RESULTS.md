@@ -351,6 +351,19 @@ XLINOP under FTZ seen at load ~7 does not reproduce on a quiet machine (14 s tot
 4. Use torch.compile only for SPECTRV's JOSH on the CPU (2.2×, bit-identical) if SPECTRV ever becomes a
    bottleneck. Elsewhere it gives no gain or breaks identity.
 
+### M7 timings on a quiet machine (2026-11-04, one core, one torch thread, load ~1.3; `results/m7/quiet/`)
+
+| program | torch (exact port) | Fortran (same core) |
+|---|---|---|
+| ATLAS9, solar model, 15 iterations | 12.0 s (byte-identical output) | 6.9 s |
+| SYNTHE chain 500-510 nm | 5.7 s (spectrum.bin identical) | 22 s |
+| SYNTHE chain 380-420 nm | 10.4 s (identical) | 24 s |
+| SYNTHE chain 100-2850 nm (2.0 M points) | 5.8 min, peak 1.5 GB | ~24 min (earlier stock timing) |
+| DFSYNTHE one temperature: 1995 / 5012 / 22387 K | 200 / 15 / 18 s, peak <= 1.9 GB | ~42 s at 5012 K |
+
+The wide chain is not byte-identical end to end because torch xnfpelsyn differs from the -O3 Fortran at 1e-10 (1-2 ulp
+in 268 of 145 M fort.9 values); it passes the gates. GPU timings are in the M7 study section above.
+
 ## M8: gradients
 
 ## Gradients (M8, draft for RESULTS.md)

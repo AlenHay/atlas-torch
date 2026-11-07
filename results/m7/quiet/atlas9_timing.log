@@ -1,0 +1,13 @@
+round 0 {'fortran': 6.929, 'torch': 12.166}
+round 1 {'fortran': 6.924, 'torch': 12.031}
+round 2 {'fortran': 6.926, 'torch': 11.981}
+{
+ "time": "2026-11-04T20:09:57",
+ "core": 2,
+ "iters": 15,
+ "rounds": 3,
+ "model": "sun (traced BasicATLAS solar run, 15 iterations)",
+ "ratio_torch_over_fortran_min": 1.73
+}
+fortran min 6.924 median 6.926
+torch min 11.981 median 12.031

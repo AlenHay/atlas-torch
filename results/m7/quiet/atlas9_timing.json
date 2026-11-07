@@ -1,0 +1,74 @@
+{
+ "time": "2026-11-04T20:09:57",
+ "core": 2,
+ "iters": 15,
+ "rounds": 3,
+ "model": "sun (traced BasicATLAS solar run, 15 iterations)",
+ "fortran": {
+  "min_s": 6.924,
+  "median_s": 6.926,
+  "runs": [
+   {
+    "run_s": 6.929,
+    "cpu_s": 6.85,
+    "loadavg": [
+     1.57080078125,
+     1.52490234375
+    ]
+   },
+   {
+    "run_s": 6.924,
+    "cpu_s": 6.9,
+    "loadavg": [
+     1.40771484375,
+     1.375
+    ]
+   },
+   {
+    "run_s": 6.926,
+    "cpu_s": 6.85,
+    "loadavg": [
+     1.359375,
+     1.33056640625
+    ]
+   }
+  ]
+ },
+ "torch": {
+  "min_s": 11.981,
+  "median_s": 12.031,
+  "runs": [
+   {
+    "run_s": 12.166,
+    "cpu_s": 12.088,
+    "process_s": 13.368,
+    "identical": true,
+    "loadavg": [
+     1.52490234375,
+     1.40771484375
+    ]
+   },
+   {
+    "run_s": 12.031,
+    "cpu_s": 11.956,
+    "process_s": 13.244,
+    "identical": true,
+    "loadavg": [
+     1.375,
+     1.359375
+    ]
+   },
+   {
+    "run_s": 11.981,
+    "cpu_s": 11.907,
+    "process_s": 13.133,
+    "identical": true,
+    "loadavg": [
+     1.33056640625,
+     1.33740234375
+    ]
+   }
+  ]
+ },
+ "ratio_torch_over_fortran_min": 1.73
+}
