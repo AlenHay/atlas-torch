@@ -112,12 +112,21 @@ def stark_shape(beta: torch.Tensor, p: torch.Tensor, n: int, m: int) -> torch.Te
     return torch.where(b > 500.0, asym, torch.where(b > 25.12, outer, inner))
 
 
+LYA_RESONANCE_RED_CM = 4000.0          # HPROF4: resonance (impact) wing of Lyman alpha within 4000 cm^-1 red of it
+LYA_RADIATIVE_HZ = (2.4190611e15, 0.77 * 3.288051e15)   # HRAYOP's gap: Lyman alpha radiative wing = Rayleigh outside
+VDW_MIN_HZ = 1.8e15                    # HPROF4: van der Waals (He, H2) wing of Lyman alpha above 60000 cm^-1 only
+
+
 class HydrogenLine:
-    """Line constants of H I n -> m (HPROF4 'set up for this line')."""
+    """Line constants of H I n -> m (HPROF4 'set up for this line').
+
+    Lyman alpha (synthe.for HPROF4 label 40): resonance broadening x 4 (matched to Allard's profile at 4000 cm^-1),
+    its impact wing only within LYA_RESONANCE_RED_CM on the red side, the radiative wing only in LYA_RADIATIVE_HZ
+    (Rayleigh scattering outside, continuum), the van der Waals wing above VDW_MIN_HZ, the quasistatic Stark term
+    halved (protons only). HPROF4's quasi-molecular H2 and H2+ wings (Allard & Koester 1992, A&A 258, 464) are a
+    separate process and are not included."""
 
     def __init__(self, n: int, m: int):
-        if n == 1 and m == 2:
-            raise NotImplementedError("Lyman alpha (quasi-molecular H2+/H2 wings) is not implemented")
         tb = _tables()
         self.n, self.m = n, m
         mmn = m - n
@@ -176,8 +185,17 @@ class HydrogenLine:
         for s, w in zip(self.fine_shift, self.fine_weight):
             d = (freq - self.freq - s).abs() / dop
             pd = pd + torch.where(d <= 7.0, torch.exp(-d * d), torch.zeros_like(d)) * w
-        hhw = self.freq * hwlor
-        pl = hhw / math.pi / (delta ** 2 + hhw ** 2) * SQRT_PI * dop
+        if self.n == 1 and self.m == 2:
+            hwres = 4.0 * hwres
+            hhw = self.freq * (hwres + hwvdw + self.radamp)
+            res = torch.where(freq > (82259.105 - LYA_RESONANCE_RED_CM) * 2.99792458e10, hwres,
+                              torch.zeros_like(hwres))
+            rad = ((freq > LYA_RADIATIVE_HZ[0]) & (freq < LYA_RADIATIVE_HZ[1])).to(freq.dtype) * self.radamp
+            vdw = torch.where(freq < VDW_MIN_HZ, torch.zeros_like(hwvdw), hwvdw)
+            pl = (res + rad + vdw) * self.freq / math.pi / (delta ** 2 + hhw ** 2) * SQRT_PI * dop
+        else:
+            hhw = self.freq * hwlor
+            pl = hhw / math.pi / (delta ** 2 + hhw ** 2) * SQRT_PI * dop
         # Stark: quasistatic ions (S(beta)) with the electron impact width (Griem 1960 asymptotic theory)
         wty1 = 1.0 / (1.0 + lay["n_e"] / self.y1wht)
         y1scal = self.y1num * lay["y1s"] * wty1 + lay["y1b"] * (1.0 - wty1)
@@ -192,7 +210,7 @@ class HydrogenLine:
             1.0 - lay["gcon1"] / (1.0 + (90.0 * y1) ** 3) - lay["gcon2"] / (1.0 + 2000.0 * y1))
         gam = torch.where((y2 <= 1e-4) & (y1 <= 1e-5), gnot.expand_as(gam), gam)
         gam = torch.where(gam <= 1e-20, torch.zeros_like(gam), gam)
-        prqs = stark_shape(beta, lay["pp"], self.n, self.m)
+        prqs = stark_shape(beta, lay["pp"], self.n, self.m) * (0.5 if self.m == 2 else 1.0)
         f = torch.where(gam > 0, gam / math.pi / (gam ** 2 + beta ** 2), torch.zeros_like(gam))
         p1 = (0.9 * y1) ** 2
         fns = (p1 + 0.03 * torch.sqrt(y1)) / (p1 + 1.0)

@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from atlas_torch.v2.opacity.continuum import PROCESSES, ContinuousOpacity, KuruczCompat
-from atlas_torch.v2.opacity.continuum.interpolate import blended_parabola, linear
+from atlas_torch.v2.opacity.continuum.interpolate import linear, map1
 
 
 def test_interpolation_exact_on_polynomials():
@@ -14,7 +14,7 @@ def test_interpolation_exact_on_polynomials():
     x = torch.linspace(-1.0, 25.0, 301, dtype=torch.float64)
     assert torch.allclose(linear(x, xp, 3.0 * xp - 2.0), 3.0 * x - 2.0)
     inner = (x >= xp[2]) & (x <= xp[-1])                               # MAP1 is linear on the first two intervals
-    assert torch.allclose(blended_parabola(x, xp, xp ** 2 - xp)[inner], (x ** 2 - x)[inner])
+    assert torch.allclose(map1(x, xp, xp ** 2 - xp)[inner], (x ** 2 - x)[inner])
 
 
 @pytest.fixture(scope="module")

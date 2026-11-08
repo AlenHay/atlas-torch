@@ -95,30 +95,44 @@ def _synthe_series(a, v, h0, h1):
         ((-0.122727278 * a + 0.532770573) * a - 0.96284325) * a + 0.979895032)
 
 
-def voigt_kurucz(a: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
+def h1(v: torch.Tensor) -> torch.Tensor:
+    """H1(v) = dH/da at a = 0 = (2/sqrt(pi)) (2 v F(v) - 1), F the Dawson function = sqrt(pi)/2 Im w(v) (synthe.for
+    TABVOIGT H1TAB)."""
+    return (2.0 / SQRT_PI) * (v * SQRT_PI * faddeeva(v, torch.zeros_like(v)).imag - 1.0)
+
+
+def voigt_kurucz(a: torch.Tensor, v: torch.Tensor, form: str = "synthe") -> torch.Tensor:
     """SYNTHE's profile (synthe.for main line loop and FUNCTION VOIGT; Kurucz & Avrett 1981 p. 5), to attribute
-    differences: within 10 Doppler widths H0(v) + a H1(v) for a < 0.2 (H1 = (2/sqrt(pi)) (2 v F(v) - 1), F the
-    Dawson function = sqrt(pi)/2 Im w(v)) and the fast approximation of VOIGT for a >= 0.2 (errors up to 13 %
-    near a = 1.4, v = 1.2); beyond, the value at v = 10 continued as v^-2 (low by 100/(100 + a^2) for large a)."""
+    differences: within 10 Doppler widths H0(v) + a H1(v) for a < 0.2 and the fast approximation of VOIGT for
+    a >= 0.2 (errors up to 13 % near a = 1.4, v = 1.2). Beyond v = 10, form "synthe": the value at v = 10
+    continued as v^-2 (low by 100/(100 + a^2) for large a); "main" (dfsynthe.for MAIN labels 1321-1325): so for
+    a < 0.2 only, VOIGT's asymptotic series at v itself for a >= 0.2; "function" (FUNCTION VOIGT, used by XLINOP):
+    as "main" but H0 + a H1 + a^2 H2 (H2 = (1 - 2 v^2) H0) for a < 0.2 and 0.5642 a/v^2 beyond v = 10."""
     a, v = torch.broadcast_tensors(a, v)
     x = v.abs()
+    if form not in ("synthe", "main", "function"):
+        raise ValueError("form: 'synthe' | 'main' | 'function'")
     near = x <= 10.0
+    if form != "synthe":
+        near = near | (a >= 0.2)
+    a2 = 1.0 if form == "function" else 0.0
 
     def core(m):
         xm, am = x[m], a[m]
         h0 = torch.exp(-xm * xm)
-        h1 = (2.0 / SQRT_PI) * (xm * SQRT_PI * faddeeva(xm, torch.zeros_like(xm)).imag - 1.0)
         series = (am >= 0.2) & (am <= 1.4) & (am + xm <= 3.2)
         asym = (am >= 0.2) & ~series
-        return _masked(xm, ((am < 0.2, lambda k: h0[k] + am[k] * h1[k]),
-                            (series, lambda k: _synthe_series(am[k], xm[k], h0[k], h1[k])),
+        return _masked(xm, ((am < 0.2, lambda k: h0[k] * (1.0 + a2 * am[k] ** 2 * (1.0 - 2.0 * xm[k] ** 2))
+                             + am[k] * h1(xm[k])),
+                            (series, lambda k: _synthe_series(am[k], xm[k], h0[k], h1(xm[k]))),
                             (asym, lambda k: _synthe_asymptotic(am[k], xm[k]))))
 
-    ten = torch.tensor([10.0], dtype=torch.float64)
-    h1_10 = (2.0 / SQRT_PI) * (10.0 * SQRT_PI * float(faddeeva(ten, torch.zeros_like(ten)).imag[0]) - 1.0)
+    h1_10 = float(h1(torch.tensor([10.0], dtype=torch.float64))[0])
 
     def wing(m):
         am, xm = a[m], x[m]
+        if form == "function":
+            return 0.5642 * am / xm ** 2
         h10 = torch.where(am < 0.2, am * h1_10, _synthe_asymptotic(am, torch.full_like(xm, 10.0)))
         return h10 * (10.0 / xm) ** 2
 

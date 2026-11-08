@@ -236,10 +236,13 @@ class ChemicalEquilibrium:
 
     # ------------------------------------------------------------------ public
 
-    def solve(self, atm: Atmosphere, comp: Composition, debye_n_e: torch.Tensor | None = None) -> Populations:
+    def solve(self, atm: Atmosphere, comp: Composition, debye_n_e: torch.Tensor | None = None,
+              guess: Populations | None = None) -> Populations:
         """Populations for every layer (and batch element) of `atm`. debye_n_e (debye="kurucz" only): electron
         density at which the lowering is evaluated instead of the solved one (NMOLEC uses its Newton start, the
-        previous layer's n_e scaled by the pressure ratio; lagged_lowering=True computes it self-consistently)."""
+        previous layer's n_e scaled by the pressure ratio; lagged_lowering=True computes it self-consistently).
+        guess: Populations of a nearby state on the same grid (e.g. the previous model iteration) to start Newton
+        (and the lagged lowering) from instead of the ionisation-only start; the solution is the same."""
         c = self.const
         T = atm.T.to(self.device, torch.float64)
         P = atm.P.to(self.device, torch.float64)
@@ -256,7 +259,12 @@ class ChemicalEquilibrium:
         ln_ne_d = torch.full_like(tf, float("nan")) if debye_n_e is None else \
             torch.log(debye_n_e.to(self.device, torch.float64)).reshape(-1)
         with torch.no_grad():
-            x0 = self._initial(tf.detach(), ln_ntot.detach(), ln_a.detach())
+            x0 = self._guess(guess, shape) if guess is not None else None
+            if x0 is None:
+                x0 = self._initial(tf.detach(), ln_ntot.detach(), ln_a.detach())
+            elif self.lagged:
+                ln_ne_d = self._lagged_ne(x0[..., len(self.mol_z)].reshape(shape), torch.log(P),
+                                          ln_ntot.reshape(shape)).reshape(-1)
         solve = lambda x_start, lag: newton(self._residual, x_start, (tf, ln_ntot, ln_a, lag), tol=self.tol,
                                             maxiter=self.maxiter, linearize=self._linearize)
         x = solve(x0, ln_ne_d)
@@ -296,6 +304,16 @@ class ChemicalEquilibrium:
             mu=r(rho / (c.amu * ntot)), debye=r(sp["de"]), n_atom=r(n_atom, (N_ELEMENTS, MAX_STAGES)),
             u_atom=r(torch.exp(ln_u), (N_ELEMENTS, MAX_STAGES)), n_mol=r(zero(torch.exp(sp["ln_mol"])), (nmol,)),
             n_over_u_mol=r(zero(torch.exp(ln_nu)), (nmol,)), molecules=self.molecules)
+
+    def _guess(self, pops: Populations, shape) -> torch.Tensor | None:
+        """Newton start from Populations of the same shape: ln n(Z I) of the molecular elements, ln n_e, ln N and
+        ln n_c = ln 2 n_e; None if any is not positive and finite."""
+        if tuple(pops.T.shape) != tuple(shape):
+            return None
+        n1 = pops.n_atom[..., self.mol_z, 0].reshape(-1, len(self.mol_z))
+        ne, nn = pops.n_e.reshape(-1, 1), pops.n_nuclei.reshape(-1, 1)
+        x = torch.log(torch.cat([n1, ne, nn, 2.0 * ne], -1).to(self.device, torch.float64))
+        return x.detach() if bool(torch.isfinite(x).all()) else None
 
     @staticmethod
     def _lagged_ne(ln_ne: torch.Tensor, ln_p: torch.Tensor, ln_ntot: torch.Tensor) -> torch.Tensor:

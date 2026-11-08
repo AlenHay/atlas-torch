@@ -41,6 +41,33 @@ def pi_e2_over_mc(const: PhysicalConstants) -> float:
     return math.pi * e_esu ** 2 / (m_e * const.c)
 
 
+def doppler_width(T: torch.Tensor, mass_amu: torch.Tensor, xi2: torch.Tensor,
+                  const: PhysicalConstants = CODATA2018) -> torch.Tensor:
+    """Delta nu_D / nu = sqrt(2kT/m + xi^2) / c (Kurucz & Avrett 1981 p. 4); xi^2 in cm^2 s^-2 (broadcast)."""
+    return torch.sqrt(2.0 * const.k * T / (mass_amu * const.amu) + xi2) / C_CM
+
+
+def line_strength(T: torch.Tensor, rho: torch.Tensor, n_over_u: torch.Tensor, log_gf: torch.Tensor,
+                  e_lower: torch.Tensor, const: PhysicalConstants = CODATA2018) -> torch.Tensor:
+    """(pi e^2/mc) gf (n/U) exp(-E_lo hc/kT) / rho, cm^2 s^-1 g^-1 (broadcast; e_lower in cm^-1, log_gf including
+    the isotopic fraction): the integrated line absorption per gram before stimulated emission (K&A 1981 p. 4)."""
+    return pi_e2_over_mc(const) * 10.0 ** log_gf * n_over_u * torch.exp(-e_lower * const.hc_k / T) / rho
+
+
+def perturber_density(T: torch.Tensor, n_h1: torch.Tensor, n_he1: torch.Tensor, n_h2: torch.Tensor,
+                      vdw_alpha: torch.Tensor | None = None, mass: torch.Tensor | None = None) -> torch.Tensor:
+    """n_pert of van der Waals broadening, cm^-3 (broadcast): (n_H I + 0.42 n_He I + 0.85 n_H2) (T/10^4 K)^0.3
+    (K&A 1981 p. 4; DFSYNTHE TXNXN), or where vdw_alpha != 0 the Anstee-Barklem-O'Mara velocity scaling
+    (synthe.for) with the absorber mass (amu)."""
+    base = (n_h1 + 0.42 * n_he1 + 0.85 * n_h2) * (T / 1e4) ** 0.3
+    if vdw_alpha is None:
+        return base
+    e = (1.0 - vdw_alpha) / 2.0
+    abo = (n_h1 * (T / 1e4) ** e + n_he1 * 0.628 * (2.0991e-4 * T * (0.25 + 1.008 / mass)) ** e
+           + n_h2 * 1.08 * (2.0991e-4 * T * (0.5 + 1.008 / mass)) ** e)
+    return torch.where(vdw_alpha != 0, abo, base)
+
+
 @dataclass(frozen=True)
 class GasState:
     """What the line opacity needs per layer, every tensor (M,) or (M, ...) with M = flattened layers.
@@ -122,18 +149,23 @@ def merging_wavenumber(n_e: torch.Tensor, hydrogen: bool) -> torch.Tensor:
 CODEX = (1.0, 2.0, 2.01, 6.0, 6.01, 12.0, 12.01, 13.0, 13.01, 14.0, 14.01, 20.0, 20.01, 8.0, 11.0, 5.0, 19.0)
 
 
-def series_ramp(wl_nm: torch.Tensor, species: torch.Tensor, ncon: torch.Tensor, n_e: torch.Tensor) -> torch.Tensor:
-    """Weight of lines of a series near its merged limit (XLINOP label 200, NCON > 0): 0 shortward of
-    lambda_con = 1/(sigma_lim - sigma_merge), rising linearly to 1 at 1/(sigma_lim - sigma_merge - 500 cm^-1);
-    sigma_lim from the CONTX edge table. Shapes: wl (M, n, w), species/ncon (n,), n_e (M,)."""
-    contx = torch.as_tensor(table("synthe.for", "xlinop", "contx"), dtype=wl_nm.dtype, device=wl_nm.device)
+def series_limits(species: torch.Tensor, ncon: torch.Tensor, n_e: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    """(lambda_con, lambda_tail) nm, each (M, n), of lines of a series near its merged limit (XLINOP label 200,
+    NCON > 0): lambda_con = 1/(sigma_lim - sigma_merge), lambda_tail = 1/(sigma_lim - sigma_merge - 500 cm^-1),
+    sigma_lim from the CONTX edge table; species/ncon (n,), n_e (M,)."""
+    contx = torch.as_tensor(table("synthe.for", "xlinop", "contx"), dtype=n_e.dtype, device=n_e.device)
     col = torch.zeros_like(ncon)
     for i, c in enumerate(CODEX):
         col = torch.where((species - c).abs() < 1e-3, torch.full_like(col, i), col)
-    lim = contx[(ncon - 1).clamp(min=0), col]
+    lim = contx[(ncon - 1).clamp(min=0), col][None, :]
     em = merging_wavenumber(n_e, False)[:, None]
-    wcon = (1e7 / (lim[None, :] - em))[..., None]
-    wtail = (1e7 / (lim[None, :] - em - 500.0))[..., None]
+    return 1e7 / (lim - em), 1e7 / (lim - em - 500.0)
+
+
+def series_ramp(wl_nm: torch.Tensor, species: torch.Tensor, ncon: torch.Tensor, n_e: torch.Tensor) -> torch.Tensor:
+    """Weight of lines of a series near its merged limit (XLINOP label 200, NCON > 0): 0 shortward of lambda_con,
+    rising linearly to 1 at lambda_tail (series_limits). Shapes: wl (M, n, w), species/ncon (n,), n_e (M,)."""
+    wcon, wtail = (x[..., None] for x in series_limits(species, ncon, n_e))
     r = ((wl_nm - wcon) / (wtail - wcon)).clamp(0.0, 1.0)
     return torch.where((ncon > 0)[None, :, None], r, torch.ones_like(r))
 
@@ -148,9 +180,8 @@ class LineOpacity:
 
     def _doppler(self, gas: GasState, mass: torch.Tensor) -> torch.Tensor:
         """Delta v_D / c, (M, n)."""
-        c = self.opt.const
         xi2 = gas.vturb ** 2 + self.opt.microturbulence ** 2
-        return torch.sqrt(2.0 * c.k * gas.T[:, None] / (mass[None, :] * c.amu) + xi2[:, None]) / C_CM
+        return doppler_width(gas.T[:, None], mass[None, :], xi2[:, None], self.opt.const)
 
     def _mass(self, ll: LineList) -> torch.Tensor:
         if self.opt.doppler_mass == "line":
@@ -167,10 +198,8 @@ class LineOpacity:
 
     def _strength(self, gas: GasState, ll: LineList) -> torch.Tensor:
         """(pi e^2/mc) gf (n/U) exp(-E hc/kT) / rho, cm^2 s^-1 g^-1 (M, n)."""
-        c = self.opt.const
-        gf = 10.0 ** (ll.log_gf + ll.log_isotope)
-        boltz = torch.exp(-ll.e_lower[None, :] * c.hc_k / gas.T[:, None])
-        return pi_e2_over_mc(c) * gf[None, :] * gas.n_over_u(ll.species) * boltz / gas.rho[:, None]
+        return line_strength(gas.T[:, None], gas.rho[:, None], gas.n_over_u(ll.species),
+                             (ll.log_gf + ll.log_isotope)[None, :], ll.e_lower[None, :], self.opt.const)
 
     def _continuum_at(self, cont: torch.Tensor, pos: torch.Tensor) -> torch.Tensor:
         k = torch.round(pos).long().clamp(0, self.grid.length - 1)
@@ -185,17 +214,24 @@ class LineOpacity:
     def _perturbers(self, gas: GasState, ll: LineList) -> torch.Tensor:
         """n_pert for van der Waals broadening, (M, n): K&A 1981 p. 4 (vdw_alpha = 0) or the
         Anstee-Barklem-O'Mara velocity scaling (synthe.for, alpha != 0)."""
-        T = gas.T[:, None]
-        base = (gas.n_h1 + 0.42 * gas.n_he1 + 0.85 * gas.n_h2)[:, None] * (T / 1e4) ** 0.3
         al = ll.vdw_alpha[None, :]
         if not bool((al != 0).any()):
-            return base.expand(-1, len(ll))
-        e = (1.0 - al) / 2.0
-        m = ll.mass[None, :]
-        abo = (gas.n_h1[:, None] * (T / 1e4) ** e
-               + gas.n_he1[:, None] * 0.628 * (2.0991e-4 * T * (0.25 + 1.008 / m)) ** e
-               + gas.n_h2[:, None] * 1.08 * (2.0991e-4 * T * (0.5 + 1.008 / m)) ** e)
-        return torch.where(al != 0, abo, base)
+            return perturber_density(gas.T, gas.n_h1, gas.n_he1, gas.n_h2)[:, None].expand(-1, len(ll))
+        return perturber_density(gas.T[:, None], gas.n_h1[:, None], gas.n_he1[:, None], gas.n_h2[:, None], al,
+                                 ll.mass[None, :])
+
+    def center_opacity(self, gas: GasState, ll: LineList | None = None, he1: bool = False):
+        """(k0, a, Delta nu_D/nu), each (M, n), of the Voigt lines ll (default self.lines): k0 = (pi e^2/mc) gf (n/U)
+        / rho e^(-E hc/kT) / (sqrt(pi) Delta nu_D) cm^2 g^-1 (H(a, 0) = 1 normalisation, before stimulated emission),
+        a = (Gamma_R + Gamma_S n_e + Gamma_W n_pert) / (4 pi Delta nu_D); he1: no van der Waals term (K&A 1981 p. 4)."""
+        ll = self.lines if ll is None else ll
+        dop = self._doppler(gas, self._mass(ll))
+        nu0 = C_NM / ll.wavelength
+        k0 = self._strength(gas, ll) / (SQRT_PI * nu0[None, :] * dop)
+        gam = 10.0 ** ll.log_gamma_rad[None, :] + 10.0 ** ll.log_gamma_stark[None, :] * gas.n_e[:, None]
+        if not he1:
+            gam = gam + 10.0 ** ll.log_gamma_vdw[None, :] * self._perturbers(gas, ll)
+        return k0, gam / (4.0 * math.pi * nu0[None, :] * dop), dop
 
     def _voigt_lines(self, gas: GasState, cont: torch.Tensor, ll: LineList, which: torch.Tensor, out: torch.Tensor,
                      he1: bool = False) -> None:
@@ -209,14 +245,7 @@ class LineOpacity:
         for c0 in range(0, len(which), chunk):
             sub = ll.select(which[c0:c0 + chunk])
             pos = self._positions(sub)
-            dop = self._doppler(gas, self._mass(sub))
-            nu0 = C_NM / sub.wavelength
-            k0 = self._strength(gas, sub) / (SQRT_PI * nu0[None, :] * dop)
-            ne = gas.n_e[:, None]
-            gam = 10.0 ** sub.log_gamma_rad[None, :] + 10.0 ** sub.log_gamma_stark[None, :] * ne
-            if not he1:
-                gam = gam + 10.0 ** sub.log_gamma_vdw[None, :] * self._perturbers(gas, sub)
-            a = gam / (4.0 * math.pi * nu0[None, :] * dop)
+            k0, a, dop = self.center_opacity(gas, sub, he1)
             kc = self._continuum_at(cont, pos) * opt.cutoff
             ratio = k0 / kc
             active = ratio >= 1.0

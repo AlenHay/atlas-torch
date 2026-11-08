@@ -59,7 +59,13 @@ class KuruczCompat:
                      all ions of Z >= 3
     he1_ff_typo      He I free-free (He II + e) with HE1OP's 3.619E8 instead of the hydrogenic constant 3.6919E8
     he2_gaunt_at_nu  He II bound-free Gaunt fits evaluated at nu instead of nu/Z^2 (HE2OP)
-    gavrila_typos    HRAYOP's abscissae 1.664026D13 (for 1.644026D13) and 3.28851D15 (for 3.288051D15)"""
+    gavrila_typos    HRAYOP's abscissae 1.664026D13 (for 1.644026D13) and 3.28851D15 (for 3.288051D15)
+
+    ATLAS9-only (atlas9mem.for; KuruczCompat.atlas9()):
+    coolop_frequency_cut  no C I, Mg I, Al I, Si I, Fe I bound-free, CH, OH or H2 collision-induced absorption above
+                     3.28805E15 Hz (COOLOP: IF(FREQ.GT.3.28805D15)RETURN)
+    cool_atlas9      C I, Mg I, Al I bound-free of atlas9mem.for C1OP, MG1OP, AL1OP (continuum/atlas9.py)
+    hop_atlas9       H I bound-free of atlas9mem.for HOP: n <= 8 hydrogenic, the rest merged (continuum/atlas9.py)"""
     h2_fits: bool = False
     choh_tables: bool = False
     hot_edge_cut: bool = False
@@ -67,9 +73,20 @@ class KuruczCompat:
     he1_ff_typo: bool = False
     he2_gaunt_at_nu: bool = False
     gavrila_typos: bool = False
+    coolop_frequency_cut: bool = False
+    cool_atlas9: bool = False
+    hop_atlas9: bool = False
+
+    ATLAS9_ONLY = ("coolop_frequency_cut", "cool_atlas9", "hop_atlas9")
 
     @classmethod
     def all(cls) -> "KuruczCompat":
+        """atlas7v.for's choices (the SYNTHE-side continuum: XNFPELSYN, SPECTRV)."""
+        return cls(**{k: k not in cls.ATLAS9_ONLY for k in cls.__dataclass_fields__})
+
+    @classmethod
+    def atlas9(cls) -> "KuruczCompat":
+        """atlas9mem.for's choices: all() plus the ATLAS9-only switches (ATLAS9, KAPPA9)."""
         return cls(**{k: True for k in cls.__dataclass_fields__})
 
 

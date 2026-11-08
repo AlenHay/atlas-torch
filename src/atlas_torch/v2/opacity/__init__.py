@@ -76,4 +76,11 @@ def planck(nu: torch.Tensor, T: torch.Tensor, const: PhysicalConstants = CODATA2
     return 2.0 * const.h * nu ** 3 / const.c ** 2 / torch.expm1(h_nu_over_kt(nu, T, const))
 
 
-__all__ = ["Opacity", "combine", "h_nu_over_kt", "stimulated_emission", "planck"]
+def planck_derivative(nu: torch.Tensor, T: torch.Tensor, const: PhysicalConstants = CODATA2018) -> torch.Tensor:
+    """dB_nu/dT = (2 h nu^3 / c^2) (x / T) e^-x / (1 - e^-x)^2, x = h nu / kT (Kurucz 1970 eq. 2.85; ATLAS9 ROSS
+    DBDT = BNU*FREQ*HKT/T/STIM), erg s^-1 cm^-2 Hz^-1 sr^-1 K^-1, (..., L, F)."""
+    x = h_nu_over_kt(nu, T, const)
+    return 2.0 * const.h * nu ** 3 / const.c ** 2 * (x / T[..., None]) * torch.exp(-x) / torch.expm1(-x) ** 2
+
+
+__all__ = ["Opacity", "combine", "h_nu_over_kt", "stimulated_emission", "planck", "planck_derivative"]

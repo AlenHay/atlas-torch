@@ -1,0 +1,288 @@
+{
+ "B4_switch_study_solar": {
+  "configs": {
+   "constants": "kurucz + CODATA2018",
+   "continuum": "kurucz + KuruczCompat()",
+   "defaults": "RosselandConfig()",
+   "eos": "kurucz + eos={} (v2 network, exact Debye, no lag)",
+   "kurucz": "RosselandConfig.kurucz() (continuum KuruczCompat.all(): atlas9() not yet available)",
+   "lower_edge": "kurucz + lower_edge_nm=8.97666",
+   "molecules": "kurucz + molecules_path=None (v2 default records)",
+   "normalization": "kurucz + normalization='quadrature'"
+  },
+  "input": "stock runs/stock/odf/solar p00big{0,1,2,4,8}.bdf; composition from kappa9v0.com; all 57 x 42 x 5 table entries, dex",
+  "location_of_largest_deltas": {
+   "continuum": "log T >= 5.2",
+   "eos": "log T 4.0-5.3, high P (max 0.057 at log T 4.50, log P 5.0)",
+   "hckt_artefact": "log T 3.3-3.6 ridge (up to 0.076)",
+   "molecules": "log T 3.56-3.62, log P 8",
+   "normalization": "log T >= 5.2 (UV beyond the first BIG frequency)"
+  },
+  "references": {
+   "stock": "work/kappa9_solar_stock kapk{v}.dat",
+   "stock_hckt_fixed": "exact-port KAPPA9 with HCKT updated per grid temperature (runs/v2/kappa_ros/kappa9_hckt_fixed/solar)"
+  },
+  "results": {
+   "constants": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0003,
+     "mean": -0.0001,
+     "rms": 0.0001
+    },
+    "vs_stock": {
+     "max": 0.0778,
+     "mean": -0.0021,
+     "rms": 0.0082
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0183,
+     "mean": -0.0008,
+     "rms": 0.0033
+    }
+   },
+   "continuum": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0135,
+     "mean": -0.0005,
+     "rms": 0.0016
+    },
+    "vs_stock": {
+     "max": 0.0778,
+     "mean": -0.0025,
+     "rms": 0.008
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0181,
+     "mean": -0.0012,
+     "rms": 0.0029
+    }
+   },
+   "defaults": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0573,
+     "mean": 0.0051,
+     "rms": 0.0156
+    },
+    "vs_stock": {
+     "max": 0.0722,
+     "mean": 0.0031,
+     "rms": 0.0164
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0553,
+     "mean": 0.0044,
+     "rms": 0.0151
+    }
+   },
+   "eos": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0573,
+     "mean": 0.0072,
+     "rms": 0.0154
+    },
+    "vs_stock": {
+     "max": 0.0723,
+     "mean": 0.0052,
+     "rms": 0.0165
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0566,
+     "mean": 0.0064,
+     "rms": 0.0152
+    }
+   },
+   "hckt_artefact(stock-fixed)": {
+    "max": 0.076,
+    "mean": 0.0013,
+    "rms": 0.0071
+   },
+   "kurucz": {
+    "vs_stock": {
+     "max": 0.0778,
+     "mean": -0.002,
+     "rms": 0.0082
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0181,
+     "mean": -0.0008,
+     "rms": 0.0033
+    }
+   },
+   "lower_edge": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0014,
+     "mean": 0.0001,
+     "rms": 0.0002
+    },
+    "vs_stock": {
+     "max": 0.0778,
+     "mean": -0.002,
+     "rms": 0.0082
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0181,
+     "mean": -0.0007,
+     "rms": 0.0033
+    }
+   },
+   "molecules": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0112,
+     "mean": 0.0003,
+     "rms": 0.0013
+    },
+    "vs_stock": {
+     "max": 0.0735,
+     "mean": -0.0017,
+     "rms": 0.0076
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0181,
+     "mean": -0.0005,
+     "rms": 0.0033
+    }
+   },
+   "normalization": {
+    "delta_vs_kurucz_config": {
+     "max": 0.0416,
+     "mean": -0.0014,
+     "rms": 0.0065
+    },
+    "vs_stock": {
+     "max": 0.0777,
+     "mean": -0.0034,
+     "rms": 0.0102
+    },
+    "vs_stock_hckt_fixed": {
+     "max": 0.0426,
+     "mean": -0.0021,
+     "rms": 0.007
+    }
+   }
+  }
+ },
+ "kurucz_config_vs_kappa9": {
+  "alpha": {
+   "stock": {
+    "fails": {
+     "kapk_v0:abs": [
+      0.072725648083237,
+      0.05
+     ],
+     "kapk_v1:abs": [
+      0.06940292740385523,
+      0.05
+     ],
+     "kapk_v2:abs": [
+      0.06487045114603873,
+      0.05
+     ],
+     "kapk_v4:abs": [
+      0.05903182227621073,
+      0.05
+     ],
+     "kapk_v8:abs": [
+      0.05410734405364348,
+      0.05
+     ],
+     "logkappa_ros:abs": [
+      0.072725648083237,
+      0.05
+     ]
+    },
+    "metrics": {
+     "kapk_v0:abs": 0.072725648083237,
+     "kapk_v0:rms_abs": 0.00805022874875258,
+     "kapk_v1:abs": 0.06940292740385523,
+     "kapk_v1:rms_abs": 0.007797711976068358,
+     "kapk_v2:abs": 0.06487045114603873,
+     "kapk_v2:rms_abs": 0.007454835834825699,
+     "kapk_v4:abs": 0.05903182227621073,
+     "kapk_v4:rms_abs": 0.006990104445055594,
+     "kapk_v8:abs": 0.05410734405364348,
+     "kapk_v8:rms_abs": 0.006582134588639129,
+     "logkappa_ros:abs": 0.072725648083237,
+     "logkappa_ros:rms_abs": 0.007394202163707852
+    }
+   },
+   "stock_hckt_fixed": {
+    "fails": {},
+    "metrics": {
+     "kapk_v0:abs": 0.021099212622625818,
+     "kapk_v0:rms_abs": 0.0035317183992691764,
+     "kapk_v1:abs": 0.021217577371711482,
+     "kapk_v1:rms_abs": 0.003527795184601003,
+     "kapk_v2:abs": 0.021027407376464913,
+     "kapk_v2:rms_abs": 0.00350933787050048,
+     "kapk_v4:abs": 0.020386163682445613,
+     "kapk_v4:rms_abs": 0.0035009448988797404,
+     "kapk_v8:abs": 0.020567835038229565,
+     "kapk_v8:rms_abs": 0.003463100662893808,
+     "logkappa_ros:abs": 0.021217577371711482,
+     "logkappa_ros:rms_abs": 0.003506665293177748
+    }
+   }
+  },
+  "solar": {
+   "stock": {
+    "fails": {
+     "kapk_v0:abs": [
+      0.07673572328946499,
+      0.05
+     ],
+     "kapk_v1:abs": [
+      0.07404862276395097,
+      0.05
+     ],
+     "kapk_v2:abs": [
+      0.06948304022495755,
+      0.05
+     ],
+     "kapk_v4:abs": [
+      0.06462862733506913,
+      0.05
+     ],
+     "kapk_v8:abs": [
+      0.05956877435610952,
+      0.05
+     ],
+     "logkappa_ros:abs": [
+      0.07673572328946499,
+      0.05
+     ]
+    },
+    "metrics": {
+     "kapk_v0:abs": 0.07673572328946499,
+     "kapk_v0:rms_abs": 0.008390837770839923,
+     "kapk_v1:abs": 0.07404862276395097,
+     "kapk_v1:rms_abs": 0.00815904853006938,
+     "kapk_v2:abs": 0.06948304022495755,
+     "kapk_v2:rms_abs": 0.007804725150012906,
+     "kapk_v4:abs": 0.06462862733506913,
+     "kapk_v4:rms_abs": 0.007339190160574033,
+     "kapk_v8:abs": 0.05956877435610952,
+     "kapk_v8:rms_abs": 0.006861200218351919,
+     "logkappa_ros:abs": 0.07673572328946499,
+     "logkappa_ros:rms_abs": 0.007730844025450317
+    }
+   },
+   "stock_hckt_fixed": {
+    "fails": {},
+    "metrics": {
+     "kapk_v0:abs": 0.017918486733551453,
+     "kapk_v0:rms_abs": 0.0030994842420795686,
+     "kapk_v1:abs": 0.018129152869152065,
+     "kapk_v1:rms_abs": 0.0030888921902308716,
+     "kapk_v2:abs": 0.017339047324142154,
+     "kapk_v2:rms_abs": 0.0030641445741096595,
+     "kapk_v4:abs": 0.017106040399769373,
+     "kapk_v4:rms_abs": 0.003007737905333725,
+     "kapk_v8:abs": 0.01630969690068107,
+     "kapk_v8:rms_abs": 0.0029306823006704638,
+     "logkappa_ros:abs": 0.018129152869152065,
+     "logkappa_ros:rms_abs": 0.0030388295626921536
+    }
+   }
+  }
+ }
+}

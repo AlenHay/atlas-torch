@@ -105,6 +105,52 @@ def atlas_metrics(ref: Path, cand: Path) -> dict:
     return out
 
 
+ATLAS_DOMAIN = (-4.0, 1.0)
+
+
+def atlas_metrics_v2(ref: Path, cand: Path, tolerances: dict | None = None) -> dict:
+    """atlas_metrics on the layers with the reference log10(TAUROS) in [-4, 1] for every key whose tolerance in
+    `tolerances` (results/v2/tolerances.json stages.atlas) names a domain (all keys when tolerances is None), plus
+    FLXERR:own_max and FLXDRV:own_max, the candidate's own max |FLXERR|, |FLXDRV| over that domain (the
+    also_require conditions)."""
+    full = atlas_metrics(ref, cand)
+    if "error" in full:
+        return full
+    a, b = read_last_iteration(Path(ref) / "output_last_iteration.out"), read_last_iteration(Path(cand) / "output_last_iteration.out")
+    da, db = read_deck6(Path(ref) / "output_summary.out"), read_deck6(Path(cand) / "output_summary.out")
+    lt = np.log10(a["TAUROS"])
+    m = (lt >= ATLAS_DOMAIN[0]) & (lt <= ATLAS_DOMAIN[1])
+    masked = {}
+    for q in ATLAS_REL:
+        _put(masked, q, "rel", _rel(a[q][m], b[q][m]))
+    for q in ATLAS_ABS:
+        _put(masked, q, "abs", _abs(a[q][m], b[q][m]))
+    _put(masked, "HEIGHT", "abs", _abs(a["HEIGHT"][m], b["HEIGHT"][m]))
+    tot = np.max(np.abs(da["FLXRAD"]) + np.abs(a["FLXCNV"]))
+    _put(masked, "FLXCNV_over_total", "abs", _abs(a["FLXCNV"][m] / tot, b["FLXCNV"][m] / tot))
+    for q in ["T", "P", "XNE", "ABROSS"]:
+        _put(masked, f"deck_{q}", "rel", _rel(da[q][m], db[q][m]))
+    out = dict(full)
+    for k, v in masked.items():
+        if tolerances is None or (tolerances.get(k.replace(":rms_", ":"), {}) or {}).get("domain"):
+            out[k] = v
+    out["FLXERR:own_max"] = float(np.max(np.abs(b["FLXERR"][m])))
+    out["FLXDRV:own_max"] = float(np.max(np.abs(b["FLXDRV"][m])))
+    out["domain_layers"] = int(m.sum())
+    return out
+
+
+def atlas_also_require(metrics: dict) -> dict:
+    """The also_require conditions of stages.atlas: own max |FLXERR| < 1 and max |FLXDRV| < 10 (percent) over
+    the domain; {key: (value, limit)} of those that fail."""
+    fails = {}
+    for k, lim in (("FLXERR:own_max", 1.0), ("FLXDRV:own_max", 10.0)):
+        v = metrics.get(k)
+        if v is None or not v < lim:
+            fails[k] = (v, lim)
+    return fails
+
+
 def gated_keys(metrics: dict) -> list[str]:
     return [k for k in metrics if ":" in k and not k.split(":")[1].startswith(("rms_", "frac"))]
 
@@ -143,12 +189,67 @@ def synthe_metrics_v2(ref: Path, cand: Path) -> dict:
 
 def gate_v2(metrics: dict, tolerances: dict) -> dict:
     """{key: (value, tol)} of the gated keys of a results/v2/tolerances.json stage block that the metrics fail
-    (a missing metric fails)."""
+    (a missing metric fails). A key containing 'v*' stands for every vturb of VTURBS, all of which must pass."""
     fails = {}
-    for k, t in tolerances.items():
-        if k.startswith("_") or not t.get("gate") or t.get("tol") is None:
+    for k0, t in tolerances.items():
+        if k0.startswith("_") or not t.get("gate") or t.get("tol") is None:
             continue
-        v = metrics.get(k)
-        if v is None or not v <= t["tol"]:
-            fails[k] = (v, t["tol"])
+        for k in ([k0.replace("v*", f"v{v}") for v in VTURBS] if "v*" in k0 else [k0]):
+            v = metrics.get(k)
+            if v is None or not v <= t["tol"]:
+                fails[k] = (v, t["tol"])
     return fails
+
+
+def odf_metrics_v2(ref: Path, cand: Path) -> dict:
+    """odf_metrics in dex (the tolerances' unit): odf_v{v}:abs, rms_abs, p999 and odf_v{v}_hot:abs divided by 1000
+    (the .bdf steps are 0.001 dex); share_gt1 (> 1 step) and frac unchanged; logkappa_ros already in dex."""
+    out = odf_metrics(ref, cand)
+    if "error" in out:
+        return out
+    for v in VTURBS:
+        for k in (f"odf_v{v}:abs", f"odf_v{v}:rms_abs", f"odf_v{v}:p999", f"odf_v{v}_hot:abs"):
+            out[k] = out[k] / 1000.0
+    return out
+
+
+def kappa9_metrics_v2(ref: Path, cand: Path, ref_kappa_ros: Path | None = None) -> dict:
+    """kappa9_metrics in dex: kapk_v{v}:abs and rms_abs divided by 1000 (kapk tables are 1000 log10 kappa_R);
+    ref_kappa_ros: the reference kappa.ros when it is not in ref (BasicATLAS keeps it with the ODFs)."""
+    out = {}
+    for v in VTURBS:
+        a, b = read_kapk(Path(ref) / f"kapk{v}.dat"), read_kapk(Path(cand) / f"kapk{v}.dat")
+        _put(out, f"kapk_v{v}", "abs", _abs(a / 1000.0, b / 1000.0))
+        out[f"kapk_v{v}:frac"] = float((a != b).mean())
+    ka = read_kappa_ros(Path(ref_kappa_ros) if ref_kappa_ros else Path(ref) / "kappa.ros")
+    kb = read_kappa_ros(Path(cand) / "kappa.ros")
+    _put(out, "logkappa_ros", "abs", _abs(ka["logkappa"], kb["logkappa"]))
+    return out
+
+
+def odf_rows_metrics_v2(ref: Path, cand_steps: dict, t_index, cand_logkappa=None, ref_kappa_ros: Path | None = None,
+                        hot_index: int = 18) -> dict:
+    """odf_metrics_v2 on a subset of the 57 ODF temperatures (a v2 build of only some temperatures).
+    cand_steps: {vturb: int array (328, len(t_index), 25, 12)}, 1000 log10 kappa as stored in p00big{v}.bdf;
+    t_index: the 0-based temperature indices of its second axis; compared with ref/p00big{v}.bdf at those
+    temperatures. odf_v{v}_hot:abs over t_index >= hot_index (T >= 4571 K, as odf_metrics). cand_logkappa:
+    (len(t_index), 42, 5) log10 kappa_R at those temperatures, compared with ref_kappa_ros (default
+    ref/kappa.ros); omitted when None. All values in dex."""
+    t = np.asarray(list(t_index), dtype=int)
+    out: dict = {"temperature_index": t.tolist()}
+    for v in VTURBS:
+        a = read_bdf(Path(ref) / f"p00big{v}.bdf").astype(np.int64)[:, t]
+        b = np.asarray(cand_steps[v]).astype(np.int64)
+        if a.shape != b.shape:
+            return {"error": f"bdf rows {a.shape} vs {b.shape}"}
+        d = np.abs(a - b)
+        _put(out, f"odf_v{v}", "abs", _abs(a / 1000.0, b / 1000.0))
+        out[f"odf_v{v}:share_gt1"] = float((d > 1).mean())
+        out[f"odf_v{v}:p999"] = float(np.quantile(d, 0.999)) / 1000.0
+        hot = t >= hot_index
+        out[f"odf_v{v}_hot:abs"] = float(d[:, hot].max()) / 1000.0 if hot.any() else None
+        out[f"odf_v{v}:frac"] = float((a != b).mean())
+    if cand_logkappa is not None:
+        ka = read_kappa_ros(Path(ref_kappa_ros) if ref_kappa_ros else Path(ref) / "kappa.ros")["logkappa"][t]
+        _put(out, "logkappa_ros", "abs", _abs(ka, cand_logkappa))
+    return out

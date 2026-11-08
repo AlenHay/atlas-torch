@@ -15,7 +15,7 @@ import torch
 from ...constants import CODATA2018, PhysicalConstants
 from ...eos.equilibrium import Populations
 from .. import Opacity
-from . import helium, hydrogen, metals, molecules, scattering
+from . import atlas9, helium, hydrogen, metals, molecules, scattering
 from .sampled import EdgeSampled
 from .state import Conditions, KuruczCompat
 
@@ -55,6 +55,9 @@ SCATTERERS = {
     "H2 Rayleigh": (scattering.h2_rayleigh, "H2RAOP"),
 }
 PROCESSES = tuple(ABSORBERS) + tuple(SCATTERERS)
+# atlas9mem.for COOLOP's sources and its upper frequency limit, Hz (KuruczCompat.coolop_frequency_cut)
+COOLOP = ("C I bf", "Mg I bf", "Al I bf", "Si I bf", "Fe I bf", "CH", "OH", "H2-H2 CIA", "H2-He CIA")
+COOLOP_MAX_FREQUENCY = 3.28805e15
 
 
 class ContinuousOpacity:
@@ -94,7 +97,14 @@ class ContinuousOpacity:
             each = {}
             for k in self.names:
                 if k in table:
-                    v = table[k][0](c) / c.rho
+                    fn = table[k][0]
+                    if self.compat.cool_atlas9 and k in atlas9.COOL:
+                        fn = atlas9.COOL[k]
+                    if self.compat.hop_atlas9 and k in atlas9.HOP:
+                        fn = atlas9.HOP[k]
+                    v = fn(c) / c.rho
+                    if self.compat.coolop_frequency_cut and k in COOLOP:
+                        v = torch.where(nu > COOLOP_MAX_FREQUENCY, torch.zeros_like(v), v)
                     total = total + v
                     if parts:
                         each[k] = v.expand(shape)

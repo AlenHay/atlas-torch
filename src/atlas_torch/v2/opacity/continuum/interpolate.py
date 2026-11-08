@@ -33,16 +33,25 @@ def _parabola(x, x0, x1, x2, f0, f1, f2):
     return f0 + (x - x0) * (d01 + (x - x1) * c), c
 
 
-def blended_parabola(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> torch.Tensor:
-    """Kurucz's MAP1 interpolation (atlas7v.for FUNCTION MAP1) for xp (K,), fp (K,): on an interior interval
-    (x_{i-1}, x_i) the parabolas through (i-2, i-1, i) and (i-1, i, i+1) averaged with weights inversely
-    proportional to their curvature; the parabola through the last three nodes on the last interval; linear
-    on the first two intervals and outside the table (extrapolation)."""
-    k = xp.shape[0]
-    i = torch.searchsorted(xp.contiguous(), x.contiguous(), right=True)  # nodes <= x
-    lin = linear(x, xp, fp)
+def map1(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> torch.Tensor:
+    """Kurucz's MAP1 interpolation (atlas9mem.for, atlas7v.for FUNCTION MAP1), batched: f at x (..., N) from fp
+    (..., K) on increasing xp (..., K) (batch dims broadcast). Interior intervals: the parabolas through
+    (i-2, i-1, i) and (i-1, i, i+1) blended with weights inversely proportional to their curvatures; the last
+    interval: the parabola through the last three nodes; the first two intervals and outside the table: linear."""
+    xp, fp = torch.broadcast_tensors(xp, fp)
+    k = xp.shape[-1]
+    batch = torch.broadcast_shapes(x.shape[:-1], xp.shape[:-1])
+    x = x.expand(batch + x.shape[-1:])
+    xp, fp = xp.expand(batch + (k,)), fp.expand(batch + (k,))
+    i = torch.searchsorted(xp.detach().contiguous(), x.detach().contiguous(), right=True)    # nodes <= x
+
+    def g(j):
+        return torch.gather(xp, -1, j), torch.gather(fp, -1, j)
+
+    il = i.clamp(1, k - 1)
+    (x0, f0), (x1, f1) = g(il - 1), g(il)
+    lin = f0 + (f1 - f0) * (x - x0) / (x1 - x0)
     ib = i.clamp(2, k - 1)
-    g = lambda j: (xp[j], fp[j])                                          # noqa: E731
     (xa, fa), (xb, fb), (xc, fc) = g(ib - 2), g(ib - 1), g(ib)
     back, cb = _parabola(x, xa, xb, xc, fa, fb, fc)
     jf = ib.clamp(max=k - 2)
@@ -50,8 +59,7 @@ def blended_parabola(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> tor
     fwd, cf = _parabola(x, xd, xe, xf, fd, fe, ff)
     den = cf.abs() + cb.abs()
     wt = torch.where(den > 0, cf.abs() / torch.where(den > 0, den, torch.ones_like(den)), torch.zeros_like(den))
-    inner = fwd + wt * (back - fwd)
-    out = torch.where(i == k - 1, back, inner)
+    out = torch.where(i == k - 1, back, fwd + wt * (back - fwd))
     return torch.where((i <= 2) | (i >= k), lin, out)
 
 

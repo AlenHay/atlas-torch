@@ -6,7 +6,7 @@ import torch
 
 from .data import fortran_data
 from .hydrogenic import free_free, karzas_latter, merged_levels
-from .interpolate import blended_parabola, linear, linear_rows
+from .interpolate import linear, linear_rows, map1
 from .state import C_CM, Conditions, Levels
 
 # H I ionisation limit and Rydberg constant (cm^-1); levels n = 1..15: edge (cm^-1) and excitation energy (cm^-1)
@@ -48,7 +48,7 @@ def h_minus_bound_free(c: Conditions) -> torch.Tensor:
     extrapolation below 18 nm turns negative."""
     wbf, bf = fortran_data("hminop", "wbf", c.nu.device), fortran_data("hminop", "bf", c.nu.device)
     lam = C_CM * 1e7 / c.nu
-    sigma = torch.where(lam < wbf[-1], torch.clamp(blended_parabola(lam, wbf, bf), min=0.0),
+    sigma = torch.where(lam < wbf[-1], torch.clamp(map1(lam, wbf, bf), min=0.0),
                         torch.zeros((), dtype=lam.dtype)) * 1e-18
     return h_minus_density(c) * sigma * c.stim
 

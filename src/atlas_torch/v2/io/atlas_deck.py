@@ -30,6 +30,12 @@ def _f(s: str) -> float:
     return float(s.replace("D", "E"))
 
 
+def _deck6_rows(rows: list[str]) -> dict[str, np.ndarray]:
+    """READ DECK6 rows (FORMAT 1PE15.8,0PF9.1,1P8E10.3) -> {column: (L,)}; 'NAN' fields become nan."""
+    cells = [[r[0:15], r[15:24]] + [r[24 + 10 * k:34 + 10 * k] for k in range(8)] for r in rows]
+    return dict(zip(DECK6_COLUMNS, np.array([[_f(v) for v in r] for r in cells], dtype=np.float64).T))
+
+
 def read_atlas_deck(path_or_text: str | Path) -> AtlasDeck:
     text = Path(path_or_text).read_text() if "\n" not in str(path_or_text) else str(path_or_text)
     lines = text.splitlines()
@@ -44,8 +50,7 @@ def read_atlas_deck(path_or_text: str | Path) -> AtlasDeck:
     change = {int(z): _f(v) for z, v in re.findall(r"(\d+)\s+(-?\d+\.\d*)", cards.split("ABUNDANCE CHANGE", 1)[1])}
     log_metals = [change[z] for z in range(3, 100)]
     comp = Composition.from_atlas(change[1], change[2], log_metals, scale)
-    rows = [[r[0:15], r[15:24]] + [r[24 + 10 * k:34 + 10 * k] for k in range(8)] for r in lines[i_d6 + 1:i_d6 + 1 + n]]
-    d6 = dict(zip(DECK6_COLUMNS, np.array([[_f(v) for v in r] for r in rows]).T))
+    d6 = _deck6_rows(lines[i_d6 + 1:i_d6 + 1 + n])
     tt = lambda k: torch.as_tensor(d6[k], dtype=torch.float64)
     head = " ".join(lines[:i_ab])
     teff = re.search(r"TEFF\s+(\S+)", head)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 
 from .data import fortran_data
-from .interpolate import blended_parabola
+from .interpolate import map1
 from .molecules import h2_density
 from .state import Conditions
 
@@ -52,7 +52,7 @@ def h1_rayleigh_cross_section(c: Conditions) -> torch.Tensor:
         g = _uniform(x, x0, dx, t, dx_origin, x0_index)
         s = torch.where((x >= lo) & (x <= hi), g * g, s)
     s = torch.where((x >= 0.961) & (x <= 1.0), g_lc[0], s)
-    s = torch.where(x > 1.0, blended_parabola(x, f_lc, g_lc), s)
+    s = torch.where(x > 1.0, map1(x, f_lc, g_lc), s)
     return c.rad.rayleigh * s
 
 

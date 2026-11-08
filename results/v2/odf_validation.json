@@ -1,0 +1,540 @@
+{
+ "B1_line_spectrum_5012K_500_510nm": {
+  "T": 5012.0,
+  "counts": {
+   "lines": 38488,
+   "pairs": 312326,
+   "points": 16163501
+  },
+  "floor_dex_max": 4.651322260684765e-08,
+  "floored_total": {
+   "max": 0.6262119048898268,
+   "median": 0.0,
+   "p99": 0.033038345020320506,
+   "rms": 0.009393401051063116
+  },
+  "nlte_list": {
+   "max": 0.17946768692187387,
+   "median": 3.329380983840835e-05,
+   "p99": 0.002475311348285799,
+   "rms": 0.003702647501476548,
+   "share": 0.10623573376426623
+  },
+  "packed_lists": {
+   "max": 0.6295590041072283,
+   "median": -5.404370615469389e-07,
+   "p99": 0.04285941772732849,
+   "rms": 0.011441771683678725,
+   "share": 0.6846540753459247,
+   "zero_share": 0.0
+  },
+  "points": 247525,
+  "window_nm": [
+   500.0,
+   510.0
+  ]
+ },
+ "B2_partial_one_segment": {
+  "big_v0": {
+   "max": 1.202,
+   "mean": 0.1254,
+   "p999": 1.197,
+   "rms": 0.3124
+  },
+  "big_v8": {
+   "max": 1.202,
+   "mean": 0.1254,
+   "p999": 1.197,
+   "rms": 0.3124
+  },
+  "cause_of_deep_layer_excess": "hydrogen lines only: opacity.lines.hydrogen (synthe.for HPROF4 transcription) gives 1.4-1.7 dex more than DFSYNTHE's XLINOP/HPROF4 at P >= 1e6 dyn/cm^2, 50119 K, 1000-1120 nm; not resolved (open)",
+  "little_v0": {
+   "max": 1.205,
+   "mean": 0.1274,
+   "p999": 1.202,
+   "rms": 0.315
+  },
+  "nlte_parts_vs_exact_xlinop": {
+   "hydrogen": {
+    "layer18_median_dex": 0.159,
+    "layer22_median_dex": 1.665,
+    "layer24_median_dex": 1.412
+   },
+   "merged_continua_autoionizing": "identical",
+   "normal_lines_walk": "identical (median log ratio 0.000 at layers 18, 22, 24)"
+  },
+  "rms_per_layer_big_v0": {
+   "0": 0.001,
+   "12": 0.005,
+   "18": 0.083,
+   "24": 1.089,
+   "6": 0.001
+  },
+  "seconds": 8.1,
+  "what": "temperature_steps (OdfConfig.kurucz(), stock xnfpdf gas) on one block, segment 40 (BIG 220-224, LITTLE 687-711, ~1000-1120 nm), 50119 K, against stock p00big/p00lit; dex"
+ },
+ "B6_cost_kurucz_config": {
+  "decision": "exceeds the 24 CPU-hour limit: B3 (full tables) not started; B2, B5 depend on it",
+  "estimate_cpu_hours_per_mix": "about 150 (21 temperatures <= 5012 K at 3-7 h, 36 hotter at 1-2 h; UV segments cost up to 10x the sampled ones)",
+  "full_segment_5012K_300nm": {
+   "line_pairs": 1882274,
+   "lines": 204266,
+   "nlte_list_s": 90.8,
+   "packed_lists_s": 198.1,
+   "points": 65000,
+   "profile_points": 80976619,
+   "seconds": 291.4
+  },
+  "machine_note": "shared 12-core machine at load average 20-29 during the measurement; torch CPU, 2 threads",
+  "note": "after the fixes: packed lines decoded line_chunk at a time, memmap bisection without column copies, MAIN wing extents searched to the first point below the cutoff, XLINOP walk for the NLTE list; torch CPU, 2 threads, nice 19, load average 11-13. The 'previous' 1995 K run predates MAIN's far-wing extents (X/n^2 to MAXSTEP), hence its 3x fewer profile points; on every 25th 20000-line chunk of the 1995 K segment the exact extents deposit 109e6 points where the preceding extent estimate deposited 176e6",
+  "per_temperature_two_segments": {
+   "1995": {
+    "extrapolated_s": 41831.0,
+    "gas_s": 1.8,
+    "line_pairs": 54850929,
+    "peak_rss_mb": 962,
+    "points_sampled": 118060,
+    "profile_points": 4439595761,
+    "segments_s": 1407.8
+   },
+   "5012": {
+    "extrapolated_s": 614.0,
+    "gas_s": 5.3,
+    "line_pairs": 261363,
+    "peak_rss_mb": 738,
+    "points_sampled": 118060,
+    "profile_points": 9554054,
+    "segments_s": 20.5
+   }
+  },
+  "previous_per_temperature_two_segments": {
+   "1995": {
+    "gas_s": 2.8,
+    "line_pairs": 52236117,
+    "peak_rss_mb": 3403,
+    "points_sampled": 118060,
+    "profile_points": 1551670393,
+    "segments_s": 853.6,
+    "uniform_extrapolation_s": 25365
+   },
+   "5012": {
+    "gas_s": 8.7,
+    "line_pairs": 261364,
+    "peak_rss_mb": 1414,
+    "points_sampled": 118060,
+    "profile_points": 7114080,
+    "segments_s": 22.4,
+    "uniform_extrapolation_s": 675
+   }
+  }
+ },
+ "B7_block_5012K_490_550nm": {
+  "counts": {
+   "lines": 86898,
+   "pairs": 718004,
+   "points": 52094603
+  },
+  "fails": {},
+  "metrics": {
+   "big_v0_rms_per_layer": [
+    0.001,
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0011,
+    0.001,
+    0.0019,
+    0.016,
+    0.0077,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "big_v1_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0018,
+    0.0154,
+    0.0074,
+    0.0005,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "big_v2_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0013,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0014,
+    0.0143,
+    0.0067,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "big_v4_rms_per_layer": [
+    0.001,
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0115,
+    0.0051,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "big_v8_rms_per_layer": [
+    0.001,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0008,
+    0.0078,
+    0.0031,
+    0.0006,
+    0.0005,
+    0.0003,
+    0.0003
+   ],
+   "little_v0_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0026,
+    0.0172,
+    0.0092,
+    0.0006,
+    0.0005,
+    0.0003,
+    0.0003
+   ],
+   "little_v1_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0011,
+    0.0024,
+    0.0165,
+    0.0088,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "little_v2_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.002,
+    0.0152,
+    0.0079,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "little_v4_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0014,
+    0.0123,
+    0.0059,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "little_v8_rms_per_layer": [
+    0.001,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0011,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0009,
+    0.0083,
+    0.0035,
+    0.0006,
+    0.0004,
+    0.0003,
+    0.0003
+   ],
+   "odf_v0:abs": 0.11700050499007086,
+   "odf_v0:p999": 0.05677359102036001,
+   "odf_v0:rms_abs": 0.004053275969865281,
+   "odf_v1:abs": 0.11096722100749212,
+   "odf_v1:p999": 0.05425412562113939,
+   "odf_v1:rms_abs": 0.0039012585746909766,
+   "odf_v2:abs": 0.10070008241494643,
+   "odf_v2:p999": 0.046843277193410485,
+   "odf_v2:rms_abs": 0.003597423930494956,
+   "odf_v4:abs": 0.0781134547175042,
+   "odf_v4:p999": 0.03581458098271832,
+   "odf_v4:rms_abs": 0.0029074115948308295,
+   "odf_v8:abs": 0.044286394486092506,
+   "odf_v8:p999": 0.023488524886108305,
+   "odf_v8:rms_abs": 0.0020754663517142
+  },
+  "peak_rss_mb": 1766,
+  "seconds": 21.0
+ },
+ "B8_gas_vs_xnfpdf": {
+  "10000": {
+   "ablog_max": 0.02157562238851174,
+   "ablog_rms": 0.0010635259968819553,
+   "dopple_rel_max": 6.565604193653485e-08,
+   "xnfpel_max": 0.02191081079080881,
+   "xnfpel_missing": 0
+  },
+  "1995": {
+   "ablog_max": 0.006542754866741607,
+   "ablog_rms": 0.0009690651906999182,
+   "dopple_rel_max": 7.037492477657281e-08,
+   "xnfpel_max": 0.003421029121366992,
+   "xnfpel_missing": 0
+  },
+  "199526": {
+   "ablog_max": 0.007861145144560044,
+   "ablog_rms": 0.0034513132128574276,
+   "dopple_rel_max": 6.50646426736401e-08,
+   "xnfpel_max": 0.004082780576693423,
+   "xnfpel_missing": 0
+  },
+  "2512": {
+   "ablog_max": 0.01227888016793699,
+   "ablog_rms": 0.0004925971470955391,
+   "dopple_rel_max": 6.679424280342516e-08,
+   "xnfpel_max": 0.0010346069824844761,
+   "xnfpel_missing": 0
+  },
+  "3162": {
+   "ablog_max": 0.02406331966802977,
+   "ablog_rms": 0.0019364843050376107,
+   "dopple_rel_max": 6.859703516326476e-08,
+   "xnfpel_max": 0.00021520568909449977,
+   "xnfpel_missing": 0
+  },
+  "50119": {
+   "ablog_max": 0.006428866671074784,
+   "ablog_rms": 0.0018434873264793277,
+   "dopple_rel_max": 7.45234169929887e-08,
+   "xnfpel_max": 0.07565915504474459,
+   "xnfpel_missing": 0
+  },
+  "5012": {
+   "ablog_max": 0.017359247294953084,
+   "ablog_rms": 0.002823664143403228,
+   "dopple_rel_max": 6.485263670530372e-08,
+   "xnfpel_max": 0.0010959774395644384,
+   "xnfpel_missing": 0
+  }
+ },
+ "B9_lyman_alpha_block_10000K": {
+  "big_110": {
+   "max": 0.17958279664554921,
+   "mean": -0.044853788901852605,
+   "rms": 0.0709031472145923
+  },
+  "big_111": {
+   "max": 0.282142572990038,
+   "mean": -0.08139179673326623,
+   "rms": 0.11665764717115047
+  },
+  "big_112": {
+   "max": 0.2554926048045705,
+   "mean": -0.05289966391560595,
+   "rms": 0.0862382938203851
+  },
+  "big_113": {
+   "max": 1.1264089892964346,
+   "mean": -0.15961336751802338,
+   "rms": 0.30532878276077186
+  }
+ },
+ "B9_lyman_alpha_block_10000K_switches": {
+  "kurucz": {
+   "big_110": {
+    "impact": -0.045,
+    "omit": -0.554
+   },
+   "big_111": {
+    "impact": -0.081,
+    "omit": -1.921
+   },
+   "big_112": {
+    "impact": -0.053,
+    "omit": -0.431
+   },
+   "big_113": {
+    "impact": -0.16,
+    "omit": -0.295
+   }
+  },
+  "v2_defaults": {
+   "big_110": {
+    "impact": -0.024,
+    "omit": -0.343
+   },
+   "big_111": {
+    "impact": -0.08,
+    "omit": -1.606
+   },
+   "big_112": {
+    "impact": -0.04,
+    "omit": -0.283
+   },
+   "big_113": {
+    "impact": -0.053,
+    "omit": -0.124
+   }
+  },
+  "what": "mean over steps and layers of v2 - stock p00big0 (dex), 10000 K, BIG 110-113; v2 defaults (OdfConfig(), v2 gas) and OdfConfig.kurucz() (stock gas), lyman_alpha 'impact' vs 'omit'"
+ }
+}

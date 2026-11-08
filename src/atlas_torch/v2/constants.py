@@ -17,6 +17,7 @@ Where they differ (Kurucz/CODATA - 1):
   (2 pi m_e k/h^2)^1.5   2.4148e15 PFSAHA, Saha                                +4.8e-5
   (2 pi amu k/h^2)^1.5   1.8786e20 NMOLEC, molecular n/U                       -3.8e-4
   hc/k     (from h, c, k above)    PFSAHA/PFGROUND: HCKT, HCK                  +8.0e-6
+  sigma    5.6697e-5               ROSS, KAPPA9: 4*5.6697E-5/3.14159*T**3      -1.2e-4
 """
 from __future__ import annotations
 
@@ -49,6 +50,7 @@ class PhysicalConstants:
     four_pi_e2: float   # 4 pi e^2, erg cm
     saha_e: float       # (2 pi m_e k / h^2)^1.5, cm^-3 K^-1.5
     saha_amu: float     # (2 pi amu k / h^2)^1.5, cm^-3 (amu K)^-1.5
+    sigma: float = 5.670374419e-5   # Stefan-Boltzmann, erg cm^-2 s^-1 K^-4 (ROSS, KAPPA9: 5.6697E-5)
 
 
 def _codata2018() -> PhysicalConstants:
@@ -59,14 +61,15 @@ def _codata2018() -> PhysicalConstants:
     return PhysicalConstants(
         name="CODATA2018", c=c, h=h, k=k, amu=amu, k_ev=k / ev, ev_cm=ev / (h * c), hc_k=h * c / k,
         ry_ev=13.605693122994, e2_ev_cm=e_esu ** 2 / ev, four_pi_e2=4.0 * math.pi * e_esu ** 2,
-        saha_e=(2.0 * math.pi * m_e * k / h ** 2) ** 1.5, saha_amu=(2.0 * math.pi * amu * k / h ** 2) ** 1.5)
+        saha_e=(2.0 * math.pi * m_e * k / h ** 2) ** 1.5, saha_amu=(2.0 * math.pi * amu * k / h ** 2) ** 1.5,
+        sigma=2.0 * math.pi ** 5 * k ** 4 / (15.0 * h ** 3 * c ** 2))
 
 
 CODATA2018 = _codata2018()
 KURUCZ = PhysicalConstants(
     name="KURUCZ", c=2.99792458e10, h=6.6256e-27, k=1.38054e-16, amu=1.660e-24, k_ev=8.6171e-5,
     ev_cm=8065.479, hc_k=6.6256e-27 * 2.99792458e10 / 1.38054e-16, ry_ev=13.595, e2_ev_cm=1.44e-7,
-    four_pi_e2=2.8965e-18, saha_e=2.4148e15, saha_amu=1.8786e20)
+    four_pi_e2=2.8965e-18, saha_e=2.4148e15, saha_amu=1.8786e20, sigma=5.6697e-5)
 
 # eV/K with which the molecules.dat equilibrium-constant fits (Kurucz 1970 eq. 4.35) are evaluated
 # (NMOLEC: EXP(EQUIL(1)/TKEV(J)-...)); part of the fit's definition, not a physical constant choice.
